@@ -32,6 +32,8 @@
   .devamark.disagree{color:#b3261e}
   .legend .devamark{margin-left:0;margin-right:2px}
   td.cell{padding:0;font-weight:700}
+  td.cell.deva-disagree{box-shadow:inset 0 0 0 2px #b3261e}
+  td.cell.deva-augment{box-shadow:inset 0 0 0 2px #6a3fb5}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
   .cellbtn:focus-visible{outline:3px solid #0b57d0;outline-offset:-2px;background:#eaf1fd}
@@ -711,7 +713,8 @@ for(const row of ROWS){
     const showMark=dm&&rubF&&rubF.aClass!=="NAx";
     const markHtml=showMark?` <b class="devamark ${dv.k}" aria-hidden="true">${dm.sym}</b>`:"";
     const markAria=showMark?` Our conclusion ${dm.word} Deva's conformance checklist for this rule.`:"";
-    h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria} Open details.">${SHORT_A[v]}${markHtml}</button></td>`;}
+    const tdCls=showMark?` deva-${dv.k}`:"";
+    h+=`<td class="cell${tdCls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria} Open details.">${SHORT_A[v]}${markHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
 }
