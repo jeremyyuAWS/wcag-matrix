@@ -81,6 +81,14 @@
   #panel details.faqitem p{margin:0 0 9px;font-size:12.5px;line-height:1.5}
   #panel details.faqitem summary:focus-visible{outline:2px solid #0b57d0}
   #panel button:focus-visible, #panel a:focus-visible{outline:2px solid #0b57d0;outline-offset:1px}
+  #panel .todaychip{display:inline-block;margin:6px 0 0 8px;font-size:12px;color:var(--muted);vertical-align:middle}
+  #panel .todaychip b{color:var(--ink)}
+  #panel .cvp{display:flex;gap:10px;margin:6px 0 0}
+  #panel .cvp-col{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+  #panel .cvp-label{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:5px}
+  #panel .cvp-how{font-size:11.5px;color:var(--muted);margin-top:4px}
+  #panel .gap{background:#fff8e1;border:1px solid #f2e2a6;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px;color:#6a5216}
+  #panel .gap b{color:#4a3a10}
   .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
   .corr h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
   .corr li{margin-bottom:5px;font-size:13px}
@@ -520,8 +528,17 @@ const DEVA={
 // independent of what ACP has shipped. aClass/fClass are ceilings, not ACP status.
 // DET=Deterministic · MA=Machine-assisted · HUM=Human judgment · NA=Not applicable (assess)
 // MECH=Mechanical edit · GEN=Generated content + human approval · REAUTH=Re-authoring · NA (fix)
-const RCLASS={DET:"Deterministic",MA:"Machine-assisted",HUM:"Human judgment",NAx:"Not applicable"};
-const FCLASS={MECH:"Mechanical edit",GEN:"Generated + approval",REAUTH:"Re-authoring",NAx:"Not applicable"};
+// Shared vocabulary across assessment and remediation, and across "current" and "potential" —
+// three mechanisms, one language: Rules-based (deterministic/property-level) · AI-assisted (ML/vision/LLM,
+// always human-confirmed or human-approved before it counts) · Human-assisted (judgment; ACP's role is
+// routing, evidence, and sign-off tracking, not the decision itself).
+const RCLASS={DET:"Rules-based",MA:"AI-assisted",HUM:"Human-assisted",NAx:"Not applicable"};
+const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"Not applicable"};
+// Maps ACP's shipped remediation tier (row.r[f]) to the same three-way "how" bucket, so "current" and
+// "potential" (RUBRIC's fClass) read on one shared scale. AC (1.1.1's vision-conditional auto-apply) is
+// AI-assisted; AP (1.3.2 xlsx / 2.4.2's partial-mechanical auto-fixes) is rules-based — verified against
+// the actual re[] mechanism text for every SC that uses AC/AP before assuming the mapping.
+const RTIER_HOW={A:"DET",AC:"MA",AP:"DET",AI:"MA",M:"HUM",N:"HUM",NA:"NAx"};
 const RUBRIC={
 "1.1.1":{plain:"Every image, icon, or chart needs a text description that conveys the same information it visually communicates — without one, a screen-reader user hears nothing where a sighted reader sees a photo, a diagram, or a chart.",
  formats:{
@@ -701,13 +718,24 @@ for(const row of ROWS){
     <div class="tile"><b class="C">${acpAtCeilingFix} / ${ceilingFixTotal}</b><span>ACP remediation cells at ceiling</span></div>`;
 })();
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
-// ACP-today status line — derived from the existing shipped-capability tiers (row.a/row.r),
-// kept entirely separate from the RUBRIC ceiling above. This is the only section that changes as ACP ships more.
-function acpStatusLine(row,f){
-  const at=row.a[f],rt=row.r[f];
-  const aStr=at==="NA"?"N/A":AL[at];
-  const rStr=rt==="NA"?"N/A":RL[rt];
-  return `Assessment: <b>${esc(aStr)}</b> · Remediation: <b>${esc(rStr)}</b>`;
+// Assessment "today" chip — a one-line status next to the ceiling badge (§2). Derived from row.a[f];
+// the only part of §§2-3 that changes as ACP ships more (the ceiling classification itself doesn't).
+function assessTodayChip(row,f){
+  const at=row.a[f];
+  return `<span class="todaychip">Today: <b>${esc(at==="NA"?"N/A":AL[at])}</b></span>`;
+}
+// Remediation current-vs-potential block — merges what used to be a separate ceiling badge (§4) and
+// an ACP-today status line (§5) into one side-by-side comparison on the shared Rules/AI/Human scale.
+function remediationCVP(row,f,rub){
+  const rt=row.r[f];
+  const curHow=RTIER_HOW[rt]||"NAx";
+  const curLabel=rt==="NA"?"N/A":RL[rt];
+  const potClass=rub?rub.fClass:"NAx";
+  const potLabel=rub?FCLASS[potClass]:"Not applicable";
+  return `<div class="cvp">
+      <div class="cvp-col"><div class="cvp-label">Current (ACP today)</div><div class="badge ${curHow}">${esc(curLabel)}</div><div class="cvp-how">How: ${RCLASS[curHow]}</div></div>
+      <div class="cvp-col"><div class="cvp-label">Potential (ceiling)</div><div class="badge ${potClass}">${esc(potLabel)}</div><div class="cvp-how">How: ${potLabel}</div></div>
+    </div>`;
 }
 // Technical notes: raw mechanism + evidence only. Concessions/counterarguments/drift now surface
 // in the FAQ (buildFAQ) instead, so they're not duplicated across two collapsed sections.
@@ -737,7 +765,6 @@ function buildFAQ(row,f,rub){
   if(counter)faqs.push({q:"What's the strongest objection to this classification, and how does it hold up?",a:counter});
   const drift=ad.cat||rd.cat;
   if(drift)faqs.push({q:"Is there a catalog/code drift on this rule?",a:drift});
-  if(UPGRADE[row.sc])faqs.push({q:"What would it take to move closer to the ceiling?",a:UPGRADE[row.sc]});
   return faqs;
 }
 // Turns bare SC-code mentions (e.g. "1.3.2") inside already-escaped text into clickable cross-links
@@ -762,7 +789,7 @@ function renderDrawer(sc,f,trigger){
   html+=`<h4>1 · The rule, in plain words</h4><p class="plain">${linkify(esc((RUBRIC[row.sc]&&RUBRIC[row.sc].plain)||""),row.sc,f)}</p>`;
 
   if(rub){
-    html+=`<h4>2 · Can this be assessed automatically?</h4><div class="badge ${rub.aClass}">${RCLASS[rub.aClass]}</div>
+    html+=`<h4>2 · Can this be assessed automatically?</h4><div class="badge ${rub.aClass}">${RCLASS[rub.aClass]}</div>${assessTodayChip(row,f)}
       <h4 style="margin-top:12px">3 · Why it lands there</h4><p class="why">${linkify(esc(rub.aWhy),row.sc,f)}</p>`;
   }
 
@@ -771,19 +798,16 @@ function renderDrawer(sc,f,trigger){
       <div><b>vs. the conformance checklist (Deva):</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
       <div><b>Our conclusion:</b> <span class="dv ${dv.k}">${esc(dv.ours)}</span> — ${esc(dv.note)}</div></div>`;}
 
-  if(rub){
-    html+=`<h4>4 · How can it be fixed, in principle?</h4><div class="badge ${rub.fClass}">${FCLASS[rub.fClass]}</div>
-      <p class="why">${linkify(esc(rub.fWhy),row.sc,f)}</p>`;
-  }
-
-  html+=`<h4>5 · Where ACP is today</h4><div class="status">${acpStatusLine(row,f)}</div>`;
+  html+=`<h4>4 · Remediation — current vs. potential</h4>${remediationCVP(row,f,rub)}`;
+  if(rub)html+=`<p class="why">${linkify(esc(rub.fWhy),row.sc,f)}</p>`;
+  if(UPGRADE[row.sc])html+=`<div class="gap"><b>Gap to close:</b> ${linkify(esc(UPGRADE[row.sc]),row.sc,f)}</div>`;
 
   const faqs=buildFAQ(row,f,rub);
   if(faqs.length){
-    html+=`<h4>6 · FAQ</h4>${faqs.map(x=>`<details class="faqitem"><summary>${esc(x.q)}</summary><p>${linkify(esc(x.a),row.sc,f)}</p></details>`).join("")}`;
+    html+=`<h4>5 · FAQ</h4>${faqs.map(x=>`<details class="faqitem"><summary>${esc(x.q)}</summary><p>${linkify(esc(x.a),row.sc,f)}</p></details>`).join("")}`;
   }
 
-  html+=`<details class="tech"><summary>7 · Technical notes</summary>${techNotes(row,f)}</details>`;
+  html+=`<details class="tech"><summary>6 · Technical notes</summary>${techNotes(row,f)}</details>`;
 
   if(row.flag)html+=`<div class="disc"><b>▲ Corrected row</b> — this row differs from the July-14 infographic; see the corrections list below the table.</div>`;
   document.getElementById("panel-body").innerHTML=html;
