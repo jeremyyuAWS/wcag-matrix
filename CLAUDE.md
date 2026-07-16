@@ -19,18 +19,25 @@ Interactive WCAG 2.1 AA assessment & remediation matrix for document formats (DO
 
 ## index.html data model
 All content lives in one `<script>` block:
-- `ROWS` — 20 SC rows; per row: `a`/`r` = assessment/remediation tier per format (C/Q/H/NA · A/AC/AP/AI/M/N/NA); `ae`/`re` = drawer content per format (`b` argument bullets, `c` concessions, `x` counterargument, `ev` evidence paths, `cat` drift note)
-- `DEVA` — per-SC: Deva's verdict verbatim (`v`, `t`) + our conclusion (`k`: agree|augment|disagree, `ours`, `note`); rendered in Assessment drawers only
-- `W3SLUG` — per-SC anchor into https://www.w3.org/TR/WCAG22/ (canonical) + W3C Understanding links
-Drawer render: the `tb.addEventListener("click", ...)` handler near the bottom.
+- `ROWS` — 20 SC rows; per row: `a`/`r` = ACP's shipped assessment/remediation tier per format (C/Q/H/NA · A/AC/AP/AI/M/N/NA) — drives the table's cell colors/labels and drawer §5. `ae`/`re` = per-format mechanism detail (`b` argument bullets, `c` concessions, `x` counterargument, `ev` evidence paths, `cat` drift note) — rendered verbatim in drawer §6 (collapsed "Technical notes").
+- `RUBRIC` — **the rule-inherent ceiling**, independent of ACP's shipped status (drawer §§1–4): per SC, `plain` (2-sentence rule statement) + per-format `{aClass, aWhy, fClass, fWhy}`. `aClass` ∈ DET/MA/HUM/NAx (assess ceiling: Deterministic/Machine-assisted/Human/Not-applicable), `fClass` ∈ MECH/GEN/REAUTH/NAx (fix ceiling: Mechanical-edit/Generated+approval/Re-authoring/Not-applicable). This is the taxonomy that should NOT churn as ACP ships more — only §5 (derived from `ROWS.a`/`ROWS.r`) changes over time. Grounded in `docs/deva-reconciliation.md` (assess ceiling reasoning) and `docs/tier-methodology.md` (fix ceiling reasoning, reframed without the "shipped" qualifier).
+- `DEVA` — per-SC: Deva's verdict verbatim (`v`, `t`) + our conclusion (`k`: agree|augment|disagree, `ours`, `note`); rendered as an aside under drawer §3.
+- `W3SLUG` — per-SC anchor into https://www.w3.org/TR/WCAG22/ (canonical) + W3C Understanding links.
+
+Drawer render: `tb.addEventListener("click", ...)` near the bottom builds a **unified 6-section drawer per (SC, format)** — clicking either the assess cell or the remediate cell for the same rule+format opens the identical drawer (§§2–3 cover the assess ceiling, §4 the fix ceiling, so splitting by column would duplicate content). Ceiling tiles above the table (`#ceilingTiles`, `#acpTiles`) are computed at load time by iterating `ROWS`×`RUBRIC` — never hand-count these; the IIFE right after the table-build loop is the single source.
+
+Validate any index.html edit: extract the script block and eval ROWS/RUBRIC/DEVA/W3SLUG — every SC in ROWS must have a RUBRIC entry with all 4 formats populated, and NA-consistency should hold (aClass NAx ⇒ fClass NAx). A quick in-browser integrity check (paste into devtools or `javascript_tool`):
+```js
+for (const row of ROWS) { const r = RUBRIC[row.sc]; if (!r) console.error(row.sc, 'missing'); for (const f of ["docx","xlsx","pptx","pdf"]) { const e = r.formats[f]; if (!e || !e.aClass || !e.fClass) console.error(row.sc, f, 'incomplete'); } }
+```
 
 ## docs/
-- `tier-methodology.md` — how Certified/Guided/Human/N-A and remediation tiers are derived (5 placement rules; exec + tech layers)
-- `drawer-content-spec.md` — 8-section drawer schema + worked 1.3.2 PPTX example
-- `drawer-content-plain.md` — plain-language drawer rewrite (deterministic vs AI/ML vs human framing, per Deva's question)
-- `deva-reconciliation.md` — per-rule agree/augment/disagree vs Deva's checklist (§7 = paste-ready drawer blocks; scorecard: 10 agree / 6 augment / 4 disagree, all disagreements = web-lens vs document-surface)
+- `tier-methodology.md` — ACP's shipped-status tiers (5 placement rules; exec + tech layers) — feeds drawer §5, NOT the RUBRIC ceiling
+- `drawer-content-spec.md` — earlier 8-section drawer schema (superseded by the current 6-section RUBRIC-driven drawer, kept for its worked 1.3.2 PPTX example and authoring rules)
+- `drawer-content-plain.md` — earlier plain-language rewrite; superseded by RUBRIC's §§1–4 but the plain-language voice/tone still applies
+- `deva-reconciliation.md` — per-rule agree/augment/disagree vs Deva's checklist; **this is RUBRIC's primary grounding source** for assess-ceiling reasoning (§7 = paste-ready blocks already close to `aWhy` text)
 
 ## Outstanding / next tasks
-- Push to GitHub: `gh repo create JeremyYuAWS/wcag-matrix --public --source . --push`, then git-connect the Netlify site for push-to-deploy
-- Optional matrix improvements: reflect first-party detectors fully; per-cell "upgrade path" notes; resolve the 4 catalog-drift items in the acp repo itself (retag or build fixers — PPTX table-header fixer is the one cheap deterministic build: `firstRow="1"`)
-- Validate any index.html edit: extract the script block and eval ROWS/DEVA/W3SLUG (all 20 SCs must resolve in both maps)
+- Repo already has a GitHub remote (`jeremyyuAWS/wcag-matrix`) and Netlify site (`fabulous-crisp-14e424`, Netlify Drop) — connect them for push-to-deploy if wanted; currently deploy is manual (`netlify deploy --prod --dir .`)
+- Table cells still show ACP's shipped status only (not the RUBRIC ceiling) — the ceiling lives in the drawer + the tiles above the table. Consider adding a small ceiling-class indicator per table cell if the two views need to be visible without opening the drawer.
+- Optional matrix improvements: per-cell "upgrade path" notes (what's the cheapest build to close the gap to ceiling); resolve the 4 catalog-drift items in the acp repo itself (retag or build fixers — PPTX table-header fixer already landed on acp `main`, see acp memory `pptx-131-table-header-parity`)

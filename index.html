@@ -57,6 +57,18 @@
   #panel .disc{background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px;color:#7c1d18}
   #panel .catalog{background:#f3eef8;border:1px solid #e0d2ee;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px;color:#4a2a66}
   #panel button{position:absolute;top:12px;right:14px;border:0;background:var(--bg);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px}
+  #panel .plain{font-size:13.5px;line-height:1.55;margin:6px 0 0;color:var(--ink)}
+  #panel .badge{display:inline-block;font-weight:800;font-size:14px;padding:4px 10px;border-radius:6px;margin:4px 0 2px}
+  #panel .badge.DET,#panel .badge.MECH{background:#e6f4ea;color:#0d652d}
+  #panel .badge.MA,#panel .badge.GEN{background:#e8f0fe;color:#174ea6}
+  #panel .badge.HUM,#panel .badge.REAUTH{background:#fce8e6;color:#a50e0e}
+  #panel .badge.NAx{background:#f1f3f4;color:#5f6368}
+  #panel .why{font-size:13px;line-height:1.5;margin:6px 0 0;color:var(--ink)}
+  #panel .status{background:#fff8e1;border:1px solid #f2e2a6;border-radius:8px;padding:9px 11px;margin:12px 0 0;font-size:12.5px;color:#6a5216}
+  #panel .status b{color:#4a3a10}
+  #panel details.tech{margin:14px 0 0;border:1px solid var(--line);border-radius:8px;padding:2px 11px 10px}
+  #panel details.tech summary{cursor:pointer;padding:9px 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  #panel details.tech .sub{margin:8px 0 0;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
   .corr h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
   .corr li{margin-bottom:5px;font-size:13px}
@@ -65,25 +77,16 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>WCAG 2.1 AA — 20 Document Core Rules · As-Built Capability</h1>
-  <div class="sub">Assessment &amp; remediation per format, every cell traceable to code. Click any cell for the full argument: mechanism, why the tier, what to concede, the counterargument it survives, and evidence. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16.</div>
+  <h1>WCAG 2.1 AA — 20 Document Core Rules · Ceiling &amp; Coverage</h1>
+  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16.</div>
 
-  <div class="tiles">
-    <div class="tile"><b class="C">6</b><span>Certified (auto assessment)</span></div>
-    <div class="tile"><b class="Q">6</b><span>Guided review (detected)</span></div>
-    <div class="tile"><b class="H">8</b><span>Human assessment</span></div>
-    <div class="tile"><b class="A">7</b><span>Automatic remediation</span></div>
-    <div class="tile"><b class="AI">1</b><span>AI proposal (HITL)</span></div>
-    <div class="tile"><b class="M">2</b><span>Manual (guided)</span></div>
-    <div class="tile"><b class="N">10</b><span>No automated remediation</span></div>
-  </div>
+  <div class="tiles" id="ceilingTiles"></div>
+  <div class="tiles" id="acpTiles" style="margin-top:0"></div>
   <div class="legend">
-    <span><span class="dot" style="background:var(--green)"></span>Certified / Automatic</span>
-    <span><span class="dot" style="background:var(--blue)"></span>Guided review</span>
-    <span><span class="dot" style="background:var(--purple)"></span>AI proposal</span>
-    <span><span class="dot" style="background:var(--orange)"></span>Human / Manual</span>
-    <span><span class="dot" style="background:var(--red)"></span>No automated remediation</span>
-    <span><span class="dot" style="background:var(--gray)"></span>N/A</span>
+    <span><span class="dot" style="background:var(--green)"></span>Deterministic / Mechanical (ceiling)</span>
+    <span><span class="dot" style="background:var(--blue)"></span>Machine-assisted / Generated+approval (ceiling)</span>
+    <span><span class="dot" style="background:var(--orange)"></span>Human judgment / Re-authoring (ceiling)</span>
+    <span><span class="dot" style="background:var(--gray)"></span>N/A (rule can't be broken in this format)</span>
     <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
   </div>
 
@@ -96,16 +99,15 @@
   </table>
 
   <div class="corr">
-    <h3>Corrections vs the July-14 infographic (code-verified)</h3>
+    <h3>How to read this version</h3>
     <ul>
-      <li><b>2.4.6 Headings &amp; Labels</b> — XLSX and PDF have <i>no</i> detector (shown as Guided); DOCX heading-skip clamp and PPTX title insertion <i>are</i> live fixers (shown as None).</li>
-      <li><b>1.4.3 Contrast — DOCX remediation</b> — shown Manual; the docx recolour fixer ships in the same file (<code>api/remediate_office.py</code>) as the pptx/xlsx ones already shown Automatic.</li>
-      <li><b>2.1.1 Keyboard — PPTX remediation</b> — detector + specific registry guidance = Manual under the stated tiers (was None). Definitional; downgrade defensible if guidance≠remediation.</li>
-      <li><b>Per-format machine-assessed counts</b> — DOCX 10 · XLSX <b>9</b> · PPTX 12 · PDF <b>9</b> (poster said 10/10/12/10). Union assessment tiles (6/6/8/0) were already correct.</li>
-      <li><b>Remediation tiles</b> — 7 automatic / 1 AI proposal / 2 manual / 10 none (poster: 6/1/1/12).</li>
+      <li><b>Every assess/remediate cell in the table still shows ACP's shipped status</b> (Certified/Guided/Human/N-A · Automatic/AI proposal/Manual/None) — that view didn't go away, and it's still code-verified against the July-14 infographic (see prior corrections, now folded into each drawer's §5).</li>
+      <li><b>What's new is the drawer.</b> Click any cell and the top of the drawer (§§1–4) answers "what does this rule inherently allow," derived from WCAG's own requirement plus the file format's structural properties — not from ACP's roadmap. That classification is stable; it doesn't move when ACP ships more.</li>
+      <li><b>§5 "Where ACP is today"</b> is the only part of the drawer that changes over time — and the two tiles above the table (<i>ceiling</i> vs <i>ACP at ceiling</i>) turn that into one honest headline: of the cells where a ceiling above N/A exists, how many has ACP actually reached.</li>
+      <li><b>N/A got cleaner</b> under this lens: it's now a property of the rule+format pair (e.g. reflow presupposes a resizable viewport; paginated OOXML has none) rather than a placeholder for "not built yet." A few cells that read Human under the old build-status framing (1.4.4, 1.4.12, several NA-by-content-model rows) are reclassified N/A here because no ceiling above N/A exists for that format — not because nothing's shipped.</li>
     </ul>
   </div>
-  <div class="foot">Layer rule: detection claims cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code>; remediation claims cite <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
+  <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
 </div>
 
 <div id="panel"><button onclick="document.getElementById('panel').classList.remove('open')">✕ close</button><div id="panel-body"></div></div>
@@ -445,6 +447,154 @@ const DEVA={
 "2.1.2":{v:"Human / AT",t:"Tab into and out of every widget/modal.",k:"agree",ours:"Agree",note:"documents mostly N/A; PDF-with-scripts human."},
 "4.1.2":{v:"Human / AT",t:"Screen-reader test; inspect ARIA; automated scan.",k:"augment",ours:"Agree + augment",note:"agree for the full SC; the document slice — do form fields expose a name? — is deterministically checkable (DOCX content-control labels shipped; PDF AcroForm /T · /TU is the same check waiting to be written)."}};
 
+// RUBRIC = the rule-inherent classification: what does WCAG + this file format allow,
+// independent of what ACP has shipped. aClass/fClass are ceilings, not ACP status.
+// DET=Deterministic · MA=Machine-assisted · HUM=Human judgment · NA=Not applicable (assess)
+// MECH=Mechanical edit · GEN=Generated content + human approval · REAUTH=Re-authoring · NA (fix)
+const RCLASS={DET:"Deterministic",MA:"Machine-assisted",HUM:"Human judgment",NAx:"Not applicable"};
+const FCLASS={MECH:"Mechanical edit",GEN:"Generated + approval",REAUTH:"Re-authoring",NAx:"Not applicable"};
+const RUBRIC={
+"1.1.1":{plain:"Every image, icon, or chart needs a text description that conveys the same information it visually communicates — without one, a screen-reader user hears nothing where a sighted reader sees a photo, a diagram, or a chart.",
+ formats:{
+  docx:{aClass:"MA",aWhy:"Whether an image HAS an attached description is a fact stored in the file — deterministic. Whether that description is a GOOD one requires understanding what the image communicates, which is genuinely semantic. Machine-assisted is the ceiling: a vision model can propose a description from the pixels, but only a person can confirm it's right.",
+   fClass:"GEN",fWhy:"Copying an author's own caption or title into the alt attribute is a pure mechanical edit — but that source doesn't exist for most images. The general case requires generating a description from the image content and having a person approve it before it's written."},
+  xlsx:{aClass:"MA",aWhy:"Same split as DOCX: attachment is a file fact, quality is semantic. Nothing about a workbook makes alt text easier to judge automatically.",
+   fClass:"GEN",fWhy:"Same reasoning as DOCX — no faithful in-file source for most images, so the general fix is generate-then-approve, not a blind property write."},
+  pptx:{aClass:"MA",aWhy:"Same presence/quality split — and slides are the strongest case for it, since the image often IS the point of the slide.",
+   fClass:"GEN",fWhy:"Same generate-then-approve ceiling as DOCX/XLSX."},
+  pdf:{aClass:"MA",aWhy:"Same split, with one gate in front of it: a PDF's images are only inspectable once it's tagged (a /Figure element to check /Alt on). An untagged PDF has nothing to assess for 1.1.1 — that failure surfaces as 1.3.1 instead, in the right order.",
+   fClass:"GEN",fWhy:"Same generate-then-approve ceiling, gated behind the same tagging prerequisite as assessment."}}},
+
+"1.3.1":{plain:"Structure that's visually obvious — this is a heading, this row is a column header, this is a data table — has to also be encoded in the file itself, so assistive technology can announce it the way a sighted reader sees it.",
+ formats:{
+  docx:{aClass:"DET",aWhy:"Whether a table's first row is marked as a header, and whether heading levels skip going down, are both facts written directly into the document XML — arithmetic and presence checks, no interpretation required.",
+   fClass:"MECH",fWhy:"Marking the first row as a header, or renumbering a skipped heading level, is a direct property write with a safe, reversible default — the data is untouched either way."},
+  xlsx:{aClass:"DET",aWhy:"headerRowCount is a single property on every table definition — explicitly zero is the violation; the OOXML spec itself defines the default. A direct read, not a guess.",
+   fClass:"MECH",fWhy:"Flipping headerRowCount 0→1 is the exact toggle Excel's own 'My table has headers' checkbox writes — deterministic and additive."},
+  pptx:{aClass:"DET",aWhy:"firstRow=\"1\" in a table's properties is PowerPoint's own header-row marker, used for both semantics and styling — a direct attribute read.",
+   fClass:"MECH",fWhy:"Writing firstRow=\"1\" is the same one-attribute edit as the DOCX/XLSX fixes — mechanical regardless of which part of a codebase happens to implement it."},
+  pdf:{aClass:"DET",aWhy:"MarkInfo.Marked and a non-stub StructTreeRoot are catalog-level facts — tagged or not is binary and file-encoded, including the 'declared tagged but empty tree' defect.",
+   fClass:"REAUTH",fWhy:"Synthesizing a correct tag tree for an untagged PDF requires understanding layout and reading order — there is no discrete property to write. The honest fix is re-export from source with tagging enabled; auto-tagging tools are known to introduce the exact defects (bad order, wrong roles) that this criterion exists to catch."}}},
+
+"1.3.2":{plain:"Content must make sense when read in a single linear order — the order a screen reader announces it in — even when it looks fine laid out visually on screen.",
+ formats:{
+  docx:{aClass:"NAx",aWhy:"Word's body content is one linear flow with no second 'file order' to diverge from the visual order — the failure mode this rule targets can't exist in this content model.",
+   fClass:"NAx",fWhy:"Nothing to fix in a linear flow."},
+  xlsx:{aClass:"DET",aWhy:"Merged cells (spans that make neighboring cells unreachable by navigation) and hidden rows/columns/sheets holding data are both structural states written directly into the workbook — direct reads, not inference.",
+   fClass:"REAUTH",fWhy:"Hidden content holding data can be safely auto-unhidden — that half is mechanical. But unmerging a cell requires deciding what value goes in each newly-freed cell, a layout decision only the author can make; there's no safe default. The ceiling for the rule as a whole is re-authoring, with a mechanical sub-case."},
+  pptx:{aClass:"MA",aWhy:"The file records both the announced order (shape-tree position) and an inferable visual order (X/Y coordinates) — comparing them is a deterministic algorithm, but divergence is evidence, not proof: two-column layouts and diagram-with-callouts slides can legitimately fail a geometric sort. A person has to confirm the mismatch is real.",
+   fClass:"MECH",fWhy:"Once a mismatch is confirmed, correcting it — resorting the shape tree to match geometry — is a deterministic algorithm with no generated content. The uncertainty lives in deciding whether to apply it, not in the mechanics of applying it."},
+  pdf:{aClass:"MA",aWhy:"Same idea as PPTX: tag-tree order vs. geometric top-to-bottom order is a computable divergence score, but RTL columns and tables have legitimately non-geometric order — a heuristic that needs confirmation, not a certifiable pass/fail.",
+   fClass:"REAUTH",fWhy:"Automated reordering can silently destroy meaning — sidebars, pull-quotes, and captions carry editorial intent a geometric sort can't infer. Correcting the order is an editorial decision in a tool like Acrobat's Order panel, not a property write."}}},
+
+"1.3.3":{plain:"Instructions can't rely only on shape, position, or color to identify something — \"click the round button on the right\" is meaningless to someone who can't see the layout.",
+ formats:(function(){const c={aClass:"MA",aWhy:"A pattern check (an instruction verb near a shape or position word, within a tight character window) finds strong candidates deterministically and reproducibly, with no LLM needed. But it can't prove ABSENCE — a clean pass isn't certifiable for a semantic criterion — and confirming a flagged phrase truly relies only on a sensory cue is a reading-comprehension judgment.",
+   fClass:"GEN",fWhy:"The fix is rewriting the instruction to add a textual identifier (\"click Submit — the round button on the right\"). That's draftable and approvable, the same shape as link-text drafting — but nothing auto-applies a rewrite without a human confirming it doesn't misstate the author's intent."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"2.4.6":{plain:"Headings and form labels must actually describe the section or field they introduce, not just exist — \"Section 3\" technically satisfies a presence check but is useless for navigating by ear.",
+ formats:(function(){const c={aClass:"MA",aWhy:"Whether a heading or label EXISTS in the right structural place is a file fact. Whether its TEXT actually describes what follows is semantic — the same presence/quality split as 1.1.1. Machine-assisted is the ceiling; structural presence is the deterministic sub-signal underneath it.",
+   fClass:"GEN",fWhy:"Filling an empty title placeholder or fixing a skipped heading level is a mechanical structural repair, but it doesn't guarantee the TEXT is descriptive. Writing genuinely descriptive text is generate-then-approve, drafted from the section's own content."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"3.1.1":{plain:"The document must declare what human language it's written in, so a screen reader loads the right pronunciation rules — without it, English text can be read with, say, French phonetics, and vice versa.",
+ formats:(function(){const c={aClass:"DET",aWhy:"Language is a single declared property (a metadata field or a markup attribute) — presence and value are a direct read, no interpretation involved.",
+   fClass:"MECH",fWhy:"Writing the detected language into that property is a safe, direct edit — dominant-script detection picks the value, and a wrong guess surfaces on re-scan rather than silently persisting."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"3.1.2":{plain:"Passages in a different language than the rest of the document need their own language tag, so a screen reader switches pronunciation for just that passage instead of mangling it.",
+ formats:(function(){const c={aClass:"MA",aWhy:"Verifying a passage's DECLARED language tag is correct is deterministic. But the real compliance question — finding passages that changed language and were never tagged at all — needs language identification (statistical/ML), and confirming a flagged switch isn't a proper noun or brand name is judgment. Machine-assisted is the ceiling.",
+   fClass:"REAUTH",fWhy:"Tagging the WRONG run breaks its pronunciation — an asymmetric false-positive cost. Unlike 3.1.1 (where the target is unambiguous: the whole document), deciding which specific run needs a language tag is an editorial call a person has to make."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"1.4.4":{plain:"People need to enlarge text up to 400% without losing content or functionality — for people with low vision who read at high zoom.",
+ formats:(function(){const c={aClass:"NAx",aWhy:"Zoom is the viewing application's job — Word, Excel, PowerPoint, and PDF readers all resize their own canvas. The file doesn't encode a zoom failure mode of its own the way a web page's fixed-width layout can. (The adjacent, genuinely file-encoded failure — text baked into an image, which won't scale as text at all — is what 1.4.5 checks; that's a different criterion, not this one under another name.)",
+   fClass:"NAx",fWhy:"Nothing to fix at the file level."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"1.4.5":{plain:"Text baked into an image (a screenshot of a paragraph, a graphic with words) can't be resized, recolored, or read aloud properly — real text should be used instead, except for logos and a few narrow exceptions.",
+ formats:(function(){const c={aClass:"MA",aWhy:"OCR reliably detects meaningful text rendered inside an image — a real, tunable signal (word count and pixel-area thresholds keep it off icons and bullets). But the rule's own \"essential\" exception — logos, screenshots where exact presentation matters — requires judgment OCR can't make, so a clean OCR pass can never be a certified PASS.",
+   fClass:"REAUTH",fWhy:"The remedy is re-authoring the image as real text — a redesign decision (what does the graphic say, how should it be laid out as text), not a caption to draft or a property to set."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"1.4.10":{plain:"Content must stay readable at 400% zoom / a 320px-wide viewport without needing to scroll in two directions — someone zoomed in on a phone shouldn't have to pan sideways to read a sentence.",
+ formats:{
+  docx:{aClass:"NAx",aWhy:"Reflow is a rendering behavior of a resizable viewport; paginated OOXML has no such viewport to fail against — the editor's canvas reflows or it doesn't, and that's the editor's property, not the file's.",fClass:"NAx",fWhy:"Nothing to fix at the file level."},
+  xlsx:{aClass:"NAx",aWhy:"Same reasoning — the grid's reflow behavior belongs to Excel, not the workbook.",fClass:"NAx",fWhy:"Nothing to fix at the file level."},
+  pptx:{aClass:"NAx",aWhy:"Same reasoning for the slide canvas.",fClass:"NAx",fWhy:"Nothing to fix at the file level."},
+  pdf:{aClass:"MA",aWhy:"The exception: a fixed PDF page can genuinely fail to reflow even in a supporting viewer if it isn't tagged. Tagged-structure presence is a real, if indirect, proxy — machine-checkable via the same tag-tree signal 1.3.1 uses — but it proves only the prerequisite for reflow, not that reflow actually works well; a person has to confirm the rendered result.",
+   fClass:"REAUTH",fWhy:"The fix is the same tagging investment as 1.3.1 — no reflow-specific property exists to write independent of building the tag tree itself."}}},
+
+"1.4.12":{plain:"Content must stay readable when a user overrides line height, paragraph spacing, letter spacing, and word spacing to their own preferred values — for people with low vision or dyslexia who need more room between lines.",
+ formats:(function(){const c={aClass:"NAx",aWhy:"This tests survival of a USER's runtime spacing override — a concept that doesn't exist for OOXML or PDF readers the way it does for a web page's CSS. There's no static property in the file for this rule to be decided against.",
+   fClass:"NAx",fWhy:"Nothing to fix at the file level."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"1.4.1":{plain:"Information can't be conveyed by color alone — \"items in red are overdue\" fails for anyone who can't distinguish those colors, and for anyone reading in black and white.",
+ formats:(function(){const c={aClass:"MA",aWhy:"Whether color is the ONLY carrier of a distinction is a semantic question with no single file property to read. But it's not purely human either: a grayscale render-and-diff, or detecting a colored run with no accompanying icon/text/pattern cue, are real machine-assisted signals in principle — evidence-gathering that narrows the question without deciding it.",
+   fClass:"REAUTH",fWhy:"The fix is adding a second cue — an icon, a text label, a pattern — an authoring decision about how to convey the same information redundantly. Not a property write, and not safely draftable without knowing what the color was standing in for."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"1.4.3":{plain:"Text must have enough contrast against its background to be readable by people with low vision — a real, computable ratio (4.5:1 for normal text, 3:1 for large text), not a subjective call.",
+ formats:{
+  docx:{aClass:"DET",aWhy:"Where a run's color and its background are both explicit in the file, the WCAG relative-luminance formula is pure arithmetic on two known values — no interpretation. (Automatic-color runs, whose rendered color depends on the viewer's theme, are outside the document's own claim and excluded, not guessed at.)",
+   fClass:"MECH",fWhy:"Recoloring a failing run to black or white — whichever clears the required ratio against its background — is a deterministic, reversible property write mirroring exactly what the check measures."},
+  xlsx:{aClass:"DET",aWhy:"The same relative-luminance math applies once a cell's font and fill colors are resolved through its style record and the workbook theme — nothing about a spreadsheet makes the arithmetic harder, only the resolution path longer. (A cheaper luma-difference heuristic is a common *implementation* shortcut here, not a format-level ceiling — see the ACP-today line.)",
+   fClass:"MECH",fWhy:"Same deterministic recolor as DOCX, applied through the cell style record instead of a run."},
+  pptx:{aClass:"DET",aWhy:"Color resolves through a defined chain — run → placeholder → layout → master theme — against the effective slide background; once resolved, it's the same arithmetic. Text over a photo or gradient is correctly out of scope (the background isn't a computable color), not silently passed.",
+   fClass:"MECH",fWhy:"Same deterministic recolor as DOCX/XLSX, scoped to runs with an explicit color over an explicit solid fill."},
+  pdf:{aClass:"MA",aWhy:"PDF has no structured \"run + background\" model — text and fills are independent paint operators in a content stream. Recovering which paint corresponds to foreground vs. background text requires sampling, not a resolvable property chain — a genuine format-level ceiling, not just an unbuilt feature.",
+   fClass:"REAUTH",fWhy:"Rewriting colors inside a PDF content stream is surgery on the page-painting program itself, with no discrete property to target safely. Re-export from source is the honest remedy."}}},
+
+"1.4.11":{plain:"UI-style elements — icons, borders, form-control outlines, chart lines — need the same minimum contrast as text (3:1) against their background, so shapes and boundaries are perceivable, not just words.",
+ formats:(function(){const c={aClass:"MA",aWhy:"The math is the identical WCAG ratio used for 1.4.3 — deterministic once you know the two colors. The blocker is resolving WHICH colors: a shape's fill or border against an arbitrary background (a photo, a gradient, another shape) needs render-and-measure, not a structured property read. Machine-assisted in principle; nothing ships today.",
+   fClass:"REAUTH",fWhy:"Text has a safe universal default (black or white rarely conflicts with intent). A shape's color is often the semantic signal itself (red = warning, green = success) — auto-recoloring it risks destroying that meaning, so the compliant color choice is a design decision, not a mechanical substitution."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"2.4.2":{plain:"The document needs a real, descriptive title in its metadata — and PDFs specifically need viewers set to display that title instead of the filename — so people scanning open tabs or a task switcher know what they're looking at.",
+ formats:(function(){const c={aClass:"MA",aWhy:"Whether a title property is set at all is a file fact — deterministic. Whether it actually describes the document's topic or purpose is semantic, the same presence/quality split as 2.4.6. Machine-assisted is the ceiling for the rule as written; presence is the deterministic sub-signal most tools stop at.",
+   fClass:"GEN",fWhy:"Deriving a title from the filename fixes presence only — a mechanical sub-case. Writing a genuinely descriptive title means drafting one from the document's own content (its first heading, its most prominent text) and having a person approve it."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"2.4.3":{plain:"When a user tabs through interactive elements, the order must make logical sense — matching the visual/reading order — so keyboard and screen-reader users experience the same flow sighted mouse users do.",
+ formats:{
+  docx:{aClass:"NAx",aWhy:"Static paragraph content has no native tab order to have — there's nothing to operate with a keyboard beyond scrolling/reading. (Embedded ActiveX controls are a rare, unaddressed edge case that doesn't change the primary classification.)",fClass:"NAx",fWhy:"Nothing to fix in non-interactive content."},
+  xlsx:{aClass:"NAx",aWhy:"Same reasoning — cell navigation isn't a \"focus order\" in the WCAG sense; nothing in a plain worksheet is tabbable in the way this criterion means.",fClass:"NAx",fWhy:"Nothing to fix in non-interactive content."},
+  pptx:{aClass:"NAx",aWhy:"Slides have no native tab order either. (Shape reading order is a real, checkable property — but that's 1.3.2, a different criterion; don't double-count it here.)",fClass:"NAx",fWhy:"Nothing to fix — see 1.3.2 for the adjacent, distinct shape-order question."},
+  pdf:{aClass:"DET",aWhy:"PDF form fields carry an explicit /Tabs key in the field dictionary — a direct, readable property when the file has form fields at all. For pages without form fields, the criterion is N/A rather than failed.",
+   fClass:"MECH",fWhy:"Setting /Tabs to row-order or structure-order is a direct, safe property write — the same pattern as 1.3.1's header-row default."}}},
+
+"2.4.4":{plain:"Link text needs to make sense out of context — \"click here\" or a bare URL forces a screen-reader user skimming a links list to open each one just to find out where it goes.",
+ formats:(function(){const c={aClass:"MA",aWhy:"Generic link text (\"click here\", \"read more\", bare URLs) is deterministically detectable against a known deny-list — that check is format-agnostic text matching, so nothing about a spreadsheet or a PDF makes it structurally harder than a Word document. But a PASS can't be certified: descriptive-SOUNDING text that lies about its destination clears the deny-list — confirming true purpose-in-context is semantic.",
+   fClass:"GEN",fWhy:"The fix is drafting replacement text that states the destination without relying on surrounding context — generated content a human must approve, the same shape as alt-text drafting."};
+  return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+"2.1.1":{plain:"Every function must be operable using a keyboard alone — no interaction that only works with a mouse (drag-only controls, hover-only menus) — for people who can't use a pointing device.",
+ formats:{
+  docx:{aClass:"NAx",aWhy:"Static content has no keyboard surface of its own — operability lives entirely in the viewer application. (Embedded macros/ActiveX are a rare, unaddressed edge case.)",fClass:"NAx",fWhy:"Nothing to fix in non-interactive content."},
+  xlsx:{aClass:"NAx",aWhy:"Same reasoning as DOCX — workbook macros/controls are the theoretical, unaddressed surface.",fClass:"NAx",fWhy:"Nothing to fix in non-interactive content."},
+  pptx:{aClass:"MA",aWhy:"Auto-advancing or exit animations after narration starts are a real, narrow proxy: the presence of a timing rule is a file fact, but whether a given animation actually breaks operability — versus being harmless motion emphasis — depends on the content, which needs human confirmation.",
+   fClass:"MECH",fWhy:"Once a problem animation is confirmed, changing its trigger from auto to on-click is a deterministic settings edit — the uncertainty lives entirely in the assessment step, not in applying the fix."},
+  pdf:{aClass:"HUM",aWhy:"Embedded JavaScript and interactive form fields are the real surface, and their PRESENCE is a deterministic file fact — but that's a risk flag, not evidence toward the verdict. Judging whether a given script actually breaks keyboard operability means simulating program execution and interaction, open-ended in a way OCR or a reading-order comparison isn't. No foreseeable bounded technique closes that gap; it needs a person (or assistive-tech testing) at the keyboard.",
+   fClass:"REAUTH",fWhy:"There's no safe default fix for arbitrary embedded script logic — correcting it means understanding and rewriting custom code, a re-authoring effort."}}},
+
+"2.1.2":{plain:"If keyboard focus enters a component, it must be able to leave again using only the keyboard — a trap forces a user to abandon the page or restart their device.",
+ formats:{
+  docx:{aClass:"NAx",aWhy:"No interactive surface to trap focus in.",fClass:"NAx",fWhy:"Nothing to fix."},
+  xlsx:{aClass:"NAx",aWhy:"No interactive surface to trap focus in.",fClass:"NAx",fWhy:"Nothing to fix."},
+  pptx:{aClass:"NAx",aWhy:"No interactive surface to trap focus in.",fClass:"NAx",fWhy:"Nothing to fix."},
+  pdf:{aClass:"HUM",aWhy:"Same as 2.1.1: script/form presence is a file fact, but whether it actually traps focus — versus merely capturing it briefly and releasing it — is behavioral. It needs a person or assistive-tech testing at the keyboard, not a bounded detector.",
+   fClass:"REAUTH",fWhy:"Custom script logic has no safe default fix — correcting a trap means rewriting the script."}}},
+
+"4.1.2":{plain:"Interactive UI components must programmatically expose their name, role, and current value/state, so assistive technology can announce and operate them — not just show them visually.",
+ formats:{
+  docx:{aClass:"DET",aWhy:"DOCX content-control fields (checkboxes, date pickers, dropdowns) carry an explicit label/tag structure directly in the XML — whether a control has an accessible name attached is a direct property read, not interpretation.",
+   fClass:"GEN",fWhy:"Where a nearby placeholder or prompt text exists, copying it into the label is mechanical — but that source doesn't always exist, so the general fix is drafting a label from context and having a person approve it, the same pattern as alt text."},
+  xlsx:{aClass:"NAx",aWhy:"Plain worksheets have no interactive-component model comparable to DOCX content controls or PDF form fields.",fClass:"NAx",fWhy:"Nothing to fix — no interactive surface."},
+  pptx:{aClass:"NAx",aWhy:"Slides have no comparable interactive-component model either.",fClass:"NAx",fWhy:"Nothing to fix — no interactive surface."},
+  pdf:{aClass:"DET",aWhy:"AcroForm fields carry /T (name) and /TU (accessible tooltip name) directly in the field dictionary — the exact PDF analogue of the DOCX content-control check, and just as direct a read.",
+   fClass:"GEN",fWhy:"Same generate-then-approve ceiling as DOCX — a nearby label can sometimes be copied mechanically, but the general case needs a drafted, approved name."}}}};
+
 const FM=["docx","xlsx","pptx","pdf"];
 const tb=document.querySelector("#tbl tbody");
 for(const row of ROWS){
@@ -455,27 +605,85 @@ for(const row of ROWS){
   for(const f of FM){const v=row.r[f];h+=`<td class="cell ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r">${SHORT_R[v]}</td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
 }
+
+// Ceiling tiles: computed from RUBRIC across all 80 (SC × format) cells — the rule-inherent denominator.
+(function(){
+  const aCounts={DET:0,MA:0,HUM:0,NAx:0}, fCounts={MECH:0,GEN:0,REAUTH:0,NAx:0};
+  let acpAtCeilingAssess=0, acpAtCeilingFix=0, ceilingAssessTotal=0, ceilingFixTotal=0;
+  const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]}; // tiers that count as "reached the assess ceiling"
+  const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
+  for(const row of ROWS){
+    for(const f of FM){
+      const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f]; if(!rub)continue;
+      aCounts[rub.aClass]++; fCounts[rub.fClass]++;
+      if(rub.aClass!=="NAx"){ceilingAssessTotal++; if((AT_CEILING_A[rub.aClass]||[]).includes(row.a[f]))acpAtCeilingAssess++;}
+      if(rub.fClass!=="NAx"){ceilingFixTotal++; if((AT_CEILING_F[rub.fClass]||[]).includes(row.r[f]))acpAtCeilingFix++;}
+    }
+  }
+  document.getElementById("ceilingTiles").innerHTML=`
+    <div class="tile"><b class="C">${aCounts.DET}</b><span>Assess: Deterministic ceiling</span></div>
+    <div class="tile"><b class="Q">${aCounts.MA}</b><span>Assess: Machine-assisted ceiling</span></div>
+    <div class="tile"><b class="H">${aCounts.HUM}</b><span>Assess: Human-judgment ceiling</span></div>
+    <div class="tile"><b class="C">${fCounts.MECH}</b><span>Fix: Mechanical-edit ceiling</span></div>
+    <div class="tile"><b class="Q">${fCounts.GEN}</b><span>Fix: Generated+approval ceiling</span></div>
+    <div class="tile"><b class="H">${fCounts.REAUTH}</b><span>Fix: Re-authoring ceiling</span></div>`;
+  document.getElementById("acpTiles").innerHTML=`
+    <div class="tile"><b class="C">${acpAtCeilingAssess} / ${ceilingAssessTotal}</b><span>ACP assessment cells at ceiling</span></div>
+    <div class="tile"><b class="C">${acpAtCeilingFix} / ${ceilingFixTotal}</b><span>ACP remediation cells at ceiling</span></div>`;
+})();
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+// ACP-today status line — derived from the existing shipped-capability tiers (row.a/row.r),
+// kept entirely separate from the RUBRIC ceiling above. This is the only section that changes as ACP ships more.
+function acpStatusLine(row,f){
+  const at=row.a[f],rt=row.r[f];
+  const aStr=at==="NA"?"N/A":AL[at];
+  const rStr=rt==="NA"?"N/A":RL[rt];
+  return `Assessment: <b>${esc(aStr)}</b> · Remediation: <b>${esc(rStr)}</b>`;
+}
+function techNotes(row,f){
+  const ad=row.ae[f]||{b:[],ev:[]}, rd=row.re[f]||{b:[],ev:[]};
+  let html="";
+  const block=(label,d)=>{
+    let h=`<div class="sub">${label}</div><ul>${(d.b||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+    if(d.c&&d.c.length)h+=`<h4 style="margin-top:8px">Concede up front</h4><ul class="concede">${d.c.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+    if(d.x)h+=`<div class="counter"><b>Counterargument it survives:</b> ${esc(d.x)}</div>`;
+    if(d.cat)h+=`<div class="catalog"><b>Catalog / drift note:</b> ${esc(d.cat)}</div>`;
+    h+=`<div class="ev"><b>Evidence</b>${(d.ev||[]).map(x=>`<code>${esc(x)}</code>`).join("")}</div>`;
+    return h;
+  };
+  html+=block("Assessment mechanism (ACP today)",ad);
+  html+=block("Remediation mechanism (ACP today)",rd);
+  return html;
+}
 tb.addEventListener("click",(e)=>{
   const td=e.target.closest("td.cell");if(!td)return;
-  const row=ROWS.find(r=>r.sc===td.dataset.sc);const f=td.dataset.f;const k=td.dataset.k;
-  const tier=k==="a"?row.a[f]:row.r[f];
-  const verdict=k==="a"?AL[tier]:RL[tier];
-  const d=(k==="a"?row.ae[f]:row.re[f])||{b:[],ev:[]};
-  const cls=tier==="NA"?"NAx":tier;
+  const row=ROWS.find(r=>r.sc===td.dataset.sc);const f=td.dataset.f;
+  const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
-  let html=`<h2>${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()} · ${k==="a"?"Assessment":"Remediation"}</h2>
-    <div class="verdict ${cls}">${verdict}</div>`;
+  let html=`<h2>${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>`;
   if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a></div>`;
-  html+=`<h4>The argument</h4><ul>${d.b.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-  if(d.c&&d.c.length)html+=`<h4>Concede up front</h4><ul class="concede">${d.c.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-  if(d.x)html+=`<div class="counter"><b>Counterargument it survives:</b> ${esc(d.x)}</div>`;
-  if(d.cat)html+=`<div class="catalog"><b>Catalog / drift note:</b> ${esc(d.cat)}</div>`;
-  if(k==="a"&&DEVA[row.sc]){const dv=DEVA[row.sc];
-    html+=`<h4>vs. the conformance checklist (Deva)</h4><div class="deva">
-      <div><b>Deva's checklist:</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
+
+  html+=`<h4>1 · The rule, in plain words</h4><p class="plain">${esc((RUBRIC[row.sc]&&RUBRIC[row.sc].plain)||"")}</p>`;
+
+  if(rub){
+    html+=`<h4>2 · Can this be assessed automatically?</h4><div class="badge ${rub.aClass}">${RCLASS[rub.aClass]}</div>
+      <h4 style="margin-top:12px">3 · Why it lands there</h4><p class="why">${esc(rub.aWhy)}</p>`;
+  }
+
+  if(DEVA[row.sc]){const dv=DEVA[row.sc];
+    html+=`<div class="deva">
+      <div><b>vs. the conformance checklist (Deva):</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
       <div><b>Our conclusion:</b> <span class="dv ${dv.k}">${esc(dv.ours)}</span> — ${esc(dv.note)}</div></div>`;}
-  html+=`<div class="ev"><b>Evidence</b>${(d.ev||[]).map(x=>`<code>${esc(x)}</code>`).join("")}</div>`;
+
+  if(rub){
+    html+=`<h4>4 · How can it be fixed, in principle?</h4><div class="badge ${rub.fClass}">${FCLASS[rub.fClass]}</div>
+      <p class="why">${esc(rub.fWhy)}</p>`;
+  }
+
+  html+=`<h4>5 · Where ACP is today</h4><div class="status">${acpStatusLine(row,f)}</div>`;
+
+  html+=`<details class="tech"><summary>6 · Technical notes</summary>${techNotes(row,f)}</details>`;
+
   if(row.flag)html+=`<div class="disc"><b>▲ Corrected row</b> — this row differs from the July-14 infographic; see the corrections list below the table.</div>`;
   document.getElementById("panel-body").innerHTML=html;
   document.getElementById("panel").classList.add("open");
