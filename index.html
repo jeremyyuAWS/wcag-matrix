@@ -27,6 +27,10 @@
   td.sc{font-weight:700;text-align:left;white-space:nowrap}
   td.name{text-align:left;min-width:170px}
   tr.flagged td.name{color:var(--red);font-weight:700}
+  .devamark{font-weight:800;margin-left:3px;font-size:.9em}
+  .devamark.augment{color:#6a3fb5}
+  .devamark.disagree{color:#b3261e}
+  .legend .devamark{margin-left:0;margin-right:2px}
   td.cell{padding:0;font-weight:700}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
@@ -113,6 +117,8 @@
     <span><span class="dot" style="background:var(--orange)"></span>Human judgment / Re-authoring (ceiling)</span>
     <span><span class="dot" style="background:var(--gray)"></span>N/A (rule can't be broken in this format)</span>
     <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
+    <span><b class="devamark augment">†</b> our conclusion augments Deva's checklist (agree, with nuance)</span>
+    <span><b class="devamark disagree">‡</b> our conclusion disagrees with Deva's checklist (documents vs. web, or a real correction)</span>
   </div>
 
   <table id="tbl">
@@ -689,11 +695,23 @@ const RUBRIC={
 
 const FM=["docx","xlsx","pptx","pdf"];
 const tb=document.querySelector("#tbl tbody");
+// Deva-vs-ours marker: her checklist evaluates ASSESSMENT approach only (no remediation column in
+// jeremy.xlsx), so the tag applies to the 4 assess cells, never the 4 remediate cells. "agree" gets no mark.
+const DEVA_MARK={augment:{sym:"†",word:"augments"},disagree:{sym:"‡",word:"disagrees with"}};
 for(const row of ROWS){
   const tr=document.createElement("tr");
   if(row.flag)tr.className="flagged";
   let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
-  for(const f of FM){const v=row.a[f];h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}. Open details.">${SHORT_A[v]}</button></td>`;}
+  const dv=DEVA[row.sc], dm=dv&&DEVA_MARK[dv.k];
+  for(const f of FM){const v=row.a[f];
+    // Only mark cells that carry an actual assessment claim (aClass !== NAx) — Deva's per-SC verdict
+    // sometimes covers only SOME formats (e.g. 1.3.2's "documents beat her class" is about XLSX/PPTX/PDF,
+    // not DOCX, which is N/A and has no claim to agree or disagree with in the first place).
+    const rubF=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
+    const showMark=dm&&rubF&&rubF.aClass!=="NAx";
+    const markHtml=showMark?` <b class="devamark ${dv.k}" aria-hidden="true">${dm.sym}</b>`:"";
+    const markAria=showMark?` Our conclusion ${dm.word} Deva's conformance checklist for this rule.`:"";
+    h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria} Open details.">${SHORT_A[v]}${markHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
 }
