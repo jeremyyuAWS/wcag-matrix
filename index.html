@@ -34,9 +34,13 @@
   tr:nth-child(even) td{background:#fafbfd}
   .C{color:var(--green)} .Q{color:var(--blue)} .H{color:var(--orange)} .NAx{color:var(--gray)}
   .A,.AC,.AP{color:var(--green)} .AI{color:var(--purple)} .M{color:var(--orange)} .N{color:var(--red)}
+  #backdrop{position:fixed;inset:0;background:rgba(15,20,35,.4);z-index:9;opacity:0;pointer-events:none;transition:opacity .18s}
+  #backdrop.open{opacity:1;pointer-events:auto}
   #panel{position:fixed;right:0;top:0;bottom:0;width:520px;max-width:96vw;background:#fff;border-left:1px solid var(--line);
-    box-shadow:-8px 0 30px rgba(20,29,54,.18);padding:18px 20px 30px;overflow:auto;transform:translateX(105%);transition:transform .18s}
+    box-shadow:-8px 0 30px rgba(20,29,54,.18);padding:18px 20px 30px;overflow:auto;transform:translateX(105%);transition:transform .18s;z-index:10}
   #panel.open{transform:none}
+  @media (max-width:640px){#panel{width:100%;max-width:100%;border-left:0}#panel .cvp{flex-direction:column}}
+  #panel{overflow-x:hidden}
   #panel h2{margin:0 0 2px;font-size:17px;color:var(--navy);padding-right:70px}
   #panel .verdict{font-weight:800;font-size:16px;margin:8px 0 2px}
   #panel h4{margin:14px 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -130,6 +134,7 @@
   <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
 </div>
 
+<div id="backdrop"></div>
 <div id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title" tabindex="-1"><button id="panel-close">✕ close</button><div id="panel-body"></div></div>
 
 <script>
@@ -813,14 +818,19 @@ function renderDrawer(sc,f,trigger){
   document.getElementById("panel-body").innerHTML=html;
   const panel=document.getElementById("panel");
   panel.classList.add("open");
+  document.getElementById("backdrop").classList.add("open");
+  document.querySelector(".wrap").inert=true; // real modal isolation: background is unclickable/untabbable, not just visually dimmed
   lastTrigger=trigger||lastTrigger;
   panel.focus();
 }
 function closePanel(){
   document.getElementById("panel").classList.remove("open");
+  document.getElementById("backdrop").classList.remove("open");
+  document.querySelector(".wrap").inert=false;
   if(lastTrigger&&document.body.contains(lastTrigger))lastTrigger.focus();
 }
 document.getElementById("panel-close").addEventListener("click",closePanel);
+document.getElementById("backdrop").addEventListener("click",closePanel);
 
 tb.addEventListener("click",(e)=>{
   const btn=e.target.closest("button.cellbtn");if(!btn)return;
