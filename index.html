@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACP · WCAG 2.1 AA — 20 Document Core Rules (as-built)</title>
+<style>
+  :root{
+    --navy:#1e2a4a; --ink:#202124; --muted:#5f6368; --line:#e3e6ec; --bg:#f6f7fa;
+    --green:#1e8e3e; --blue:#1976d2; --orange:#e8710a; --red:#c5221f; --purple:#7b1fa2; --gray:#9aa0a6;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font:14px/1.45 "Segoe UI",system-ui,-apple-system,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px}
+  h1{font-size:24px;margin:0 0 2px;color:var(--navy)}
+  .sub{color:var(--muted);margin-bottom:14px}
+  .wrap{max-width:1280px;margin:0 auto}
+  .tiles{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  .tile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:150px}
+  .tile b{display:block;font-size:22px}
+  .tile span{color:var(--muted);font-size:12px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 14px;font-size:12px;color:var(--muted)}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  table{border-collapse:collapse;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}
+  th{background:var(--navy);color:#fff;position:sticky;top:0;font-weight:600}
+  th.grp{background:#141d36;font-size:12px;letter-spacing:.06em}
+  td.sc{font-weight:700;text-align:left;white-space:nowrap}
+  td.name{text-align:left;min-width:170px}
+  tr.flagged td.name{color:var(--red);font-weight:700}
+  td.cell{cursor:pointer;font-weight:700}
+  td.cell:hover{outline:2px solid var(--navy);outline-offset:-2px}
+  tr:nth-child(even) td{background:#fafbfd}
+  .C{color:var(--green)} .Q{color:var(--blue)} .H{color:var(--orange)} .NAx{color:var(--gray)}
+  .A,.AC,.AP{color:var(--green)} .AI{color:var(--purple)} .M{color:var(--orange)} .N{color:var(--red)}
+  #panel{position:fixed;right:0;top:0;bottom:0;width:520px;max-width:96vw;background:#fff;border-left:1px solid var(--line);
+    box-shadow:-8px 0 30px rgba(20,29,54,.18);padding:18px 20px 30px;overflow:auto;transform:translateX(105%);transition:transform .18s}
+  #panel.open{transform:none}
+  #panel h2{margin:0 0 2px;font-size:17px;color:var(--navy);padding-right:70px}
+  #panel .verdict{font-weight:800;font-size:16px;margin:8px 0 2px}
+  #panel h4{margin:14px 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  #panel ul{margin:4px 0 0;padding-left:18px}
+  #panel li{margin-bottom:7px;font-size:13px}
+  #panel ul.concede li{color:#7a4a00}
+  #panel .counter{background:#f0f4fb;border:1px solid #d5e0f2;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px}
+  #panel .counter b{color:var(--navy)}
+  #panel .ev{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px}
+  #panel .ev code{display:block;font-family:Consolas,Menlo,monospace;font-size:11.5px;color:#8a3324;word-break:break-all;margin-top:3px}
+  #panel .disc{background:#fdecea;border:1px solid #f5c6c2;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px;color:#7c1d18}
+  #panel .catalog{background:#f3eef8;border:1px solid #e0d2ee;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px;color:#4a2a66}
+  #panel button{position:absolute;top:12px;right:14px;border:0;background:var(--bg);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px}
+  .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
+  .corr h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
+  .corr li{margin-bottom:5px;font-size:13px}
+  .foot{color:var(--muted);font-size:11.5px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>WCAG 2.1 AA — 20 Document Core Rules · As-Built Capability</h1>
+  <div class="sub">Assessment &amp; remediation per format, every cell traceable to code. Click any cell for the full argument: mechanism, why the tier, what to concede, the counterargument it survives, and evidence. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16.</div>
+
+  <div class="tiles">
+    <div class="tile"><b class="C">6</b><span>Certified (auto assessment)</span></div>
+    <div class="tile"><b class="Q">6</b><span>Guided review (detected)</span></div>
+    <div class="tile"><b class="H">8</b><span>Human assessment</span></div>
+    <div class="tile"><b class="A">7</b><span>Automatic remediation</span></div>
+    <div class="tile"><b class="AI">1</b><span>AI proposal (HITL)</span></div>
+    <div class="tile"><b class="M">2</b><span>Manual (guided)</span></div>
+    <div class="tile"><b class="N">10</b><span>No automated remediation</span></div>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--green)"></span>Certified / Automatic</span>
+    <span><span class="dot" style="background:var(--blue)"></span>Guided review</span>
+    <span><span class="dot" style="background:var(--purple)"></span>AI proposal</span>
+    <span><span class="dot" style="background:var(--orange)"></span>Human / Manual</span>
+    <span><span class="dot" style="background:var(--red)"></span>No automated remediation</span>
+    <span><span class="dot" style="background:var(--gray)"></span>N/A</span>
+    <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr><th class="grp" colspan="2">WCAG 2.1 AA</th><th class="grp" colspan="4">ASSESS — can ACP decide pass/fail?</th><th class="grp" colspan="4">REMEDIATE — how does ACP fix it?</th></tr>
+      <tr><th>SC</th><th style="text-align:left">Criterion</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="corr">
+    <h3>Corrections vs the July-14 infographic (code-verified)</h3>
+    <ul>
+      <li><b>2.4.6 Headings &amp; Labels</b> — XLSX and PDF have <i>no</i> detector (shown as Guided); DOCX heading-skip clamp and PPTX title insertion <i>are</i> live fixers (shown as None).</li>
+      <li><b>1.4.3 Contrast — DOCX remediation</b> — shown Manual; the docx recolour fixer ships in the same file (<code>api/remediate_office.py</code>) as the pptx/xlsx ones already shown Automatic.</li>
+      <li><b>2.1.1 Keyboard — PPTX remediation</b> — detector + specific registry guidance = Manual under the stated tiers (was None). Definitional; downgrade defensible if guidance≠remediation.</li>
+      <li><b>Per-format machine-assessed counts</b> — DOCX 10 · XLSX <b>9</b> · PPTX 12 · PDF <b>9</b> (poster said 10/10/12/10). Union assessment tiles (6/6/8/0) were already correct.</li>
+      <li><b>Remediation tiles</b> — 7 automatic / 1 AI proposal / 2 manual / 10 none (poster: 6/1/1/12).</li>
+    </ul>
+  </div>
+  <div class="foot">Layer rule: detection claims cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code>; remediation claims cite <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
+</div>
+
+<div id="panel"><button onclick="document.getElementById('panel').classList.remove('open')">✕ close</button><div id="panel-body"></div></div>
+
+<script>
+const AL={C:"Certified",Q:"Guided review",H:"Human assessment",NA:"Not applicable"};
+const RL={A:"Automatic",AC:"Automatic (conditional)",AP:"Automatic (partial)",AI:"AI proposal",M:"Manual (guided)",N:"No automated remediation",NA:"Not applicable"};
+const SHORT_A={C:"Certified",Q:"Guided",H:"Human",NA:"N/A"};
+const SHORT_R={A:"Auto",AC:"Auto*",AP:"Auto (part.)",AI:"AI proposal",M:"Manual",N:"None",NA:"N/A"};
+
+// Each cell: b = argument bullets · c = concede-up-front bullets · x = counterargument it survives · ev = evidence · cat = catalog/drift note
+const ROWS=[
+{sc:"1.1.1",name:"Non-text Content",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"AC",xlsx:"AC",pptx:"AC",pdf:"AC"},
+ ae:{
+  docx:{b:["The .NET AltTextRule reads descr= on every wp:docPr — a deterministic XML attribute check, so pass/fail is machine-decidable, not a heuristic.","Smarter than a bare presence check: bare filenames ('image1.png') and generic auto-names count as missing; images correctly marked decorative are exempt — the rule matches how Word actually authors files.","The rubric only certifies files with a clean ANALYSED run (scripts/rubric.py): if any rule errored, the score is an upper bound and the file is not certifiable."],
+      c:["Certifies alt PRESENCE, not alt QUALITY — description quality is a review-queue question and the spec says so explicitly.","OLE-embedded images and chart/SmartArt internals are out of scope by declaration, not omission."],
+      ev:["engine/office-analysers/.../Docx/Rules/AltTextRule.cs","docs/rules/DOCX-ALT-001.md"]},
+  xlsx:{b:["Same deterministic check on xdr:cNvPr inside pictures in xl/drawings/* — identical logic, different namespace.","Junk-descr handling (filenames, generic names) identical to docx, so verdicts are consistent across formats."],
+      c:["Charts and sparklines are separately-anchored objects the picture rule doesn't reach — documented; don't claim chart-alt coverage."],
+      ev:["engine/office-analysers/.../Xlsx/Rules/AltTextRule.cs","docs/rules/XLSX-ALT-001.md"]},
+  pptx:{b:["Deterministic descr= check on p:cNvPr inside p:pic, honouring PowerPoint's official decorative extension (adec:decorative val=\"1\").","Slides are the strongest case for this rule — the image often IS the content, so an unlabelled picture is a hole exactly where the point of the slide was."],
+      c:["An image inside a group can inherit the group's descr and pass while the meaningful inner picture has none (declared false-negative)."],
+      ev:["engine/office-analysers/.../Pptx/Rules/AltTextRule.cs","docs/rules/PPTX-ALT-001.md"]},
+  pdf:{b:["image_alt_text.py walks the structure tree and checks /Alt on every Figure tag, skipping artifacts (decorative) — deterministic within scope.","The tagged-file condition is the defense, not a weakness: an untagged PDF has no figures to inspect, so it deterministically fails pdf.tagged (1.3.1) instead. The pipeline never claims a 1.1.1 verdict on a file it cannot see into — findings cascade in the right order."],
+      c:["Scanned/image-only PDFs produce no 1.1.1 findings at all — pdf.tagged fires first; that ordering is intentional."],
+      x:"“So PDF 1.1.1 isn't really certified.” — It is, for the population it claims: tagged PDFs. For everything else the failure is reported at the right layer (1.3.1).",
+      ev:["worker-python/analysers/rules/pdf/image_alt_text.py","docs/rules/pdf.missing-alt-text.md"]}},
+ re:{
+  docx:{b:["The fixer never invents text. Priority: author's own Alt-Text Title → adjacent 'Figure N:' caption → meaningful (non-generic) shape name → local vision model (only when reachable; budget 25 images/doc) → otherwise the image is left untouched and routed to review.","Fixes are string-surgical (descr injected into the original tag text) so every other byte of the OOXML part is preserved — Office consumers are picky about re-serialization.","Every applied fix lands in a tamper-evident provenance stamp (docProps/custom.xml: tool, version, date, WCAG target, fixes applied)."],
+      c:["'Conditional' is the accurate word: with AI off and no faithful source, nothing is written — the finding routes to HITL. That is a design principle (invented alt is worse than none), not a coverage gap."],
+      x:"“The auto-fix will hallucinate descriptions.” — It cannot: the deterministic ladder only copies author-provided text; the vision path describes actual image pixels and is bounded and traced (Langfuse).",
+      ev:["api/remediate_office.py:_fix_image_alt / _derive_alt / _vision_alt","api/ai.py:describe_image / vision_is_available"]},
+  xlsx:{b:["Same faithful-source-then-vision fixer; the caption source doesn't apply (docx-only), so the ladder is title → shape name → vision.","Vision budget is shared across the whole workbook (25), keeping worst-case CPU inference bounded."],
+      c:["Excel has no decorative marker, so decorative divider images keep getting flagged and deferred — expected reviewer traffic."],
+      ev:["api/remediate_office.py:_fix_image_alt (_ALT_TARGETS xl/drawings)"],},
+  pptx:{b:["Same pipeline over ppt/slides/slide*.xml; only shapes inside p:pic blocks are touched, so placeholders and text shapes are never mislabelled.","Slides render identically after the fix — it's an XML-attribute-only change."],
+      ev:["api/remediate_office.py:_fix_image_alt (_ALT_TARGETS ppt/slides)"]},
+  pdf:{b:["Tagged /Figure elements missing /Alt get a genuine vision description of their page (rendered at 150 DPI via pypdfium2), capped at 25 figures/doc; the /Alt string is written onto the exact struct element the analyser checks.","Two-stage save (pikepdf structural → pypdf metadata) exists specifically to make these writes reliable in a long-lived worker; fixes apply to a copy, never in place.","AI off / vision unreachable degrades gracefully: all missing-alt figures defer to review; nothing is guessed."],
+      c:["Untagged PDFs get no alt remediation — that work is gated behind tagging (1.3.1), which is human/re-export territory."],
+      ev:["api/remediate_pdf.py:_fix_pdf_figure_alt / _render_page_png"]}}},
+
+{sc:"1.3.1",name:"Info and Relationships",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"A",xlsx:"A",pptx:"M",pdf:"M"},
+ ae:{
+  docx:{b:["Two deterministic rules: TableHeaderRule — the first row of every table must carry w:tblHeader (exactly what AT uses to announce column labels) — and HeadingStructureRule — heading styles must not skip levels going down (H1→H3).","Both are structure reads on the document XML: no sampling, no thresholds, no model."],
+      c:["Layout tables get flagged — Word has no reliable data-vs-layout marker, so every table is treated as data (declared).","'Fake headings' (bold 18pt body text) carry no outline level and are invisible to the heading rule (declared)."],
+      ev:["engine/office-analysers/.../Docx/Rules/TableHeaderRule.cs","engine/office-analysers/.../Docx/Rules/HeadingStructureRule.cs","docs/rules/DOCX-TABLE-001.md · DOCX-HEAD-001.md"]},
+  xlsx:{b:["TableHeaderRule reads headerRowCount on every ListObject: explicitly setting 0 is the violation; absence defaults to 1 per the OOXML spec — the rule encodes the spec, not a guess."],
+      c:["Plain ranges that LOOK like tables — the most common real-world case — are invisible: the rule can only see what's formalised as a table. Scope statement, not defect."],
+      ev:["engine/office-analysers/.../Xlsx/Rules/TableHeaderRule.cs","docs/rules/XLSX-TABLE-001.md"]},
+  pptx:{b:["Deterministic: firstRow=\"1\" in a:tblPr — the exact marker PowerPoint uses for header-row semantics AND styling, so the check matches the authoring tool's own model."],
+      c:["Matrix-style tables with no natural header row will be flagged; tables pasted as images fall under 1.1.1 instead (declared)."],
+      ev:["engine/office-analysers/.../Pptx/Rules/TableHeaderRule.cs","docs/rules/PPTX-TABLE-001.md"]},
+  pdf:{b:["tagged_pdf.py is a strong deterministic gate: MarkInfo.Marked = true AND a non-stub StructTreeRoot — it explicitly catches 'declared tagged but empty tree', the classic defective export.","This is the backbone rule: every other PDF structural check depends on tags, so certifying it first is architecturally correct."],
+      ev:["worker-python/analysers/rules/pdf/tagged_pdf.py","docs/rules/pdf.tagged.md"]}},
+ re:{
+  docx:{b:["_remediate_docx_structure adds w:tblHeader to the first row of every multi-row table — precisely what the analyser's check reads, so fix → re-scan → clear is closed-loop.","It also normalises the heading outline: promotes the top heading to H1 if none exists, demotes extra H1s to H2, matching the document's own style-id spelling so styles still resolve.","First-row-as-header is a defensible default: a wrong guess is visible and harmless — announcements name the wrong row, the data is untouched (spec's own rationale)."],
+      ev:["api/remediate_office.py:_remediate_docx_structure"]},
+  xlsx:{b:["headerRowCount 0→1 on every table-definition part — the same toggle Excel's 'My table has headers' flips.","Deterministic, additive, provenance-stamped."],
+      ev:["api/remediate_office.py:_remediate_xlsx_structure"]},
+  pptx:{b:["Manual — and the reason is the layer rule, not difficulty: the only pptx table-header fixer (PptxTableHeaderFix) lives in the undeployed partner tree (digital-accessibility/, gitignored, absent from the deploy image). The honest cell is what ships.","The finding carries concrete author guidance: Table Design → enable Header Row.","The path out is cheap — write firstRow=\"1\", same pattern as the docx fixer. Say 'small, unbuilt', never show it as built."],
+      x:"“But the fixer exists in the repo tree.” — In a gitignored partner clone that the deploy image never copies. Quoting it as capability is exactly how the mixed analyses happened.",
+      ev:["RuleMetadataRegistry.cs (PptxRuleIds.TableHeaders — guidance)","deploy/public/Dockerfile (what actually ships)"]},
+  pdf:{b:["No fixer, and that is the industry-honest position: synthesising a semantically correct tag tree requires understanding layout and reading order — the correct fix is re-export from source (Word/InDesign/LaTeX) with tag export enabled, which is exactly the guidance ACP emits."],
+      x:"“Acrobat can auto-tag.” — Auto-tagging produces role and order errors that then fail 1.3.2 and 1.1.1; ACP refuses to generate defects it would immediately flag.",
+      ev:["docs/rules/pdf.tagged.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.Tagged — guidance)"]}}},
+
+{sc:"1.3.2",name:"Meaningful Sequence",lvl:"A",flag:false,a:{docx:"NA",xlsx:"C",pptx:"Q",pdf:"Q"},r:{docx:"NA",xlsx:"AP",pptx:"A",pdf:"M"},
+ ae:{
+  docx:{b:["Word body content is a single linear flow — the reading order of the main story cannot diverge from the visual order the way slide shapes and PDF tag trees can.","N/A by content model is a stronger position than an unbuilt check: there is nothing for a rule to disagree with."],
+      c:["Floating text boxes / shapes are a theoretical edge — concede as potential future scope, not as a gap in this claim."],
+      ev:["rule catalog: no docx 1.3.2 rule (by design)"]},
+  xlsx:{b:["Deterministic on two structural signals: MergedCellsRule — any mergeCell spanning >1 row/col (a merged A1:C1 makes B1/C1 unreachable by cell navigation) — and HiddenContentRule — hidden rows/cols/sheets that actually contain data.","Both are direct XML state reads; no heuristics involved → Certified."],
+      c:["Visually simulated merges (borders removed, overflow text) and white-on-white 'hiding' are undetectable — only structural state is read (declared)."],
+      ev:["engine/office-analysers/.../Xlsx/Rules/MergedCellsRule.cs","engine/office-analysers/.../Xlsx/Rules/HiddenContentRule.cs"]},
+  pptx:{b:["ReadingOrderRule compares XML (tab) order against shape bounding boxes — a real signal: AT reads shapes in XML order, not visual order, and the divergence is invisible to the author until someone hears it.","It is a heuristic, and the scanner treats it as one: per-slide hits are collapsed into a single advisory — 'a heuristic flag; verify the reading order (routed to review)'. Guided is the code's own posture, not our downgrade."],
+      c:["Two-column layouts and diagram-with-callouts slides have legitimately ambiguous order — declared false-positive modes."],
+      ev:["engine/office-analysers/.../Pptx/Rules/ReadingOrderRule.cs","api/scanner.py:_collapse_reading_order"]},
+  pdf:{b:["reading_order.py scores divergence between tag-tree order and geometric top-to-bottom/column order per page; large divergence fails.","Pages without tags SKIP — owned by pdf.tagged — a clean separation of concerns that prevents double-reporting."],
+      c:["Declared limits: RTL column conventions and tables (cell order is legitimately non-geometric) are excluded; locally swapped lines fall under the threshold."],
+      ev:["worker-python/analysers/rules/pdf/reading_order.py","docs/rules/pdf.reading-order.md"]}},
+ re:{
+  docx:{b:["N/A — nothing to fix in a linear flow."],ev:["—"]},
+  xlsx:{b:["Partial, and the split is principled: hidden rows/columns holding data are auto-unhidden (exposure is safe, reversible, and clears the exact detector), while merged cells have NO fixer — unmerging requires deciding what goes in each freed cell, a layout decision only the author can make.","The manual path is documented and cheap: Unmerge + 'Center Across Selection' keeps the visual without the navigation break."],
+      ev:["api/remediate_office.py:_remediate_xlsx_structure (unhide)","docs/rules/XLSX-MERGE-001.md (author steps)"]},
+  pptx:{b:["The fixer is live: _remediate_pptx_slides re-sorts spTree children by visual position (y, then x) — the top-to-bottom, left-to-right order AT expects.","Sorting also sets z-order sanely (top-left backgrounds sort first), so typical stacking is preserved.","Catalog says human-only for PPTX-ORDER-001 — drift; the poster footnote already follows code here."],
+      c:["For a deliberately non-linear slide the sort can be wrong — which is why DETECTION still routes to review even though a fixer exists."],
+      ev:["api/remediate_office.py:_remediate_pptx_slides (reorder)"],
+      cat:"Catalog drift: rule-catalog.json fix_mode=human-only vs live auto-fix. Re-sync recommended."},
+  pdf:{b:["Manual by the spec's own rationale: automated re-ordering 'can silently destroy meaning' — sidebars, pull quotes and captions are editorial intent.","The finding ships with concrete guidance: verify and correct in Acrobat's Order panel; may require re-tagging."],
+      ev:["docs/rules/pdf.reading-order.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.ReadingOrder)"]}}},
+
+{sc:"1.3.3",name:"Sensory Characteristics",lvl:"A",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"Q"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:(function(){const common={
+   b:["textchecks.detect_sensory runs a deliberately tight regex — an instruction verb within 45 characters of a shape-only or position-only reference ('click the round button', 'see the box on the right') — over text extracted from every format the scanner reads (pii.extract_text covers docx/pptx/xlsx/pdf/html).","The posture is stated in the module docstring: deterministic and reproducible (no LLM — an audit tool must return the same findings for the same file every run), detect-and-route, NEVER auto-passed. That is the definition of Guided.","One finding per document by design: the reviewer inspects the phrasing; per-sentence hits would be queue noise, not coverage.","Why not Certified: absence of a regex match cannot prove instructions don't rely on sensory cues — a PASS is not machine-certifiable for a semantic criterion."],
+   c:["Size- and colour-only references were consciously excluded as too noisy (they overlap other SCs) — the anchor is shape + position, the two strongest sensory-only signals."],
+   ev:["api/textchecks.py:detect_sensory / _SENSORY_RE","api/scanner.py (wired into every scan path)"]};
+   return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
+ re:(function(){const common={
+   b:["No fixer, on principle: the fix is rewriting instructions ('click Submit — the round button on the right'), and any auto-rewrite would put words in the author's mouth.","The finding routes to review with the matched phrasing, so the reviewer lands directly on the sentence to fix."],
+   ev:["— (report-and-route only)"]};
+   return {docx:common,xlsx:common,pptx:common,pdf:common};})()},
+
+{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"Q",xlsx:"H",pptx:"Q",pdf:"H"},r:{docx:"A",xlsx:"N",pptx:"A",pdf:"N"},
+ ae:{
+  docx:{b:["DOCX_HEADING_SKIP (office_structure) fires on Heading1→Heading3 style skips — deterministic for that narrow signal, and exactly the outline defect that breaks jump-by-heading navigation.","The SC verdict stays Guided because 2.4.6 asks whether headings DESCRIBE their topic — semantic, human-confirmed. The skip check is evidence toward the criterion, not the whole criterion."],
+      ev:["api/office_structure.py:docx_checks (DOCX_HEADING_SKIP)"]},
+  xlsx:{b:["No detector exists: office_structure's 2.4.6 checks cover docx (heading skips) and pptx (empty titles) only; nothing evaluates sheet-label descriptiveness.","The poster shows Guided here — that cell has no code behind it. Claiming it invites the one question you can't answer: 'show me the check.'","If the cell must be Guided, the honest sequence is build the sheet-label heuristic first, then update the poster."],
+      c:["Near-miss you can cite: SheetNameRule flags default sheet names — but it's mapped to 2.4.2 (titles); borrowing it here double-counts one check under two SCs."],
+      x:"“Sheet names are labels, so we're covered.” — That check already scores under 2.4.2; a criterion isn't covered by re-labelling someone else's rule.",
+      ev:["api/office_structure.py (docx+pptx only — grep for 2.4.6)"]},
+  pptx:{b:["PPTX_TITLE_EMPTY fires when a slide's layout provides a title placeholder that the slide leaves empty — a deterministic structural signal that a 'label' is missing.","Guided, not Certified, for the same semantic reason as docx: presence ≠ descriptiveness."],
+      ev:["api/office_structure.py:pptx_checks (PPTX_TITLE_EMPTY)"]},
+  pdf:{b:["No detector: nothing in the PDF stack evaluates heading-tag descriptiveness or label quality (bookmarks rule is 2.4.2; the first-party PDF adds are contrast and bypass-blocks).","Same correction as XLSX: the poster's Guided cell is unsupported by code."],
+      ev:["worker-python/analysers/rules/pdf/* (no 2.4.6 rule)","api/office_structure.py (pdf checks: contrast, 2.4.1 only)"]}},
+ re:{
+  docx:{b:["The fixer is live and cites this SC in its own change log: skipped heading levels are clamped to prev+1 — 'Closed N skipped heading level(s) so the outline has no gaps · 2.4.6'.","It runs after the 1.3.1 outline normalisation and re-derives levels from the possibly-rewritten style ids — the two fixes compose deliberately.","The July-14 poster shows None here — understated against code."],
+      ev:["api/remediate_office.py:_remediate_docx_structure (skip_fixed block)"]},
+  xlsx:{b:["None — nothing detected, nothing fixed. Keep the cell honest until a detector exists."],ev:["—"]},
+  pptx:{b:["Automatic via the slide-title insertion: _remediate_pptx_slides fills the empty title placeholder from the slide's most prominent text, which clears PPTX_TITLE_EMPTY as a direct effect.","Poster shows None — understated against code."],
+      ev:["api/remediate_office.py:_remediate_pptx_slides (title insertion)"]},
+  pdf:{b:["None."],ev:["—"]}}},
+
+{sc:"3.1.1",name:"Language of Page",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"A",xlsx:"A",pptx:"A",pdf:"A"},
+ ae:{
+  docx:{b:["Post-ADR-0012 the rule reads the REAL signal: conformant when EITHER metadata OR a content language is present (w:lang in style docDefaults or runs). The old metadata-only check false-failed properly-authored files; that bug is fixed, in-repo, with end-to-end tests (tests/test_office_language_rules.py).","Owning the analysers (ADR 0012) is itself a defense point: the partner wouldn't ship the fix, so the team vendored the projects and fixed the WCAG semantics."],
+      c:["Declared false-negative: a wrong-but-present code (en-US on a French doc) passes — only absence is detected."],
+      ev:["engine/office-analysers/.../Docx/Rules/DocumentLanguageRule.cs","docs/adr/0012-own-office-analysers.md"]},
+  xlsx:{b:["Metadata-only check — and that is CORRECT, not lazy: spreadsheets have no per-cell content-language model, so metadata is the only signal that exists. ADR 0012 says this in as many words."],
+      ev:["engine/office-analysers/.../Xlsx/Rules/DocumentLanguageRule.cs","docs/adr/0012 (xlsx rationale)"]},
+  pptx:{b:["Same ADR-0012 fix as docx: metadata OR run-level @lang — presentations stamp lang on essentially every text run, so the content check is high-signal."],
+      ev:["engine/office-analysers/.../Pptx/Rules/DocumentLanguageRule.cs"]},
+  pdf:{b:["/Lang on the document catalog — a boolean-simple deterministic read; the spec's failure-mode section is literally 'False positive: —'.","Blast-radius argument: PDF is the most-published format, so this cheap check covers the most files."],
+      c:["Malformed-but-present codes ('english') pass the presence check (declared)."],
+      ev:["worker-python/analysers/rules/pdf/document_language.py","docs/rules/pdf.document-language.md"]}},
+ re:{
+  docx:{b:["dc:language written into docProps/core.xml — a value the (fixed) analyser accepts, so fix → re-scan → clear is closed-loop.","Dominant-script detection picks the value; a wrong auto-detect surfaces at re-validation rather than silently persisting."],
+      ev:["api/remediate_office.py:remediate_office (_ensure dc:language)"]},
+  xlsx:{b:["Same dc:language write — the one code path covers all three OOXML formats because OPC core-properties are identical."],ev:["api/remediate_office.py"]},
+  pptx:{b:["Same dc:language write."],ev:["api/remediate_office.py"]},
+  pdf:{b:["PdfLanguageFixer writes /Lang in stage 1 of the two-stage pipeline; the pikepdf→pypdf split exists precisely to make these writes reliable in a long-lived worker.","Applied to a copy; provenance-stamped in docinfo."],
+      ev:["api/remediate_pdf.py (stage 1)","worker-python/remediation/fixers/pdf/language_fixer.py"]}}},
+
+{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"Q"},r:{docx:"M",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:{
+  docx:{b:["Two independent detectors: (1) seeded langdetect over extracted text fires when ≥2 languages are confidently detected — ≥12-word segments, ≥0.90 confidence, thresholds chosen against false positives; DetectorFactory.seed=0 makes it reproducible run-to-run. (2) LanguageOfPartsRule flags long runs whose Unicode SCRIPT differs from the document's dominant script with no w:lang of their own — deliberately narrow after ADR 0012 killed the old false-positive flood (it used to flag every 20+ word run).","Guided because the hard call — foreign language vs proper noun vs quotation — is judgment; the spec says script detection 'drafts nothing safe enough to auto-apply'."],
+      c:["Known drift to disclose before someone finds it: the .NET rule still reports under SC_3_1_1 (ADR 0012 defers separate 3.1.2 modelling). SC-keyed coverage queries under-report DOCX until the remap lands.","Latin-script switches (English→Spanish quote) pass the script detector; the langdetect check partially covers this at document level."],
+      ev:["api/textchecks.py:detect_language_parts","engine/office-analysers/.../Docx/Rules/LanguageOfPartsRule.cs","docs/adr/0012 (3.1.2 deferral)"],
+      cat:"Drift: LanguageOfPartsRule reports under SC_3_1_1. Fix = add SC_3_1_2 mapping (key already exists in config/rubric.default.json)."},
+  xlsx:{b:["The langdetect mixed-language detector is format-agnostic (runs on extracted text), so 'we detect language mixes and route them to review' is true estate-wide, including workbooks.","Confidence guard trades recall for near-zero false positives — the right trade for an audit tool."],
+      c:["Same-script switches below the detector floor are missed without dictionaries (declared)."],
+      ev:["api/textchecks.py:detect_language_parts"]},
+  pptx:{b:["Same format-agnostic detection over extracted slide text."],ev:["api/textchecks.py"]},
+  pdf:{b:["Same format-agnostic detection over extracted page text; span-level /Lang overrides in the tag tree are not inspected (declared in the 3.1.1 spec)."],ev:["api/textchecks.py"]}},
+ re:{
+  docx:{b:["Manual with real guidance: the finding ships with 'Review → Language → Set Proofing Language' on the exact run; catalog fix_mode human-only — consistent across catalog, spec, and code.","Why no auto-fix: writing w:lang on the wrong run (a brand name, a person's name) would actively degrade pronunciation — the false-positive cost is asymmetric."],
+      ev:["RuleMetadataRegistry.cs (DocxRuleIds.LanguageOfParts)","docs/rules/DOCX-LANGPART-001.md"]},
+  xlsx:{b:["None — OOXML spreadsheets have no per-cell language model at all; there is nothing to write even if we wanted to."],ev:["docs/rules/XLSX-LANG-001.md (scope note)"]},
+  pptx:{b:["None — run-level overrides require knowing WHICH runs, which is the thing only review determines."],ev:["—"]},
+  pdf:{b:["None — span-level /Lang in the tag tree is review-directed work."],ev:["—"]}}},
+
+{sc:"1.4.4",name:"Resize Text",lvl:"AA",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:(function(){const common={
+   b:["No document-format check exists — the 1.4.4 fixer in api/remediate.py is HTML-only (viewport un-blocking); don't let it bleed into the document story.","Why Human rather than N/A: zoom is mostly the viewer's job (Word/Excel/PowerPoint/Acrobat all zoom), BUT content can still defeat it — text rasterised into images, tiny fixed frames — so a blanket 'not applicable' overclaims.","Adjacent honest coverage: text-in-images, the main content-side resize failure in practice, IS caught — by the 1.4.5 OCR detector."],
+   ev:["api/remediate.py (1.4.4 fixer is HTML-only)","api/ocr.py (the adjacent coverage)"]};
+   return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
+ re:(function(){const c={b:["None — nothing detected, nothing fixed."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+{sc:"1.4.5",name:"Images of Text",lvl:"AA",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"Q"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:(function(){const mk=(src)=>({
+   b:["Real OCR, not markup guessing: tesseract runs over the rasters actually embedded in the file ("+src+"), flagging any image carrying a meaningful amount of text.","Tuned against false positives at the AA bar: ≥10 real words, ≥20k pixels (skips icons/bullets), ≤30 images/file, giant scans downscaled — so logos and one-word badges don't fire.","Why Guided: the rule cannot judge WCAG's 'essential' exception (logotypes, screenshots where exact presentation matters) — findings are 'detected automatically and routed to review — never auto-passed' (module docstring).","Operationally safe: self-gates to zero findings when tesseract is unavailable, and never raises — OCR can't fail a scan."],
+   c:["1.4.9 (AAA) runs as a stricter-threshold superset of the same signal — modelled honestly as lower floors, not a copy-paste rule."],
+   ev:["api/ocr.py:images_of_text / is_available","deploy/public/Dockerfile (tesseract-ocr installed for this check)"]});
+   return {docx:mk("word/media"),xlsx:mk("xl/media"),pptx:mk("ppt/media"),pdf:mk("pikepdf page images")};})(),
+ re:(function(){const c={b:["None, on principle: the remedy is re-authoring the image as real text — human/AI-assisted authoring work, so the finding is detected and routed, never auto-passed or auto-fixed."],ev:["api/ocr.py (module docstring states the posture)"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+{sc:"1.4.10",name:"Reflow",lvl:"AA",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"H"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"N"},
+ ae:{
+  docx:{b:["Reflow (320-px width / 400% zoom without 2-D scrolling) is a rendering behaviour: flowable OOXML reflows because the EDITOR reflows it; the file's content plays no role.","The obligation sits with the application, so N/A is the defensible verdict — stronger than 'unbuilt'."],ev:["—"]},
+  xlsx:{b:["Same reasoning — the grid's reflow behaviour is Excel's, not the file's."],ev:["—"]},
+  pptx:{b:["Same reasoning for the slide canvas."],ev:["—"]},
+  pdf:{b:["The exception: fixed pages genuinely CAN fail reflow at 400% zoom, and tagged PDFs reflow far better in supporting viewers — another reason pdf.tagged (1.3.1) is the gating investment.","No machine check today → Human. Don't claim; point to the tagging dependency."],ev:["—"]}},
+ re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
+
+{sc:"1.4.12",name:"Text Spacing",lvl:"AA",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:(function(){const common={
+   b:["The criterion tests whether USER spacing overrides break content — an interactive AT behaviour with no static-file oracle in the current stack.","The HTML fixer (relaxing fixed-pixel line-height) shows the pattern is understood; nothing analogous exists for documents. Unbuilt = Human, stated plainly."],
+   ev:["api/remediate.py (1.4.12 fixer is HTML-only)"]};
+   return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
+ re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+{sc:"1.4.1",name:"Use of Color",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:(function(){const common={
+   b:["Nothing inspects colour-as-the-only-signal in documents — the sole 1.4.1 implementation is the HTML link check (colour-styled links without underline) and its fixer.","Evidence the space was considered, not overlooked: 1.3.3's design consciously EXCLUDED colour references from its sensory regex as too noisy — a deliberate deferral you can cite."],
+   ev:["api/remediate.py:_fix_use_of_color (HTML only)","api/textchecks.py (design note excluding colour)"]};
+   return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
+ re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"C",xlsx:"Q",pptx:"C",pdf:"Q"},r:{docx:"A",xlsx:"A",pptx:"A",pdf:"N"},
+ ae:{
+  docx:{b:["The .NET rule computes the TRUE WCAG relative-luminance contrast ratio — 4.5:1 normal text, 3:1 large (≥18pt or 14pt bold) — for every run with explicit colour (w:color) against its shading (w:shd). The real formula, not a luma shortcut.","The declared scope is the RIGHT scope: automatic-colour runs are skipped because their rendered colour depends on the viewer theme — outside the document.","Findings are actionable by design: fg/bg hex, measured ratio, required ratio, text excerpt — a designer can act without re-scanning."],
+      c:["Effective backgrounds from table-cell or page fills aren't resolved (declared FP mode); theme-driven low contrast passes (declared FN mode)."],
+      ev:["engine/office-analysers/.../Docx/Rules/ColourContrastRule.cs","docs/rules/DOCX-CONTRAST-001.md"]},
+  xlsx:{b:["Guided because the first-party check uses a luma-DIFFERENCE heuristic (|Δluma| < 0.5), not the WCAG ratio — good evidence-gathering, not certification. This is why the poster's Q here is right.","Resolution is deliberately narrow: direct-RGB fonts and solid/none fills only, resolved through cellXfs — every flag is a pair the fixer can actually clear."],
+      ev:["api/office_structure.py:xlsx_contrast_checks / _hex_luma"]},
+  pptx:{b:["The strongest contrast implementation in the stack: colour resolved through run → placeholder → layout → master theme against the effective slide background, at the true 4.5:1 / 3:1 thresholds.","Critically, text over photos/gradients is reported as SKIP, not FAIL — the background isn't computable, and refusing to guess is what makes the rest certifiable.","office_structure adds an explicit-fill cross-check (PPTX_LOW_CONTRAST_AA) so the two engines corroborate."],
+      c:["Text over images is never flagged — genuinely illegible white-on-photo text passes (declared FN). WordArt and embedded objects out of scope."],
+      ev:["engine/office-analysers/.../Pptx/Rules/ColourContrastRule.cs","api/office_structure.py:pptx_contrast_checks"]},
+  pdf:{b:["Content-stream colour sampling with per-page and per-doc character caps — a heuristic sample of what's actually painted, not a resolved render → Guided.","Findings feed the same review queue; PDF contrast is evidence-gathering by design."],
+      ev:["api/office_structure.py:pdf_contrast_checks / _pdf_luma"]}},
+ re:{
+  docx:{b:["The fixer exists and is live: _remediate_docx_structure recolours failing explicit-colour runs to black or white — whichever clears 4.5:1 against the paragraph background — mirroring exactly what the analyser measures, so the finding clears on re-scan.","The July-14 poster shows Manual here. Same file, same pattern as the pptx/xlsx recolours it already shows Automatic — correct the cell.","Catalog fix_mode 'human-only' for DOCX-CONTRAST-001 (and PPTX) is drift; the poster footnote acknowledged only pptx."],
+      c:["Concede the design caveat before it's raised: auto-recolour trades brand palette for compliance. Position: 'deterministic fix, design review recommended' — the finding carries both hexes and ratios so a designer can substitute a compliant brand colour."],
+      ev:["api/remediate_office.py:_remediate_docx_structure (contrast block)"],
+      cat:"Catalog drift: DOCX-CONTRAST-001 fix_mode=human-only vs live auto-recolour. Re-sync recommended."},
+  xlsx:{b:["Deterministic: clones each offending font with black/white and repoints the failing cell styles (cellXfs) — clearing exactly what the detector flags; fixer and detector are mirrored on purpose ('it clears what it flags')."],
+      ev:["api/remediate_office.py:_remediate_xlsx_contrast"]},
+  pptx:{b:["Live recolour on explicit srgbClr runs over explicit solid fills — the same narrow scope the detector measures, so every recolour targets a run the scanner actually flagged.","Catalog 'human-only' is acknowledged drift; the poster already follows code here."],
+      ev:["api/remediate_office.py:_remediate_pptx_slides (recolor_run_in_sp)"],
+      cat:"Catalog drift: PPTX-CONTRAST-001 fix_mode=human-only vs live auto-recolour."},
+  pdf:{b:["None: rewriting colours inside PDF content streams is high-risk surgery on the page-painting program itself. Report-and-review is the defensible ceiling today."],
+      ev:["—"]}}},
+
+{sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:(function(){const common={
+   b:["No engine measures UI-component or graphical-object contrast in documents — the text-contrast rules (1.4.3) deliberately don't stretch to cover shapes, chart elements, or form-control borders.","Nothing claimed, nothing to defend; the build here would be a shape-fill vs adjacent-colour analysis — well-defined future work."],
+   ev:["—"]};
+   return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
+ re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+{sc:"2.4.2",name:"Page / Doc Titled",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"AP",xlsx:"AP",pptx:"A",pdf:"AP"},
+ ae:{
+  docx:{b:["Deterministic pair: dc:title must be non-empty (DocumentTitleRule — the filename is never accepted as a substitute), plus BookmarksRule for >10-page documents (at least one named, non-hidden bookmark).","AT announces the title on open and in the task switcher — presence is exactly what's machine-checkable."],
+      c:["Presence, not quality: 'Document1' passes — declared. The HITL title-draft lane (ai.suggest_fix) is the quality answer when wanted."],
+      ev:["engine/office-analysers/.../Docx/Rules/DocumentTitleRule.cs · BookmarksRule.cs"]},
+  xlsx:{b:["dc:title check plus SheetNameRule: default names (Sheet1, localized Tabelle1) are deterministic to spot, and sheet tabs are the workbook's top-level navigation."],
+      c:["A sheet named 'x' passes — non-default is the bar, quality is review's."],
+      ev:["engine/office-analysers/.../Xlsx/Rules/DocumentTitleRule.cs · SheetNameRule.cs"]},
+  pptx:{b:["SlideTitleRule: every slide needs a REAL Title/ctrTitle placeholder with text — text boxes styled to look like titles don't count, which mirrors what AT actually announces ('Slide 7' vs the title).","Per-slide granularity: the finding names the slides, not just the file."],
+      c:["Duplicate titles ('Agenda' ×5) pass — outline-navigation quality is a review concern (declared)."],
+      ev:["engine/office-analysers/.../Pptx/Rules/SlideTitleRule.cs"]},
+  pdf:{b:["Three deterministic checks: /Title in Info or XMP (document_title), /DisplayDocTitle (display_title — without it viewers show the FILENAME, so even a perfect title never reaches AT; a PDF/UA hard requirement and 'the cheapest fix in the whole catalog'), and /Outlines for multi-page docs (bookmarks).","The pair-logic is explicit in the specs: title + display-title must both pass for the outcome users experience."],
+      ev:["worker-python/analysers/rules/pdf/document_title.py · display_title.py · bookmarks.py"]}},
+ re:{
+  docx:{b:["Title auto-fix is live: filename-derived dc:title, never overwrites a real title, provenance-stamped (custom.xml + lastModifiedBy + modified date).","'Partial' because the bookmark fixer (catalog says auto) is NOT built — poster footnote 2 already concedes this; keep conceding it."],
+      ev:["api/remediate_office.py:remediate_office (_ensure dc:title)"],
+      cat:"Catalog drift: DOCX-BOOKMARK-001 fix_mode=auto but no fixer exists in the live path."},
+  xlsx:{b:["dc:title auto-fix live; the sheet-RENAME fixer is not built — and prudently so: external workbooks referencing '[book.xlsx]Sheet1'!A1 break on rename, and the engine can't see external links. The spec documents the risk; 'unbuilt by prudence' is a fine argument."],
+      ev:["api/remediate_office.py","docs/rules/XLSX-SHEET-001.md (rename risk)"],
+      cat:"Catalog drift: XLSX-SHEET-001 fix_mode=auto but no fixer exists in the live path."},
+  pptx:{b:["The complete story: _remediate_pptx_slides inserts a title from the slide's most prominent text, or an OFF-SLIDE title (y above the canvas — the standard 'invisible title' technique) when the design has no room. Compliance without touching the visual design.","Verified against the engine: re-scan clears the finding (stated in the code's own comments)."],
+      ev:["api/remediate_office.py:_remediate_pptx_slides / _pptx_add_title"]},
+  pdf:{b:["Live: /Title (filename-derived; existing titles preserved through the two-stage save) + /DisplayDocTitle boolean.","The bookmark gap is ONE integration away: PdfBookmarksFixer (pdfplumber heading extraction, page-level fallback) exists and is registered in the vendored worker — remediate_pdf.py just never invokes it. The cheapest capability upgrade on the board."],
+      ev:["api/remediate_pdf.py (stages 1–2)","worker-python/remediation/fixers/pdf/bookmarks_fixer.py (built, unwired)","worker-python/remediation/fixer_registry.py"]}}},
+
+{sc:"2.4.3",name:"Focus Order",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:(function(){const common={
+   b:["Focus order is an interaction property; the only implemented check is HTML positive-tabindex (with its reset-to-0 fixer).","For slides, shape tab order — the nearest document analogue — is already detected AND remediated under 1.3.2. Cite the adjacency; don't double-claim it here."],
+   ev:["api/remediate.py:_fix_focus_order (HTML only)","see 1.3.2 PPTX for the adjacent coverage"]};
+   return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
+ re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+
+{sc:"2.4.4",name:"Link Purpose (In Context)",lvl:"A",flag:false,a:{docx:"Q",xlsx:"H",pptx:"Q",pdf:"H"},r:{docx:"AI",xlsx:"N",pptx:"AI",pdf:"N"},
+ ae:{
+  docx:{b:["Deterministic FAILURE detection: every w:hyperlink's display text is tested against a generic-phrase deny-list ('click here', 'read more', 'more', 'link'…) plus a bare-URL pattern.","The harm story is concrete: screen-reader users skim a links list; ten 'click here's are indistinguishable — the destination is only knowable by leaving the list.","Why Guided, not Certified: a PASS can't certify purpose — descriptive-sounding text that lies about its destination passes, because the rule never fetches the target (declared). Semantic criteria cap at Guided."],
+      c:["Short-but-clear texts ('map') can false-positive against the deny-list (declared)."],
+      ev:["engine/office-analysers/.../Docx/Rules/LinkPurposeRule.cs","docs/rules/DOCX-LINK-001.md"]},
+  xlsx:{b:["No link rule for spreadsheets — cell hyperlinks exist but nothing inspects them. Unclaimed, honestly."],ev:["—"]},
+  pptx:{b:["Same deny-list + bare-URL test on a:hlinkClick runs; the spec notes slide wording is even more editorially sensitive, reinforcing the HITL posture."],
+      c:["Deliberately terse CTA text ('Go') can false-positive; shape-level links whose 'text' is alt text are out of scope (declared)."],
+      ev:["engine/office-analysers/.../Pptx/Rules/LinkPurposeRule.cs"]},
+  pdf:{b:["No PDF link-annotation rule. Unclaimed."],ev:["—"]}},
+ re:{
+  docx:{b:["The AI lane is real and wired end-to-end for DRAFTING: ai.suggest_fix (2.4.4 prompt: 'descriptive link text stating the destination or purpose without surrounding context') → exposed via routes/ai.py → consumed by the reviewer queue (Remediate.jsx draftAi → approve/edit).","Catalog fix_mode 'ai-assisted' matches code — one of the rows where all layers agree.","State the boundary before anyone probes it: applying the approved wording back into the OOXML is manual today — there is no LinkPurpose fixer in the live remediator (the partner's is HUMAN_REQUIRED and undeployed anyway). Draft-assisted, human-applied."],
+      x:"“So the AI just writes it for you?” — No: the model drafts, a human approves or edits, and a human applies. Three checkpoints, which is the appropriate posture for editorially-sensitive wording.",
+      ev:["api/ai.py:suggest_fix (_SUGGESTABLE '2.4.4')","api/routes/ai.py","frontend/src/Remediate.jsx (draftAi)"]},
+  xlsx:{b:["None."],ev:["—"]},
+  pptx:{b:["Same draft → approve → manual-apply lane as docx."],ev:["api/ai.py:suggest_fix"]},
+  pdf:{b:["None."],ev:["—"]}}},
+
+{sc:"2.1.1",name:"Keyboard",lvl:"A",flag:true,a:{docx:"H",xlsx:"H",pptx:"Q",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"M",pdf:"N"},
+ ae:{
+  docx:{b:["Static document content has no keyboard surface of its own — operability lives in the viewer. No check exists, none claimed.","Why Human rather than N/A: embedded ActiveX/macro content could in principle create keyboard issues; Human keeps the door honest."],ev:["—"]},
+  xlsx:{b:["Same reasoning as docx; workbook macros/controls are the theoretical surface, unchecked today."],ev:["—"]},
+  pptx:{b:["AnimationOrderRule scans the timing tree (p:timing) for exit effects and content resequencing after narration starts — a narrow, heuristic slice of operability. The catalog itself maps PPTX-ANIM-001 to 2.1.1.","Heuristics route to review → Guided: whether an exit animation destroys meaning or is cosmetic 'depends entirely on the content' (spec)."],
+      c:["Motion-only emphasis effects, slide transitions, and occlusion aren't computed (declared)."],
+      ev:["engine/office-analysers/.../Pptx/Rules/AnimationOrderRule.cs","docs/rules/PPTX-ANIM-001.md"]},
+  pdf:{b:["Embedded JavaScript and interactive form fields can create keyboard issues; nothing inspects them. Unclaimed."],ev:["—"]}},
+ re:{
+  docx:{b:["None."],ev:["—"]},
+  xlsx:{b:["None."],ev:["—"]},
+  pptx:{b:["Manual, not None (the poster's cell): the finding ships with specific, actionable registry guidance — change animation triggers from After/With Previous to On Click so users control pacing.","This one is definitional, not factual: under the stated tiers (detector + concrete guidance = Manual) the cell upgrades; if Deva prefers 'guidance ≠ remediation', downgrade it — but write the definition down either way."],
+      ev:["RuleMetadataRegistry.cs (PptxRuleIds.AnimationOrder)"]},
+  pdf:{b:["None."],ev:["—"]}}},
+
+{sc:"2.1.2",name:"No Keyboard Trap",lvl:"A",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"H"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"N"},
+ ae:{
+  docx:{b:["Static OOXML content cannot capture and hold focus — a trap requires executable interaction, which lives in the viewer. N/A by content model."],ev:["—"]},
+  xlsx:{b:["Same — N/A by content model."],ev:["—"]},
+  pptx:{b:["Same — N/A by content model."],ev:["—"]},
+  pdf:{b:["The exception that proves the rule: PDF CAN embed JavaScript and form logic that traps focus. Nothing checks it → Human, honestly."],ev:["—"]}},
+ re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
+
+{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+ ae:{
+  docx:{b:["This SC targets UI components; in documents it bites on form controls. What exists nearby: docx content-control fields (checkbox, date, dropdown…) ARE checked for labels — but under 3.3.2, not 4.1.2 (DOCX_FORM_FIELD_NO_LABEL).","Watch the demo-catalog trap: wcagCatalog.js marks 4.1.2 'Shipped (demo)' — that's HTML axe coverage for web pages. Quoting it for documents is exactly the layer-mixing this brief exists to stop."],
+      ev:["api/office_structure.py (3.3.2 form-field check — adjacent)","frontend/src/wcagCatalog.js (HTML-only 'Shipped' marker)"]},
+  xlsx:{b:["No check; form controls in workbooks are unexamined."],ev:["—"]},
+  pptx:{b:["No check."],ev:["—"]},
+  pdf:{b:["PDF AcroForm fields are the real 4.1.2 surface in documents (name/role/value in the tag tree) — unchecked today.","If Deva wants movement on this row, THIS is the concrete build: a deterministic AcroForm field check. Well-defined, unbuilt."],ev:["—"]}},
+ re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()}
+];
+
+const FM=["docx","xlsx","pptx","pdf"];
+const tb=document.querySelector("#tbl tbody");
+for(const row of ROWS){
+  const tr=document.createElement("tr");
+  if(row.flag)tr.className="flagged";
+  let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
+  for(const f of FM){const v=row.a[f];h+=`<td class="cell ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a">${SHORT_A[v]}</td>`;}
+  for(const f of FM){const v=row.r[f];h+=`<td class="cell ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r">${SHORT_R[v]}</td>`;}
+  tr.innerHTML=h;tb.appendChild(tr);
+}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+tb.addEventListener("click",(e)=>{
+  const td=e.target.closest("td.cell");if(!td)return;
+  const row=ROWS.find(r=>r.sc===td.dataset.sc);const f=td.dataset.f;const k=td.dataset.k;
+  const tier=k==="a"?row.a[f]:row.r[f];
+  const verdict=k==="a"?AL[tier]:RL[tier];
+  const d=(k==="a"?row.ae[f]:row.re[f])||{b:[],ev:[]};
+  const cls=tier==="NA"?"NAx":tier;
+  let html=`<h2>${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()} · ${k==="a"?"Assessment":"Remediation"}</h2>
+    <div class="verdict ${cls}">${verdict}</div>
+    <h4>The argument</h4><ul>${d.b.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  if(d.c&&d.c.length)html+=`<h4>Concede up front</h4><ul class="concede">${d.c.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  if(d.x)html+=`<div class="counter"><b>Counterargument it survives:</b> ${esc(d.x)}</div>`;
+  if(d.cat)html+=`<div class="catalog"><b>Catalog / drift note:</b> ${esc(d.cat)}</div>`;
+  html+=`<div class="ev"><b>Evidence</b>${(d.ev||[]).map(x=>`<code>${esc(x)}</code>`).join("")}</div>`;
+  if(row.flag)html+=`<div class="disc"><b>▲ Corrected row</b> — this row differs from the July-14 infographic; see the corrections list below the table.</div>`;
+  document.getElementById("panel-body").innerHTML=html;
+  document.getElementById("panel").classList.add("open");
+});
+</script>
+</body>
+</html>
