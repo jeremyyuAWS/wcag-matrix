@@ -31,10 +31,15 @@
   .devamark.augment{color:#6a3fb5}
   .devamark.disagree{color:#b3261e}
   .legend .devamark{margin-left:0;margin-right:2px}
-  td.cell{padding:0;font-weight:700}
-  /* border (not box-shadow) — box-shadow on <td> is unreliable across browsers under border-collapse:collapse */
-  td.cell.deva-disagree{border:2px solid #b3261e;background:#fdecea}
-  td.cell.deva-augment{border:2px solid #6a3fb5;background:#f3eefb}
+  td.cell{padding:0;font-weight:700;position:relative}
+  /* Corner flag, not a full border+tint — same info, far less visual weight across ~40% of assess cells.
+     A real border (not box-shadow) is used for the triangle itself, since box-shadow on <td> is unreliable
+     across browsers under border-collapse:collapse (tried first; silently failed to render live). */
+  td.cell.deva-disagree::after,td.cell.deva-augment::after,.swatch.deva-disagree::after,.swatch.deva-augment::after{
+    content:"";position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 12px 12px 0;pointer-events:none}
+  td.cell.deva-disagree::after,.swatch.deva-disagree::after{border-color:transparent #b3261e transparent transparent}
+  td.cell.deva-augment::after,.swatch.deva-augment::after{border-color:transparent #6a3fb5 transparent transparent}
+  .swatch{display:inline-block;position:relative;padding:3px 7px;border-radius:4px;font-weight:700;font-size:12px;color:var(--blue);margin-right:2px;vertical-align:middle;background:#f6f7fa;border:1px solid var(--line)}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
   .cellbtn:focus-visible{outline:3px solid #0b57d0;outline-offset:-2px;background:#eaf1fd}
@@ -120,8 +125,8 @@
     <span><span class="dot" style="background:var(--orange)"></span>Human judgment / Re-authoring (ceiling)</span>
     <span><span class="dot" style="background:var(--gray)"></span>N/A (rule can't be broken in this format)</span>
     <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
-    <span><b class="devamark augment">†</b> our conclusion augments Deva's checklist (agree, with nuance)</span>
-    <span><b class="devamark disagree">‡</b> our conclusion disagrees with Deva's checklist (documents vs. web, or a real correction)</span>
+    <span><span class="swatch deva-augment">Guided <b class="devamark augment">†</b></span> our conclusion augments Deva's checklist (agree, with nuance)</span>
+    <span><span class="swatch deva-disagree">Guided <b class="devamark disagree">‡</b></span> our conclusion disagrees with Deva's checklist (documents vs. web, or a real correction)</span>
   </div>
 
   <table id="tbl">
