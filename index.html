@@ -27,8 +27,10 @@
   td.sc{font-weight:700;text-align:left;white-space:nowrap}
   td.name{text-align:left;min-width:170px}
   tr.flagged td.name{color:var(--red);font-weight:700}
-  td.cell{cursor:pointer;font-weight:700}
-  td.cell:hover{outline:2px solid var(--navy);outline-offset:-2px}
+  td.cell{padding:0;font-weight:700}
+  .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
+  .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
+  .cellbtn:focus-visible{outline:3px solid #0b57d0;outline-offset:-2px;background:#eaf1fd}
   tr:nth-child(even) td{background:#fafbfd}
   .C{color:var(--green)} .Q{color:var(--blue)} .H{color:var(--orange)} .NAx{color:var(--gray)}
   .A,.AC,.AP{color:var(--green)} .AI{color:var(--purple)} .M{color:var(--orange)} .N{color:var(--red)}
@@ -69,6 +71,16 @@
   #panel details.tech{margin:14px 0 0;border:1px solid var(--line);border-radius:8px;padding:2px 11px 10px}
   #panel details.tech summary{cursor:pointer;padding:9px 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
   #panel details.tech .sub{margin:8px 0 0;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  #panel .crumb{font-size:11px;color:var(--muted);margin:2px 0 6px}
+  #panel .quote{font-size:12.5px;font-style:italic;color:#3c4043;border-left:3px solid var(--line);padding:4px 0 4px 10px;margin:8px 0 0}
+  #panel .quote cite{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:2px}
+  #panel .xlink{color:#0b57d0;text-decoration:underline;text-decoration-style:dotted;cursor:pointer;font-weight:600}
+  #panel .xlink:focus-visible{outline:2px solid #0b57d0;outline-offset:1px}
+  #panel details.faqitem{margin:8px 0 0;border:1px solid var(--line);border-radius:6px;padding:0 10px}
+  #panel details.faqitem summary{cursor:pointer;padding:8px 0;font-size:13px;font-weight:600;color:var(--navy)}
+  #panel details.faqitem p{margin:0 0 9px;font-size:12.5px;line-height:1.5}
+  #panel details.faqitem summary:focus-visible{outline:2px solid #0b57d0}
+  #panel button:focus-visible, #panel a:focus-visible{outline:2px solid #0b57d0;outline-offset:1px}
   .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
   .corr h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
   .corr li{margin-bottom:5px;font-size:13px}
@@ -110,7 +122,7 @@
   <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
 </div>
 
-<div id="panel"><button onclick="document.getElementById('panel').classList.remove('open')">✕ close</button><div id="panel-body"></div></div>
+<div id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title" tabindex="-1"><button id="panel-close">✕ close</button><div id="panel-body"></div></div>
 
 <script>
 const AL={C:"Certified",Q:"Guided review",H:"Human assessment",NA:"Not applicable"};
@@ -423,6 +435,63 @@ const ROWS=[
 // Canonical W3C WCAG 2.2 anchors (2.2 contains every 2.1 SC at the same anchors; 4.1.1 Parsing — removed in 2.2 — is not in this matrix)
 const W3SLUG={"1.1.1":"non-text-content","1.3.1":"info-and-relationships","1.3.2":"meaningful-sequence","1.3.3":"sensory-characteristics","2.4.6":"headings-and-labels","3.1.1":"language-of-page","3.1.2":"language-of-parts","1.4.4":"resize-text","1.4.5":"images-of-text","1.4.10":"reflow","1.4.12":"text-spacing","1.4.1":"use-of-color","1.4.3":"contrast-minimum","1.4.11":"non-text-contrast","2.4.2":"page-titled","2.4.3":"focus-order","2.4.4":"link-purpose-in-context","2.1.1":"keyboard","2.1.2":"no-keyboard-trap","4.1.2":"name-role-value"};
 
+// WCAG 2.2 Principle → Guideline breadcrumb, for orientation (factual structure, not creative content).
+const PRINCIPLE={"1.1.1":"1 Perceivable → 1.1 Text Alternatives",
+"1.3.1":"1 Perceivable → 1.3 Adaptable","1.3.2":"1 Perceivable → 1.3 Adaptable","1.3.3":"1 Perceivable → 1.3 Adaptable",
+"1.4.4":"1 Perceivable → 1.4 Distinguishable","1.4.5":"1 Perceivable → 1.4 Distinguishable","1.4.10":"1 Perceivable → 1.4 Distinguishable","1.4.12":"1 Perceivable → 1.4 Distinguishable","1.4.1":"1 Perceivable → 1.4 Distinguishable","1.4.3":"1 Perceivable → 1.4 Distinguishable","1.4.11":"1 Perceivable → 1.4 Distinguishable",
+"2.4.6":"2 Operable → 2.4 Navigable","2.4.2":"2 Operable → 2.4 Navigable","2.4.3":"2 Operable → 2.4 Navigable","2.4.4":"2 Operable → 2.4 Navigable",
+"2.1.1":"2 Operable → 2.1 Keyboard Accessible","2.1.2":"2 Operable → 2.1 Keyboard Accessible",
+"3.1.1":"3 Understandable → 3.1 Readable","3.1.2":"3 Understandable → 3.1 Readable",
+"4.1.2":"4 Robust → 4.1 Compatible"};
+
+// Short (<15-word) excerpts of the SC's own normative language, always attributed + linked to the full canonical text.
+// Not a substitute for the spec — trimmed fragments to bridge the plain-language rule to the standard's own wording.
+const QUOTE={
+"1.1.1":"“non-text content that is presented to the user has a text alternative…”",
+"1.3.1":"“information, structure, and relationships…can be programmatically determined…”",
+"1.3.2":"“when the sequence…affects meaning, a correct reading sequence can be programmatically determined”",
+"1.3.3":"“instructions…do not rely solely on sensory characteristics of components”",
+"2.4.6":"“headings and labels describe topic or purpose”",
+"3.1.1":"“the default human language…can be programmatically determined”",
+"3.1.2":"“the human language of each passage…can be programmatically determined”",
+"1.4.4":"“text can be resized without assistive technology up to 200 percent…”",
+"1.4.5":"“text is used to convey information rather than images of text”",
+"1.4.10":"“content can be presented without…requiring scrolling in two dimensions”",
+"1.4.12":"“no loss of content or functionality occurs” [when text spacing is adjusted]",
+"1.4.1":"“color is not used as the only visual means of conveying information…”",
+"1.4.3":"“visual presentation of text…has a contrast ratio of at least 4.5:1”",
+"1.4.11":"“visual presentation of…graphical objects…have a contrast ratio of at least 3:1”",
+"2.4.2":"“web pages have titles that describe topic or purpose”",
+"2.4.3":"“components receive focus in an order that preserves meaning…”",
+"2.4.4":"“the purpose of each link can be determined from the link text alone…”",
+"2.1.1":"“all functionality…is operable through a keyboard interface…”",
+"2.1.2":"“if keyboard focus can be moved…away…using only a keyboard interface”",
+"4.1.2":"“name and role can be programmatically determined…” [for UI components]"};
+
+// One authored, code-grounded sentence per SC: the cheapest concrete build that would close the gap
+// between "ACP today" (§5) and the rule-inherent ceiling (§§2-4) — drawn from ROWS.ae/re content already on file.
+const UPGRADE={
+"1.1.1":"Already at ceiling where a faithful source or the vision model is reachable — the remaining gap is coverage (budget/timeout limits), not new engineering.",
+"1.3.1":"PPTX: the header-row fixer exists but lives in the gitignored partner tree, not the deployed image — porting that one function is the cheapest win on this list. PDF stays re-authoring regardless of investment.",
+"1.3.2":"XLSX: no safe mechanical path exists for unmerging by design. PPTX/PDF are already at their assess ceiling (heuristic detectors shipped) — nothing cheap left to build there.",
+"1.3.3":"No draft-and-approve rewrite lane exists yet for sensory-instruction fixes — wiring the same AI-draft lane already used for 2.4.4 link text would close the fix gap.",
+"2.4.6":"XLSX and PDF have no detector at all — building the sheet-label / bookmark-descriptiveness heuristic is the prerequisite before any fix work can start.",
+"3.1.1":"Already at ceiling in all four formats — nothing left to build.",
+"3.1.2":"DOCX's language-of-parts rule reports under the wrong SC key (SC_3_1_1) — remapping it is a config change, not new code.",
+"1.4.4":"N/A — no upgrade path exists at the file level.",
+"1.4.5":"Already at assess ceiling (OCR shipped); no safe mechanical or generated fix exists even in principle — stays reviewer work by design.",
+"1.4.10":"PDF is gated behind the same tagging investment as 1.3.1 — no reflow-specific work exists independent of that. DOCX/XLSX/PPTX are N/A.",
+"1.4.12":"N/A — no upgrade path exists at the file level.",
+"1.4.1":"Grayscale render-and-diff is the concrete next build — it reuses the same rendering pipeline the PDF contrast sampler already has.",
+"1.4.3":"XLSX: swap the luma-difference heuristic for the true ratio formula — the resolution path (cellXfs → theme) already exists for the fixer, so the math isn't the blocker. PDF stays re-authoring.",
+"1.4.11":"Needs a render-and-measure pipeline for shape/icon colors — the closest existing building block is the PDF contrast content-stream sampler, not yet extended past text.",
+"2.4.2":"PDF: PdfBookmarksFixer already exists, built and registered, just not wired into the live remediation path — the cheapest concrete win on this entire list.",
+"2.4.3":"PDF: an AcroForm /Tabs detector + fixer is well-defined and unbuilt — a clean, self-contained new rule.",
+"2.4.4":"XLSX/PDF: the deny-list check is format-agnostic text matching — porting it is cheap. Applying an AI-approved draft back into the file (not just drafting it) is the remaining gap everywhere.",
+"2.1.1":"PPTX is already at ceiling (detector + guided fix shipped). PDF script-behavior testing has no foreseeable bounded technique — this one stays human indefinitely.",
+"2.1.2":"Same as 2.1.1 PDF — no foreseeable bounded technique for judging arbitrary script behavior.",
+"4.1.2":"PDF: an AcroForm /T·/TU check is well-defined and unbuilt, the same pattern as the DOCX content-control check that already ships."};
+
 // Deva's conformance-checklist verdicts (jeremy.xlsx, verbatim) vs. this matrix's conclusion.
 // v = her Validation Approach · t = her How-to-Test note · k = agree|augment|disagree · ours/note = our conclusion + reason.
 const DEVA={
@@ -601,8 +670,8 @@ for(const row of ROWS){
   const tr=document.createElement("tr");
   if(row.flag)tr.className="flagged";
   let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
-  for(const f of FM){const v=row.a[f];h+=`<td class="cell ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a">${SHORT_A[v]}</td>`;}
-  for(const f of FM){const v=row.r[f];h+=`<td class="cell ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r">${SHORT_R[v]}</td>`;}
+  for(const f of FM){const v=row.a[f];h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}. Open details.">${SHORT_A[v]}</button></td>`;}
+  for(const f of FM){const v=row.r[f];h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
 }
 
@@ -640,34 +709,61 @@ function acpStatusLine(row,f){
   const rStr=rt==="NA"?"N/A":RL[rt];
   return `Assessment: <b>${esc(aStr)}</b> · Remediation: <b>${esc(rStr)}</b>`;
 }
+// Technical notes: raw mechanism + evidence only. Concessions/counterarguments/drift now surface
+// in the FAQ (buildFAQ) instead, so they're not duplicated across two collapsed sections.
 function techNotes(row,f){
   const ad=row.ae[f]||{b:[],ev:[]}, rd=row.re[f]||{b:[],ev:[]};
-  let html="";
-  const block=(label,d)=>{
-    let h=`<div class="sub">${label}</div><ul>${(d.b||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-    if(d.c&&d.c.length)h+=`<h4 style="margin-top:8px">Concede up front</h4><ul class="concede">${d.c.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-    if(d.x)h+=`<div class="counter"><b>Counterargument it survives:</b> ${esc(d.x)}</div>`;
-    if(d.cat)h+=`<div class="catalog"><b>Catalog / drift note:</b> ${esc(d.cat)}</div>`;
-    h+=`<div class="ev"><b>Evidence</b>${(d.ev||[]).map(x=>`<code>${esc(x)}</code>`).join("")}</div>`;
-    return h;
-  };
-  html+=block("Assessment mechanism (ACP today)",ad);
-  html+=block("Remediation mechanism (ACP today)",rd);
-  return html;
+  const block=(label,d)=>`<div class="sub">${label}</div><ul>${(d.b||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <div class="ev"><b>Evidence</b>${(d.ev||[]).map(x=>`<code>${esc(x)}</code>`).join("")}</div>`;
+  return block("Assessment mechanism (ACP today)",ad)+block("Remediation mechanism (ACP today)",rd);
 }
-tb.addEventListener("click",(e)=>{
-  const td=e.target.closest("td.cell");if(!td)return;
-  const row=ROWS.find(r=>r.sc===td.dataset.sc);const f=td.dataset.f;
+// FAQ: mostly synthesized from data already captured elsewhere on the row (no new authoring per format),
+// plus one hand-authored "upgrade path" note per SC (UPGRADE, SC-level). Order = most-asked first.
+function buildFAQ(row,f,rub){
+  const ad=row.ae[f]||{}, rd=row.re[f]||{};
+  const faqs=[];
+  if(rub&&rub.aClass!=="NAx"&&ad.b&&ad.b[0])
+    faqs.push({q:"What exactly does ACP check today for this rule and format?",a:ad.b[0]});
+  if(ad.c&&ad.c.length)
+    faqs.push({q:"What's a known blind spot reviewers should expect?",a:ad.c.join(" ")});
+  if(rd.c&&rd.c.length)
+    faqs.push({q:"What's a known limit of the fix, if one exists?",a:rd.c.join(" ")});
+  const PASS_MEANING={DET:"Yes, for the exact property this check reads — see §3 above for what's explicitly excluded from that claim.",
+    MA:"No. A clean result means the machine-assisted check found no red flags — the semantic remainder still needs a human sign-off before the file can be called compliant on this point.",
+    HUM:"No machine verdict exists yet for this rule and format — an unflagged file means unassessed, not passed.",
+    NAx:"N/A cells are excluded from the score entirely — they neither pass nor fail."};
+  if(rub)faqs.push({q:"Does a clean result here mean the file fully satisfies this WCAG criterion?",a:PASS_MEANING[rub.aClass]});
+  const counter=rd.x||ad.x;
+  if(counter)faqs.push({q:"What's the strongest objection to this classification, and how does it hold up?",a:counter});
+  const drift=ad.cat||rd.cat;
+  if(drift)faqs.push({q:"Is there a catalog/code drift on this rule?",a:drift});
+  if(UPGRADE[row.sc])faqs.push({q:"What would it take to move closer to the ceiling?",a:UPGRADE[row.sc]});
+  return faqs;
+}
+// Turns bare SC-code mentions (e.g. "1.3.2") inside already-escaped text into clickable cross-links
+// to that SC's drawer (same format where it has data). Regex runs on esc()'d text — safe, no new user input.
+function linkify(escapedText,currentSc,f){
+  return escapedText.replace(/\b(\d\.\d{1,2}\.\d{1,2})\b/g,(m)=>{
+    if(m===currentSc||!RUBRIC[m])return m;
+    return `<span class="xlink" role="button" tabindex="0" data-sc="${m}" data-f="${f}">${m}</span>`;
+  });
+}
+let lastTrigger=null;
+function renderDrawer(sc,f,trigger){
+  const row=ROWS.find(r=>r.sc===sc);if(!row)return;
+  if(!row.a[f]&&!row.r[f]){f="docx";} // cross-link landed on a format this SC has no columns for — fall back
   const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
-  let html=`<h2>${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>`;
-  if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a></div>`;
+  let html=`<h2 id="panel-title">${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>`;
+  if(PRINCIPLE[row.sc])html+=`<div class="crumb">${esc(PRINCIPLE[row.sc])} → ${row.sc}</div>`;
+  if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a> · <a href="https://www.w3.org/WAI/WCAG22/quickref/#${slug}" target="_blank" rel="noopener">Techniques</a></div>`;
+  if(QUOTE[row.sc])html+=`<div class="quote">${QUOTE[row.sc]}<cite>— excerpt, WCAG 2.2 Success Criterion ${row.sc} (full text via the canonical link above)</cite></div>`;
 
-  html+=`<h4>1 · The rule, in plain words</h4><p class="plain">${esc((RUBRIC[row.sc]&&RUBRIC[row.sc].plain)||"")}</p>`;
+  html+=`<h4>1 · The rule, in plain words</h4><p class="plain">${linkify(esc((RUBRIC[row.sc]&&RUBRIC[row.sc].plain)||""),row.sc,f)}</p>`;
 
   if(rub){
     html+=`<h4>2 · Can this be assessed automatically?</h4><div class="badge ${rub.aClass}">${RCLASS[rub.aClass]}</div>
-      <h4 style="margin-top:12px">3 · Why it lands there</h4><p class="why">${esc(rub.aWhy)}</p>`;
+      <h4 style="margin-top:12px">3 · Why it lands there</h4><p class="why">${linkify(esc(rub.aWhy),row.sc,f)}</p>`;
   }
 
   if(DEVA[row.sc]){const dv=DEVA[row.sc];
@@ -677,16 +773,59 @@ tb.addEventListener("click",(e)=>{
 
   if(rub){
     html+=`<h4>4 · How can it be fixed, in principle?</h4><div class="badge ${rub.fClass}">${FCLASS[rub.fClass]}</div>
-      <p class="why">${esc(rub.fWhy)}</p>`;
+      <p class="why">${linkify(esc(rub.fWhy),row.sc,f)}</p>`;
   }
 
   html+=`<h4>5 · Where ACP is today</h4><div class="status">${acpStatusLine(row,f)}</div>`;
 
-  html+=`<details class="tech"><summary>6 · Technical notes</summary>${techNotes(row,f)}</details>`;
+  const faqs=buildFAQ(row,f,rub);
+  if(faqs.length){
+    html+=`<h4>6 · FAQ</h4>${faqs.map(x=>`<details class="faqitem"><summary>${esc(x.q)}</summary><p>${linkify(esc(x.a),row.sc,f)}</p></details>`).join("")}`;
+  }
+
+  html+=`<details class="tech"><summary>7 · Technical notes</summary>${techNotes(row,f)}</details>`;
 
   if(row.flag)html+=`<div class="disc"><b>▲ Corrected row</b> — this row differs from the July-14 infographic; see the corrections list below the table.</div>`;
   document.getElementById("panel-body").innerHTML=html;
-  document.getElementById("panel").classList.add("open");
+  const panel=document.getElementById("panel");
+  panel.classList.add("open");
+  lastTrigger=trigger||lastTrigger;
+  panel.focus();
+}
+function closePanel(){
+  document.getElementById("panel").classList.remove("open");
+  if(lastTrigger&&document.body.contains(lastTrigger))lastTrigger.focus();
+}
+document.getElementById("panel-close").addEventListener("click",closePanel);
+
+tb.addEventListener("click",(e)=>{
+  const btn=e.target.closest("button.cellbtn");if(!btn)return;
+  renderDrawer(btn.dataset.sc,btn.dataset.f,btn);
+});
+
+const panelBody=document.getElementById("panel-body");
+panelBody.addEventListener("click",(e)=>{
+  const xl=e.target.closest(".xlink");if(!xl)return;
+  renderDrawer(xl.dataset.sc,xl.dataset.f,lastTrigger);
+});
+panelBody.addEventListener("keydown",(e)=>{
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  const xl=e.target.closest(".xlink");if(!xl)return;
+  e.preventDefault();
+  renderDrawer(xl.dataset.sc,xl.dataset.f,lastTrigger);
+});
+
+document.addEventListener("keydown",(e)=>{
+  const panel=document.getElementById("panel");
+  if(!panel.classList.contains("open"))return;
+  if(e.key==="Escape"){closePanel();return;}
+  if(e.key!=="Tab")return;
+  // simple focus trap: cycle within the panel's focusable elements
+  const focusable=panel.querySelectorAll('button, a[href], [tabindex="0"]');
+  if(!focusable.length)return;
+  const first=focusable[0], last=focusable[focusable.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
 });
 </script>
 </body>
