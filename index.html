@@ -41,6 +41,15 @@
   #panel ul{margin:4px 0 0;padding-left:18px}
   #panel li{margin-bottom:7px;font-size:13px}
   #panel ul.concede li{color:#7a4a00}
+  #panel .w3{margin:2px 0 10px;font-size:12px}
+  #panel .w3 a{color:#0b57d0;text-decoration:none}
+  #panel .w3 a:hover{text-decoration:underline}
+  #panel .deva{background:#f2f6ff;border-left:3px solid #0b57d0;padding:10px 12px;border-radius:6px;font-size:13px;margin:6px 0 12px}
+  #panel .deva>div+div{margin-top:6px}
+  #panel .deva .dv{font-weight:700}
+  #panel .deva .dv.agree{color:#0a7a3d}
+  #panel .deva .dv.augment{color:#6a3fb5}
+  #panel .deva .dv.disagree{color:#b3261e}
   #panel .counter{background:#f0f4fb;border:1px solid #d5e0f2;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px}
   #panel .counter b{color:var(--navy)}
   #panel .ev{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px}
@@ -409,6 +418,33 @@ const ROWS=[
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()}
 ];
 
+// Canonical W3C WCAG 2.2 anchors (2.2 contains every 2.1 SC at the same anchors; 4.1.1 Parsing — removed in 2.2 — is not in this matrix)
+const W3SLUG={"1.1.1":"non-text-content","1.3.1":"info-and-relationships","1.3.2":"meaningful-sequence","1.3.3":"sensory-characteristics","2.4.6":"headings-and-labels","3.1.1":"language-of-page","3.1.2":"language-of-parts","1.4.4":"resize-text","1.4.5":"images-of-text","1.4.10":"reflow","1.4.12":"text-spacing","1.4.1":"use-of-color","1.4.3":"contrast-minimum","1.4.11":"non-text-contrast","2.4.2":"page-titled","2.4.3":"focus-order","2.4.4":"link-purpose-in-context","2.1.1":"keyboard","2.1.2":"no-keyboard-trap","4.1.2":"name-role-value"};
+
+// Deva's conformance-checklist verdicts (jeremy.xlsx, verbatim) vs. this matrix's conclusion.
+// v = her Validation Approach · t = her How-to-Test note · k = agree|augment|disagree · ours/note = our conclusion + reason.
+const DEVA={
+"1.1.1":{v:"Automated + Agentic",t:"Check alt text; verify with a screen reader (NVDA/VoiceOver); confirm decorative images use null alt / aria-hidden.",k:"agree",ours:"Agree",note:"alt PRESENCE is deterministic in the file; alt QUALITY is the agentic half — exactly her split."},
+"1.3.1":{v:"Automated + Agentic",t:"Inspect semantic markup/ARIA; screen-reader test; automated scan (axe).",k:"agree",ours:"Agree",note:"document translation: header rows / heading skips / PDF tags deterministic; correctness of relationships is the agentic remainder."},
+"1.3.2":{v:"Human / AT",t:"Disable CSS or use a screen reader to verify order.",k:"disagree",ours:"Disagree (documents)",note:"right for web, where order lives in the rendered DOM; in PPTX/PDF/XLSX the reading order is written into the file, so machines detect mismatches and a person confirms — documents beat her class here."},
+"1.3.3":{v:"Automated + Agentic",t:"Manual review of instructional text.",k:"augment",ours:"Agree + augment",note:"detectable without an LLM — a deterministic pattern check (shipped) finds 'click the round button'-style phrasing reproducibly; human confirms."},
+"2.4.6":{v:"Automated + Agentic",t:"Review heading/label text.",k:"agree",ours:"Agree",note:"structure (skips, empties) deterministic; DESCRIPTIVENESS agentic — the canonical split rule."},
+"3.1.1":{v:"Automated",t:"Inspect <html lang>.",k:"agree",ours:"Agree",note:"deterministic in all four document formats (core properties / settings / PDF /Lang). No caveats."},
+"3.1.2":{v:"Automated",t:"Inspect lang on foreign-language content.",k:"disagree",ours:"Disagree (nuance)",note:"her test only verifies passages already marked; finding UNMARKED language changes needs ML language-ID + human confirm — her own Automated + Agentic class, not Automated."},
+"1.4.4":{v:"Automated",t:"Zoom browser to 200%; check for clipping/overlap.",k:"disagree",ours:"Disagree (documents)",note:"browser technique with no document equivalent — viewers zoom natively. N/A for files; her class stands for web."},
+"1.4.5":{v:"Automated",t:"Identify text rendered as images.",k:"augment",ours:"Augment",note:"automatable, but via OCR (ML) with thresholds — and the 'essential' exception (logos) is judgment → machine-detected + human-confirmed."},
+"1.4.10":{v:"Automated",t:"Zoom to 400% / 320px viewport; check for horizontal scroll.",k:"disagree",ours:"Disagree (documents)",note:"viewport test is web-only. Fixed-layout OOXML: N/A. PDF: tagged-structure presence is the honest machine proxy."},
+"1.4.12":{v:"Automated",t:"Apply text-spacing bookmarklet; check for clipping.",k:"disagree",ours:"Disagree (documents)",note:"bookmarklet is web-only; user spacing overrides aren't a document-author obligation. N/A for files."},
+"1.4.1":{v:"Human / AT",t:"Manual review; grayscale check.",k:"augment",ours:"Agree + augment",note:"agree today; her grayscale check is exactly the future machine assist (render-and-diff), which would lift this to machine-detected later."},
+"1.4.3":{v:"Automated",t:"Use a contrast analyzer on text/background pairs.",k:"augment",ours:"Agree + augment",note:"the ratio math is deterministic; in documents the hard part is resolving EFFECTIVE colors (themes, fills). Where colors resolve → certified; where not → review, never a silent pass."},
+"1.4.11":{v:"Automated",t:"Contrast analyzer on buttons, borders, icons, focus rings.",k:"augment",ours:"Augment",note:"on web the analyzer reads computed styles; document shapes/charts need render-and-measure (ML/vision). Her class is the ceiling — today it's human for files."},
+"2.4.2":{v:"Automated",t:"Inspect the <title> element.",k:"agree",ours:"Agree",note:"deterministic in all four formats, shipped both directions. ('Descriptive' titles are judgment — the same remainder she assigns 2.4.6.)"},
+"2.4.3":{v:"Human / AT",t:"Tab through; verify logical order.",k:"augment",ours:"Agree + augment",note:"agree for anything interactive. OOXML has no focus order (N/A); PDF FORMS expose a tab-order key (/Tabs) that is deterministically checkable — a cheap detector her web lens misses."},
+"2.4.4":{v:"Automated + Agentic",t:"Review link text ('click here' fails).",k:"agree",ours:"Agree",note:"generic-text detection deterministic (her own example); purpose-in-context agentic. Shipped as exactly that split."},
+"2.1.1":{v:"Human / AT",t:"Tab/arrow through all controls with no mouse.",k:"augment",ours:"Agree + augment",note:"behavioral where content is interactive. Static DOCX/XLSX: N/A. PPTX: one machine proxy (auto-advancing animations, shipped). PDF forms/scripts: human."},
+"2.1.2":{v:"Human / AT",t:"Tab into and out of every widget/modal.",k:"agree",ours:"Agree",note:"documents mostly N/A; PDF-with-scripts human."},
+"4.1.2":{v:"Human / AT",t:"Screen-reader test; inspect ARIA; automated scan.",k:"augment",ours:"Agree + augment",note:"agree for the full SC; the document slice — do form fields expose a name? — is deterministically checkable (DOCX content-control labels shipped; PDF AcroForm /T · /TU is the same check waiting to be written)."}};
+
 const FM=["docx","xlsx","pptx","pdf"];
 const tb=document.querySelector("#tbl tbody");
 for(const row of ROWS){
@@ -427,12 +463,18 @@ tb.addEventListener("click",(e)=>{
   const verdict=k==="a"?AL[tier]:RL[tier];
   const d=(k==="a"?row.ae[f]:row.re[f])||{b:[],ev:[]};
   const cls=tier==="NA"?"NAx":tier;
+  const slug=W3SLUG[row.sc];
   let html=`<h2>${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()} · ${k==="a"?"Assessment":"Remediation"}</h2>
-    <div class="verdict ${cls}">${verdict}</div>
-    <h4>The argument</h4><ul>${d.b.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+    <div class="verdict ${cls}">${verdict}</div>`;
+  if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a></div>`;
+  html+=`<h4>The argument</h4><ul>${d.b.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
   if(d.c&&d.c.length)html+=`<h4>Concede up front</h4><ul class="concede">${d.c.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
   if(d.x)html+=`<div class="counter"><b>Counterargument it survives:</b> ${esc(d.x)}</div>`;
   if(d.cat)html+=`<div class="catalog"><b>Catalog / drift note:</b> ${esc(d.cat)}</div>`;
+  if(k==="a"&&DEVA[row.sc]){const dv=DEVA[row.sc];
+    html+=`<h4>vs. the conformance checklist (Deva)</h4><div class="deva">
+      <div><b>Deva's checklist:</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
+      <div><b>Our conclusion:</b> <span class="dv ${dv.k}">${esc(dv.ours)}</span> — ${esc(dv.note)}</div></div>`;}
   html+=`<div class="ev"><b>Evidence</b>${(d.ev||[]).map(x=>`<code>${esc(x)}</code>`).join("")}</div>`;
   if(row.flag)html+=`<div class="disc"><b>▲ Corrected row</b> — this row differs from the July-14 infographic; see the corrections list below the table.</div>`;
   document.getElementById("panel-body").innerHTML=html;
