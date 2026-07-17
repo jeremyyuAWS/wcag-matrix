@@ -16,16 +16,16 @@ criterion actually requires; worth keeping distinct from a real gap.
 
 ## Scorecard
 
-**44 items total: 21 🟢 Full · 5 🟡 Partial · 12 🔴 Gap (in scope) · 6 ⚪ Not a WCAG SC**
+**44 items total: 23 🟢 Full · 5 🟡 Partial · 10 🔴 Gap (in scope) · 6 ⚪ Not a WCAG SC**
 
 | Format | 🟢 | 🟡 | 🔴 | ⚪ |
 |---|---|---|---|---|
 | PowerPoint (12) | 5 | 3 | 1 | 3 |
-| Word (12) | 7 | 1 | 2 | 2 |
-| PDF (12) | 6 | 0 | 6 | 0 |
-| Excel (8) | 3 | 1 | 3 | 1 |
+| Word (12) | 8 | 1 | 2 | 1 |
+| PDF (12) | 7 | 0 | 5 | 0 |
+| Excel (8) | 3 | 1 | 2 | 2 |
 
-PDF has the highest gap concentration — six of twelve checklist items map to real, unbuilt WCAG
+PDF has the highest gap concentration — five of twelve checklist items map to real, unbuilt WCAG
 work (form-field labels, tab order, link text, scanned-OCR, heading-hierarchy tagging), zero
 partial credit either way. That's a useful prioritization signal on its own.
 
@@ -114,11 +114,21 @@ separately, not fixed here — this repo doesn't touch acp's code).
 Same purpose as `deva-reconciliation.md`: the honest inventory a customer conversation can be built
 on. Two distinct signals worth separating in that conversation:
 
-1. **🔴 Gap (in scope), 12 items** — real, buildable work against ACP's own 20-criterion matrix.
-   PDF concentrates six of these; several (Excel/PDF hyperlink text, PDF tab order) are already
+1. **🔴 Gap (in scope), 10 items** — real, buildable work against ACP's own 20-criterion matrix.
+   PDF concentrates five of these; several (Excel/PDF hyperlink text, PDF tab order) are already
    flagged elsewhere in this matrix as cheap, well-defined builds — this checklist independently
    corroborates the same priority list from a completely different source (a human team's own SOP,
    not this matrix's own analysis).
 2. **⚪ Not a WCAG SC, 6 items** — genuine best practices Deva's team correctly checks manually, but
    not gaps in ACP's WCAG coverage. Worth naming explicitly so "ACP doesn't check font size" doesn't
    read as a shortcoming — no accessibility tool would, because WCAG doesn't require it.
+
+## Drawer integration
+
+The 28 🟢/🟡 matched items (23 + 5) are wired directly into the live drawer as `CHECKLIST2` in
+`index.html`, keyed `sc → format → [{criteria, how-to-text}]` since this checklist is inherently
+per-format (unlike `jeremy.xlsx`'s SC-level entries). They render in drawer §4 "Remediation" as
+"HITL today — Deva's team's own manual step" — grounding the Current/Human-assisted mechanism in
+the exact procedure her team already follows, rather than an abstract label. Deliberately excludes
+the 10 🔴 and 6 ⚪ items — showing those as "today's manual step" would wrongly imply ACP has a cell
+for them to correspond to.
