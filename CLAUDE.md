@@ -15,7 +15,8 @@ Interactive WCAG 2.1 AA assessment & remediation matrix for document formats (DO
 - `api/remediate_office.py`, `api/remediate_pdf.py`, `api/remediate.py` — implemented fixers
 - `api/store.py` — RULE_CATALOG + RULE_FORMATS (per-format applicability)
 - `docs/TODO.md` — backlog; detector gaps: 1.4.2 pptx autoplay (blocked on fixture), per-format applicability pass (1.4.1/1.3.5/2.5.3/4.1.2), 3.1.3 deliberately unbuilt
-- `jeremy.xlsx` (Deva's checklist) — customer taxonomy: Automated / Automated+Agentic / Human-AT
+- `jeremy.xlsx` (Deva's checklist #1) — customer taxonomy: Automated / Automated+Agentic / Human-AT; reconciled in `docs/deva-reconciliation.md`
+- `~/Downloads/Accessibility Checklist.pdf` (Deva's checklist #2, provided 2026-07-17, not committed anywhere — a Downloads file, not a stable repo location) — the manual per-file SOP a human review team works through today (Word/Excel/PowerPoint/PDF, 44 items, plain-English criteria + native-tool "how to check" steps, no WCAG SC numbers). Reconciled in `docs/deva-checklist-reconciliation.md`, verified item-by-item against the actual acp code (not inferred from this matrix's own prior claims) — that verification caught and corrected a real error in this matrix's own 1.1.1 technical notes (a false decorative-marker claim), see that doc's "discovery" section
 
 ## index.html data model
 All content lives in one `<script>` block:
@@ -50,7 +51,8 @@ for (const row of ROWS) { const r = RUBRIC[row.sc]; if (!r) console.error(row.sc
 - `tier-methodology.md` — ACP's shipped-status tiers (5 placement rules; exec + tech layers) — feeds drawer §5, NOT the RUBRIC ceiling
 - `drawer-content-spec.md` — earlier 8-section drawer schema (superseded by the current 6-section RUBRIC-driven drawer, kept for its worked 1.3.2 PPTX example and authoring rules)
 - `drawer-content-plain.md` — earlier plain-language rewrite; superseded by RUBRIC's §§1–4 but the plain-language voice/tone still applies
-- `deva-reconciliation.md` — per-rule agree/augment/disagree vs Deva's checklist; **this is RUBRIC's primary grounding source** for assess-ceiling reasoning (its §7 = paste-ready blocks already close to `aWhy` text)
+- `deva-reconciliation.md` — per-rule agree/augment/disagree vs Deva's checklist #1 (jeremy.xlsx); **this is RUBRIC's primary grounding source** for assess-ceiling reasoning (its §7 = paste-ready blocks already close to `aWhy` text)
+- `deva-checklist-reconciliation.md` — Deva's checklist #2 (the manual per-file SOP, `Accessibility Checklist.pdf`), 44 items across 4 formats mapped to ACP's actual capability; 12 confirmed in-scope gaps (PDF concentrates 6), 6 items that are genuine best practices but not actual WCAG success criteria (font choice, cell A1, named ranges) — kept distinct from real gaps on purpose
 
 ## Mobile / responsive
 - `#panel` goes full-width (`width:100%`, no left border) below 640px; `.cvp` (the current-vs-potential cards in §4) stacks vertically below the same breakpoint — both via one `@media (max-width:640px)` block. `#panel{overflow-x:hidden}` is a defensive second rule (deliberately separate, later in source order, so it overrides only the `overflow-x` half of the base rule's `overflow:auto` shorthand) — keep it if you ever add wide content (tables, code blocks) to the drawer.
