@@ -113,6 +113,20 @@
   #panel .hitl-item b{color:#0b3d91}
   #panel .openq{background:#fdf3e7;border:1px solid #f0d5ae;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px;color:#6a4416}
   #panel .openq-title{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#b1651b;font-weight:700;margin-bottom:4px}
+  #panel .aspec{border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin:6px 0 0}
+  #panel .aspec-title{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+  #panel .aspec-item{margin-top:8px}
+  #panel .aspec-item:first-of-type{margin-top:0}
+  #panel .aspec-item .c{font-weight:700;color:var(--navy);font-size:12.5px}
+  #panel .aspec-item .s{font-size:12px;color:var(--ink);margin-top:2px;font-family:Consolas,Menlo,monospace;line-height:1.5}
+  #panel .avbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.02em;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle}
+  #panel .avbadge.MATCH{background:#e6f4ea;color:#0d652d}
+  #panel .avbadge.PARTIAL{background:#e8f0fe;color:#174ea6}
+  #panel .avbadge.GAP{background:#fdecea;color:#a50e0e}
+  #panel .avbadge.DIFF{background:#fce8e6;color:#c5221f}
+  #panel .avbadge.NONE,#panel .avbadge.UNVER{background:#f1f3f4;color:#5f6368}
+  #panel .aspec-note{font-size:11.5px;color:var(--muted);margin-top:3px}
+  #panel .aspec-vs{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:10px 0 4px}
   .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
   .corr h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
   .corr li{margin-bottom:5px;font-size:13px}
@@ -574,6 +588,53 @@ const OPENQ={
 "1.3.2":{pptx:"Should this fix cap at Human-assisted? The reorder algorithm is deterministic, but Deva’s analysis scores it Structural rebuild — “highest-risk fix in the deck; reordering changes z-order and can alter appearance.” Not resolved — a risk-philosophy decision, not a code bug."},
 "2.1.1":{pptx:"Shares the 1.3.2/pptx reordering mechanism and risk. Deva’s analysis also scores the assessment side stricter (Det+human, not machine-assisted) — “operability is behavioral.” Not resolved here."}};
 
+// ASSESS_SPEC = Deva's Assessment grid (V3, column D) — per her request, THE PRIMARY reference for
+// "how should this be assessed," shown first in §3, ahead of this matrix's own aWhy prose. Every
+// entry also carries the verdict from directly auditing ACP's actual detector code against her
+// spec (docs/deva-assessment-grid-comparison.md, 38 items, full detail + file:line citations).
+// v: MATCH (green) | PARTIAL (blue) | GAP (orange) | DIFF (red, different mechanism entirely) |
+// NONE (gray, no detector exists) | UNVER (gray, not independently re-verified this pass).
+const AV_LABEL={MATCH:"Match",PARTIAL:"Partial",GAP:"Gap",DIFF:"Different mechanism",NONE:"No detector",UNVER:"Not re-verified"};
+const ASSESS_SPEC={
+"1.1.1":{docx:[{c:"Descriptive Alt Text",s:"Require wp:docPr/@descr non-empty (fall back to inner pic:cNvPr/@descr). Do NOT accept @title — legacy field, AT doesn't read it. Check adec:decorative in docPr/extLst to separate decorative from missing.",v:"MATCH",note:"AltTextRule.cs only reads @descr, never @title."}],
+  xlsx:[{c:"Alt Text for Images",s:"xdr:cNvPr/@descr and @title. Flag empty on pictures AND charts.",v:"MATCH",note:"Only @descr read; covers both Picture and GraphicFrame anchors."}],
+  pptx:[{c:"Alt Text for Images",s:"p:cNvPr/@descr and @title. Flag empty on non-decorative picture/graphicFrame shapes.",v:"PARTIAL",note:"Covers both shape types via @descr — but never checks decorative marking at all (the confirmed bug from this matrix's own earlier fix)."},
+    {c:"Decorative Images Marked Correctly",s:"Detect the 'mark as decorative' flag: a:extLst decorative extension (adec) on cNvPr, or empty descr paired with no semantic role.",v:"NONE",note:"Confirmed absent."}],
+  pdf:[{c:"Descriptive Alt Text",s:"Require /Alt on the /Figure structure element. Do NOT accept /ActualText — it's a text REPLACEMENT (ligatures), not a description.",v:"MATCH",note:"image_alt_text.py only reads /Alt, no /ActualText."}]},
+"1.3.1":{docx:[{c:"Uses Heading Styles",s:"Primary signal: w:pPr/w:outlineLvl (language-independent). Secondary: canonical English style name, never localized display name.",v:"PARTIAL",note:"Matches by style ID only (correctly non-localized); never reads outlineLvl."},
+    {c:"Lists Use Proper Formatting",s:"Resolve w:numPr through the full chain: direct, then style's numPr (walk basedOn), then numbering.xml.",v:"NONE",note:"No list-structure detector exists."},
+    {c:"Simple Tables with Headers",s:"w:tblHeader on row 0's trPr. ALSO detect merged cells via w:vMerge/w:gridSpan and flag.",v:"PARTIAL",note:"Checks tblHeader; no merged-cell detection anywhere in the file."},
+    {c:"Table Captions or Descriptions",s:"Canonical style name 'caption' (not localized) immediately before/after w:tbl.",v:"NONE",note:"No caption detector exists."}],
+  xlsx:[{c:"Use Table Headers",s:"tbl.headerRowCount == 1 (xl/tables/tableN.xml).",v:"MATCH",note:"Reads HeaderRowCount, flags when 0."}],
+  pptx:[{c:"Meaningful Table Headers",s:"a:tblPr/@firstRow='1' is a STYLE BANDING flag, not header semantics — PPTX has no <TH>. Corroborate with cell content/formatting.",v:"GAP",note:"firstRow is the sole signal, no corroboration — a declared limitation, now independently confirmed by her spec too."}],
+  pdf:[{c:"PDF is Tagged",s:"/MarkInfo/Marked AND /StructTreeRoot present. PRECONDITION for every other PDF check.",v:"MATCH",note:"tagged_pdf.py checks both, AND-combined."},
+    {c:"Headings Tagged Properly",s:"/H1-/H6 present, correct nesting, no skipped levels.",v:"NONE",note:"Nothing beyond overall tagging exists."},
+    {c:"Table Headers Tagged",s:"/TH elements present AND /Scope attribute set (or Headers/IDs association).",v:"GAP",note:"table_headers.py checks /TH only; /Scope never read."}]},
+"1.3.2":{pptx:[{c:"Logical Reading Order",s:"spTree order vs. geometric top-left sort; flag divergence.",v:"MATCH",note:"ReadingOrderRule.cs does exactly this comparison."}],
+  pdf:[{c:"Correct Reading Order",s:"Structure-tree order vs. content-stream order vs. visual x/y.",v:"UNVER",note:"reading_order.py reviewed in an earlier pass; not re-verified against this exact V3 wording."}]},
+"1.4.3":{docx:[{c:"Color Contrast",s:"Resolve direct hex OR theme color, THEN apply themeTint/themeShade (HSL math). Skipping tint/shade is the most common cause of tools disagreeing.",v:"GAP",note:"Direct hex only; skips (doesn't attempt) theme-colored runs entirely — no theme resolution exists at all."}],
+  xlsx:[{c:"Color Contrast",s:"Theme + XLSX-specific tint float formula — DIFFERENT math than DOCX's themeTint/themeShade. Using DOCX's formula gives wrong ratios.",v:"GAP",note:"No theme/tint resolution exists for XLSX at all, engine or Python fallback."}],
+  pptx:[{c:"Color Contrast",s:"Resolve solidFill (srgbClr/schemeClr+theme) vs. shape→layout→master background chain.",v:"PARTIAL",note:"Full shape→layout→master chain confirmed — but only explicit RGB hex; schemeClr+theme-map resolution isn't handled."}],
+  pdf:[{c:"Color Contrast",s:"veraPDF WCAG profile, OR render+pdfplumber-bbox+pixel-sample.",v:"DIFF",note:"Neither — uses content-stream non_stroking_color extraction + luma heuristic. No rendering at all."}]},
+"1.4.5":{docx:[{c:"No Use of Images for Text Only",s:"Walk word/media/*; no deterministic text detection, needs OCR.",v:"PARTIAL",note:"api/ocr.py walks word/ppt/xl media via tesseract — mechanism matches, but it's a shared module, not docx-specific."}],
+  pdf:[{c:"No Scanned Images of Text (OCR)",s:"Near-zero text layer + large-area image = scan. No OCR needed to DETECT.",v:"NONE",note:"No detector exists."}]},
+"2.1.1":{pptx:[{c:"Keyboard Accessible Navigation",s:"Extract interactive shape order (spTree) + hyperlink/action shapes. Tab order is extractable, not judgeable.",v:"DIFF",note:"AnimationOrderRule.cs checks auto-advancing animation timing entirely — a real 2.1.1 signal, but not the same mechanism she describes at all."}]},
+"2.4.2":{docx:[{c:"Document Title Set",s:"docProps/core.xml dc:title present, non-empty.",v:"MATCH",note:"DocumentTitleRule.cs reads PackageProperties.Title."}],
+  xlsx:[{c:"Name the Table",s:"tbl.displayName not matching ^Table\\d+$.",v:"NONE",note:"No detector exists."},
+    {c:"Unique Names for Worksheets",s:"Default-pattern match AND cross-sheet uniqueness.",v:"GAP",note:"SheetNameRule.cs only regex-matches default names; no uniqueness check among custom names."}],
+  pptx:[{c:"Unique Slide Titles",s:"Non-empty AND unique across the deck (set comparison).",v:"GAP",note:"SlideTitleRule.cs checks per-slide non-empty only; no cross-slide uniqueness check."}],
+  pdf:[{c:"Title and Metadata Set",s:"/Title non-empty AND DisplayDocTitle true. BOTH required.",v:"MATCH",note:"Two separate rules (document_title.py + display_title.py), both conditions covered."}]},
+"2.4.3":{pdf:[{c:"Logical Tab Order",s:"Each page's /Tab entry should be /S (structure order); plus AcroForm field order.",v:"NONE",note:"No detector exists."}]},
+"2.4.4":{docx:[{c:"Descriptive Hyperlinks",s:"Resolve r:id via rels. Flag generic text ('click here') AND raw URLs (regex ^https?://).",v:"PARTIAL",note:"LinkPurposeRule.cs resolves rels and flags generic text; no raw-URL regex check exists."}],
+  xlsx:[{c:"Meaningful Hyperlink Text",s:"Public cell.hyperlink; ALSO scan formulas for '=HYPERLINK(' — formula links never appear as cell.hyperlink.",v:"NONE",note:"No detector exists."}],
+  pptx:[{c:"Descriptive Hyperlinks",s:"run.hyperlink.address+text. Flag generic text AND raw URLs.",v:"PARTIAL",note:"Same pattern as DOCX — generic-text yes, raw-URL regex no."}],
+  pdf:[{c:"Links Are Descriptive and Active",s:"Descriptive-text check, PLUS an HTTP liveness check (HEAD/GET, real User-Agent, exclude mailto/tel/anchors).",v:"NONE",note:"No detector exists."}]},
+"3.1.1":{docx:[{c:"Document Language",s:"Read ALL THREE: @val (Latin), @eastAsia (CJK), @bidi (RTL). @val alone silently misses CJK/RTL.",v:"MATCH",note:"LangSet() checks all three attributes."}],
+  pptx:[{c:"Slide Language",s:"Read a:rPr/@lang AND @altLang (the DrawingML CJK equivalent).",v:"GAP",note:"Only @lang checked; @altLang never referenced."}],
+  pdf:[{c:"Language Declared",s:"Catalog /Lang present, valid BCP-47.",v:"MATCH",note:"document_language.py reads /Lang correctly."}]},
+"4.1.2":{docx:[{c:"Accessible Form Fields",s:"w:sdtPr/w:alias/@val non-empty AND w:tag set — both.",v:"GAP",note:"Only @alias checked (filed under 3.3.2, not 4.1.2, in ACP's catalog); w:tag never read."}],
+  pdf:[{c:"Form Fields Have Labels",s:"AcroForm /Fields, each needs /TU, /FT, /V.",v:"NONE",note:"No detector exists."}]}};
+
 // Deva's conformance-checklist verdicts (jeremy.xlsx, verbatim) vs. this matrix's conclusion.
 // v = her Validation Approach · t = her How-to-Test note · k = agree|augment|disagree · ours/note = our conclusion + reason.
 const DEVA={
@@ -889,7 +950,16 @@ function renderDrawer(sc,f,trigger){
 
   if(rub){
     html+=`<h4>2 · Can this be assessed automatically?</h4><div class="badge ${rub.aClass}">${RCLASS[rub.aClass]}</div>${assessTodayChip(row,f)}
-      <h4 style="margin-top:12px">3 · Why it lands there</h4><p class="why">${linkify(esc(rub.aWhy),row.sc,f)}</p>`;
+      <h4 style="margin-top:12px">3 · Why it lands there</h4>`;
+    const aspec=ASSESS_SPEC[row.sc]&&ASSESS_SPEC[row.sc][f];
+    if(aspec&&aspec.length){
+      html+=`<div class="aspec"><div class="aspec-title">Deva's assessment spec — primary reference</div>${aspec.map(x=>
+        `<div class="aspec-item"><span class="c">${esc(x.c)}</span><span class="avbadge ${x.v}">${esc(AV_LABEL[x.v])}</span>
+          <div class="s">${esc(x.s)}</div>
+          <div class="aspec-note"><b>ACP today:</b> ${esc(x.note)}</div></div>`).join("")}</div>
+        <div class="aspec-vs">This matrix's framing</div>`;
+    }
+    html+=`<p class="why">${linkify(esc(rub.aWhy),row.sc,f)}</p>`;
   }
 
   if(DEVA[row.sc]){const dv=DEVA[row.sc];
