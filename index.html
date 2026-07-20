@@ -111,6 +111,8 @@
   #panel .hitl-item{margin-top:6px}
   #panel .hitl-item:first-of-type{margin-top:0}
   #panel .hitl-item b{color:#0b3d91}
+  #panel .openq{background:#fdf3e7;border:1px solid #f0d5ae;border-radius:8px;padding:9px 11px;margin:10px 0 0;font-size:12.5px;color:#6a4416}
+  #panel .openq-title{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#b1651b;font-weight:700;margin-bottom:4px}
   .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
   .corr h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
   .corr li{margin-bottom:5px;font-size:13px}
@@ -561,6 +563,17 @@ const CHECKLIST2={
 "4.1.2":{docx:[{c:"Accessible Form Fields",h:"Use Developer > Content Controls with clear labels."}]},
 "2.1.1":{pptx:[{c:"Keyboard Accessible Navigation",h:"Use Tab key in slideshow mode to test focus order."}]}};
 
+// Open questions from docs/deva-automation-tier-reconciliation.md — deliberately NOT resolved by
+// picking a side. Keyed sc -> [format(s) it applies to, or "*" for all] -> question text.
+// Rendered in drawer §4, below the Gap-to-close block.
+const OPENQ={
+"2.4.2":{xlsx:"Does ‘unique worksheet names’ belong under 2.4.2 at all? ACP’s own SheetNameRule files it there, but the literal WCAG 2.4.2 text is about the document having a title — not worksheet-tab navigation. Deva’s independent automation-tier analysis scores this checklist item as having no WCAG SC behind it. Not resolved here — a catalog-filing decision, not a code bug."},
+"1.4.3":{docx:"Should this deterministic-but-design-consequential fix cap at Human-assisted? Auto-recoloring to a compliant shade is a deterministic algorithm, but Deva’s automation-tier analysis scores it as needing a human regardless — “auto-recoloring breaks brand compliance; propose, do not apply.” ACP’s fixer already applies this automatically today; the FAQ already surfaces the brand-palette caveat, but it doesn’t currently cap the ceiling.",
+  xlsx:"Same open question as DOCX 1.4.3 — see that cell.",
+  pptx:"Same open question as DOCX 1.4.3 — see that cell."},
+"1.3.2":{pptx:"Should this fix cap at Human-assisted? The reorder algorithm is deterministic, but Deva’s analysis scores it Structural rebuild — “highest-risk fix in the deck; reordering changes z-order and can alter appearance.” Not resolved — a risk-philosophy decision, not a code bug."},
+"2.1.1":{pptx:"Shares the 1.3.2/pptx reordering mechanism and risk. Deva’s analysis also scores the assessment side stricter (Det+human, not machine-assisted) — “operability is behavioral.” Not resolved here."}};
+
 // Deva's conformance-checklist verdicts (jeremy.xlsx, verbatim) vs. this matrix's conclusion.
 // v = her Validation Approach · t = her How-to-Test note · k = agree|augment|disagree · ours/note = our conclusion + reason.
 const DEVA={
@@ -892,6 +905,8 @@ function renderDrawer(sc,f,trigger){
       `<div class="hitl-item"><b>${esc(x.c)}:</b> ${esc(x.h)}</div>`).join("")}</div>`;
   }
   if(UPGRADE[row.sc])html+=`<div class="gap"><b>Gap to close:</b> ${linkify(esc(UPGRADE[row.sc]),row.sc,f)}</div>`;
+  const oq=OPENQ[row.sc]&&(OPENQ[row.sc][f]||OPENQ[row.sc]["*"]);
+  if(oq)html+=`<div class="openq"><div class="openq-title">Open question — not resolved</div>${linkify(esc(oq),row.sc,f)}</div>`;
 
   const faqs=buildFAQ(row,f,rub);
   if(faqs.length){
