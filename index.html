@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ACP · WCAG 2.1 AA — 20 Document Core Rules (as-built)</title>
+<title>ACP · WCAG 2.1 AA — Deva V3 Edition (local models only)</title>
 <style>
   :root{
     --navy:#1e2a4a; --ink:#202124; --muted:#5f6368; --line:#e3e6ec; --bg:#f6f7fa;
@@ -131,6 +131,8 @@
   #panel .avbadge.DIFF{background:#fce8e6;color:#c5221f}
   #panel .avbadge.NONE,#panel .avbadge.UNVER{background:#f1f3f4;color:#5f6368}
   #panel .aspec-note{font-size:11.5px;color:var(--muted);margin-top:3px}
+  #panel .aspec-lm{font-size:11.5px;color:#0d652d;margin-top:3px;background:#e6f4ea;border-radius:4px;padding:3px 6px;display:inline-block}
+  #panel .aspec-lm.caveat{color:#7a4a00;background:#fdf3e0}
   #panel .aspec-vs{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:10px 0 4px}
   .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
   .corr h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
@@ -140,8 +142,8 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>WCAG 2.1 AA — 20 Document Core Rules · Ceiling &amp; Coverage</h1>
-  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16.</div>
+  <h1>WCAG 2.1 AA — Deva V3 Edition · Ceiling &amp; Coverage</h1>
+  <div class="sub">This branch (<code>wcag-deva-v3</code>) is scoped to exactly the SCs in Deva's V3 checklist, with every model-assisted assessment cell naming the best available LOCAL model, not cloud — see the full 20-SC, any-model version at the <code>main</code> branch. The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath — including the recommended local model, where one applies. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's V3 file re-verified 2026-07-21.</div>
 
   <div class="tiles" id="ceilingTiles"></div>
   <div class="tiles" id="acpTiles" style="margin-top:0"></div>
@@ -156,8 +158,8 @@
   </div>
 
   <div class="filterbar">
-    <label><input type="checkbox" id="v3only"> Show only the SCs in Deva's V3 checklist (<span id="v3count"></span>)</label>
-    <span class="filterbar-note">Off = ACP's full 20-SC rubric. On = just what her V3 file actually checks — the other 5 (1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2) aren't in it at all, per her own "Gaps vs WCAG" sheet.</span>
+    <span style="font-weight:700;color:var(--navy)">Deva V3 edition — <span id="v3count"></span> SCs, local models only</span>
+    <span class="filterbar-note">Scoped to just what her V3 checklist actually checks — the other 5 (1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2) aren't in it at all, per her own "Gaps vs WCAG" sheet. Every model-assisted assessment cell names the best available LOCAL model for that task (drawer §3) — no cloud models, per her own Local Models tab, with an honest caveat where she flags local models as materially weaker (reading order).</span>
   </div>
 
   <table id="tbl">
@@ -645,6 +647,50 @@ const ASSESS_SPEC={
 "4.1.2":{docx:[{c:"Accessible Form Fields",s:"w:sdtPr/w:alias/@val non-empty AND w:tag set — both.",v:"GAP",note:"Only @alias checked (filed under 3.3.2, not 4.1.2, in ACP's catalog); w:tag never read."}],
   pdf:[{c:"Form Fields Have Labels",s:"AcroForm /Fields, each needs /TU, /FT, /V.",v:"NONE",note:"No detector exists."}]}};
 
+// wcag-deva-v3 branch: local-models-only edition. Keyed by ASSESS_SPEC item name (`c`), sourced
+// verbatim from V3's Assessment tab column E ("Model (local / cloud)") — the Local: clause only,
+// cloud stripped — cross-checked against her separate "Local Models" tab for the general-purpose
+// fallback (Qwen3-8B for short-text descriptiveness judgments) where an item names no model of
+// its own. Two items — PPTX/PDF reading order — get an HONEST caveat rather than a confident local
+// substitute: her own Local Models tab states outright "the one task where open-weight VLMs lag
+// materially... do not run this locally without evaluating." Silently swapping in a local model
+// there would overclaim; the caveat is the accurate answer to "best available."
+const LOCAL_MODEL={
+"Uses Heading Styles":"Qwen3-8B or Llama 3.x 8B — pseudo-heading detection (bold/large manual paragraphs that look like headings)",
+"Descriptive Alt Text":"Qwen2.5-VL-7B-Instruct (24GB) or Llama 3.2 Vision 11B",
+"Alt Text for Images":"Qwen2.5-VL-7B-Instruct (24GB) or Llama 3.2 Vision 11B — charts need a data-summary alt, not a visual description",
+"Table Captions or Descriptions":"Qwen3-8B",
+"Descriptive Hyperlinks":"Qwen3-8B",
+"Meaningful Hyperlink Text":"Qwen3-8B",
+"Document Title Set":"Qwen3-8B",
+"Title and Metadata Set":"Qwen3-8B",
+"No Use of Images for Text Only":"Qwen2.5-VL-7B (strongest open-weight OCR) or PaddleOCR/Tesseract for pure transcription",
+"No Scanned Images of Text (OCR)":"Qwen2.5-VL-7B, or PaddleOCR/Tesseract (CPU) for pure transcription",
+"Accessible Form Fields":"Qwen3-8B",
+"Form Fields Have Labels":"Qwen3-8B",
+"Unique Slide Titles":"Qwen3-8B — optional, judges descriptiveness only",
+"Decorative Images Marked Correctly":"Qwen2.5-VL-7B — judges whether the decorative call is actually correct, not just presence of the flag",
+"Meaningful Table Headers":"Qwen3-8B — corroborates firstRow with cell-content/formatting",
+"Headings Tagged Properly":"Qwen3-8B — judges heading-text descriptiveness once tags exist",
+"Links Are Descriptive and Active":"Qwen3-8B for purpose-in-context; liveness check itself is deterministic HTTP, no model needed",
+"Slide Language":"fastText lid.176 (dedicated classifier, not an LLM — optional declared-vs-actual check)",
+"Document Language":"fastText lid.176 (dedicated classifier, not an LLM — optional declared-vs-actual check)",
+"Language Declared":"fastText lid.176 (dedicated classifier, not an LLM — optional declared-vs-actual check)",
+"Logical Reading Order":"No confident local substitute — her own Local Models sheet names this the one task where open-weight VLMs lag materially and says not to run it locally without evaluating first. Best available today: Qwen2.5-VL-7B or Llama 3.2 Vision 11B flagging candidates for MANDATORY human review, not an unsupervised pass.",
+"Correct Reading Order":"No confident local substitute — same caveat as PPTX reading order. Best available today: a local VLM flags candidates for MANDATORY human review, not an unsupervised pass.",
+"Logical Tab Order":"Qwen3-8B for an optional secondary 'does this order make sense' pass; the primary /Tab=/S check itself is already fully deterministic, no model needed",
+// Color Contrast is per-format, NOT a blanket key: her spec explicitly says "None on solid fills"
+// (docx) / "None on resolvable colors" (xlsx) — those two stay fully deterministic, no model, and
+// must NOT get a local-model note. Only PPTX (text over picture/gradient) and PDF (ambiguous
+// backgrounds) call for one.
+"Color Contrast":{pptx:"Any local VLM (e.g. Qwen2.5-VL-7B) can flag text-over-picture/gradient regions for review — math is still resolved in code, not by the model",
+  pdf:"Any local VLM (e.g. Qwen2.5-VL-7B) can flag ambiguous backgrounds for review — math is still resolved in code, not by the model"}};
+(function(){for(const sc in ASSESS_SPEC)for(const f in ASSESS_SPEC[sc])for(const item of ASSESS_SPEC[sc][f]){
+  const lm=LOCAL_MODEL[item.c];
+  if(typeof lm==="string")item.lm=lm;
+  else if(lm&&lm[f])item.lm=lm[f];
+}})();
+
 // Deva's V3 checklist ("accessibility-checklist-automation V3.xlsx") vs. this matrix's conclusion —
 // now the sole source (jeremy.xlsx retired 2026-07-21). v = her V3 automation tier for this SC's
 // item(s) (Deterministic / Det + model / Model-primary / Det + human, Assessment tab col C) ·
@@ -838,7 +884,13 @@ const DEVA_MARK={augment:{sym:"◆",word:"augments"},disagree:{sym:"⊗",word:"d
 // is itself derived from V3 (see the DEVA comment above) and already excludes the 5 SCs her own
 // "Gaps vs WCAG" sheet admits aren't in it. Drives the #v3only filter toggle below.
 const V3_COVERED=new Set(Object.keys(DEVA));
+// wcag-deva-v3 branch: this edition is permanently scoped to the SCs Deva's V3 checklist actually
+// covers — not a togglable option like on main, since the whole point of this branch is a fixed,
+// shareable "just her 15" view. Rows for the other 5 (1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2) are
+// skipped at build time, not hidden with CSS, so the ceiling tiles below stay consistent with what's
+// actually on screen.
 for(const row of ROWS){
+  if(!V3_COVERED.has(row.sc))continue;
   const tr=document.createElement("tr");
   tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
@@ -858,28 +910,17 @@ for(const row of ROWS){
   tr.innerHTML=h;tb.appendChild(tr);
 }
 
-// "Show only Deva's V3 checklist SCs" toggle — per her feedback that the full 20-SC rubric table
-// includes rows outside what her V3 file actually checks. Filters rows only (via tr.dataset.sc
-// set above); doesn't touch the ceiling tiles, which describe ACP's own rubric-wide ceiling and
-// are intentionally independent of any one checklist's scope.
-(function(){
-  const cb=document.getElementById("v3only"), countEl=document.getElementById("v3count");
-  countEl.textContent=`${V3_COVERED.size} of ${ROWS.length}`;
-  function apply(){
-    for(const tr of tb.querySelectorAll("tr"))
-      tr.classList.toggle("v3-hidden", cb.checked && !V3_COVERED.has(tr.dataset.sc));
-  }
-  cb.addEventListener("change",apply);
-  apply();
-})();
+// Static count for the fixed-scope banner (see the .filterbar markup) — no toggle on this branch.
+document.getElementById("v3count").textContent=`${V3_COVERED.size} of ${ROWS.length}`;
 
-// Ceiling tiles: computed from RUBRIC across all 80 (SC × format) cells — the rule-inherent denominator.
+// Ceiling tiles: computed from RUBRIC across the V3-covered SCs only on this branch (all 80
+// SC×format cells on main) — kept consistent with the rows actually on screen here.
 (function(){
   const aCounts={DET:0,MA:0,HUM:0,NAx:0}, fCounts={MECH:0,GEN:0,REAUTH:0,NAx:0};
   let acpAtCeilingAssess=0, acpAtCeilingFix=0, ceilingAssessTotal=0, ceilingFixTotal=0;
   const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]}; // tiers that count as "reached the assess ceiling"
   const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
-  for(const row of ROWS){
+  for(const row of ROWS.filter(r=>V3_COVERED.has(r.sc))){
     for(const f of FM){
       const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f]; if(!rub)continue;
       aCounts[rub.aClass]++; fCounts[rub.fClass]++;
@@ -989,7 +1030,8 @@ function renderDrawer(sc,f,trigger){
       html+=`<div class="aspec"><div class="aspec-title">Deva's assessment spec — primary reference</div>${aspec.map(x=>
         `<div class="aspec-item"><span class="c">${esc(x.c)}</span><span class="avbadge ${x.v}">${esc(AV_LABEL[x.v])}</span>
           <div class="s">${esc(x.s)}</div>
-          <div class="aspec-note"><b>ACP today:</b> ${esc(x.note)}</div></div>`).join("")}</div>
+          <div class="aspec-note"><b>ACP today:</b> ${esc(x.note)}</div>${x.lm?
+          `<div class="aspec-lm${x.lm.startsWith("No confident local substitute")?" caveat":""}"><b>Local model (best available):</b> ${esc(x.lm)}</div>`:""}</div>`).join("")}</div>
         <div class="aspec-vs">This matrix's framing</div>`;
     }
     html+=`<p class="why">${linkify(esc(rub.aWhy),row.sc,f)}</p>`;
