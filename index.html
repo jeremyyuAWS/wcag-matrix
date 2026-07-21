@@ -129,7 +129,8 @@
   #panel .avbadge.PARTIAL{background:#e8f0fe;color:#174ea6}
   #panel .avbadge.GAP{background:#fdecea;color:#a50e0e}
   #panel .avbadge.DIFF{background:#fce8e6;color:#c5221f}
-  #panel .avbadge.NONE,#panel .avbadge.UNVER{background:#f1f3f4;color:#5f6368}
+  #panel .avbadge.NONE,#panel .avbadge.UNVER,#panel .avbadge.NOFIX{background:#f1f3f4;color:#5f6368}
+  #panel .avbadge.CONFIRMED{background:#e6f4ea;color:#0d652d}
   #panel .aspec-note{font-size:11.5px;color:var(--muted);margin-top:3px}
   #panel .aspec-vs{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:10px 0 4px}
   .corr{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:16px}
@@ -615,7 +616,7 @@ const OPENQ={
 // spec (docs/deva-assessment-grid-comparison.md, 38 items, full detail + file:line citations).
 // v: MATCH (green) | PARTIAL (blue) | GAP (orange) | DIFF (red, different mechanism entirely) |
 // NONE (gray, no detector exists) | UNVER (gray, not independently re-verified this pass).
-const AV_LABEL={MATCH:"Match",PARTIAL:"Partial",GAP:"Gap",DIFF:"Different mechanism",NONE:"No detector",UNVER:"Not re-verified"};
+const AV_LABEL={MATCH:"Match",PARTIAL:"Partial",GAP:"Gap",DIFF:"Different mechanism",NONE:"No detector",UNVER:"Not re-verified",NOFIX:"No fixer",CONFIRMED:"Confirmed (source-only)"};
 const ASSESS_SPEC={
 "1.1.1":{docx:[{c:"Descriptive Alt Text",s:"Require wp:docPr/@descr non-empty (fall back to inner pic:cNvPr/@descr). Do NOT accept @title — legacy field, AT doesn't read it. Check adec:decorative in docPr/extLst to separate decorative from missing.",v:"MATCH",note:"AltTextRule.cs only reads @descr, never @title."}],
   xlsx:[{c:"Alt Text for Images",s:"xdr:cNvPr/@descr and @title. Flag empty on pictures AND charts.",v:"MATCH",note:"Only @descr read; covers both Picture and GraphicFrame anchors."}],
@@ -712,6 +713,55 @@ const ASSESS_META={
   const meta=ASSESS_META[f+"|"+item.c];
   if(meta){item.m=meta.m;item.h=meta.h;}
 }})();
+
+// REMEDIATION_SPEC = V3's Remediation tab vs. ACP's actual fixer code — the remediation-side
+// companion to ASSESS_SPEC. Same shape (sc -> format -> [{c,s,v,note}]), audited 2026-07-21
+// against api/remediate_office.py, api/remediate_pdf.py, api/proposals.py, api/apply_alt.py,
+// api/store.py, config/rule-catalog.json, and api/remediation_capability.py (the newer round-
+// trip-proven source of truth, cited over the catalog when the two disagree). Full detail +
+// file:line citations: docs/deva-remediation-comparison.md. v: MATCH/PARTIAL/GAP/DIFF (same
+// codes as ASSESS_SPEC) plus NOFIX (nothing exists) and CONFIRMED (V3 says source-only/don't
+// automate, ACP agrees — a good outcome, not a gap). Renders in drawer §4, below the CVP cards.
+const REMEDIATION_SPEC={
+"1.1.1":{docx:[{c:"Descriptive Alt Text for Images",s:"Generate+approve — lxml sets wp:docPr/@descr after approval.",v:"PARTIAL",note:"remediate_office.py:316-471,474-572 — same target, but a faithful-source or OCR-grounded description writes immediately with NO approval; only an ungrounded vision guess is held for approval."}],
+  xlsx:[{c:"Alt Text for Images",s:"Generate+approve — zip/XML edit since openpyxl doesn't expose xdr:cNvPr/@descr.",v:"MATCH",note:"remediate_office.py:585,324-467 — same zip/XML mechanism (openpyxl never imported here, so V3's round-trip-loss risk doesn't apply); same faithful-vs-AI split as DOCX."}],
+  pptx:[{c:"Alt Text for Images",s:"Generate+approve — set descr on p:cNvPr; never auto-write unreviewed alt.",v:"PARTIAL",note:"remediate_office.py:316-572 — faithful-source and OCR-grounded cases auto-write with no approval, violating V3's blanket rule by design."},
+    {c:"Decorative Images Marked Correctly",s:"Generate+approve — set the adec:decorative extLst flag, or clear descr.",v:"GAP",note:"Detection/proposal correctly never auto-marks (:392-426) — but no code sets an adec:decorative flag; the only applier would write proposal text into descr= instead of actually flagging the shape decorative."}],
+  pdf:[{c:"Descriptive Alt Text for Images",s:"Generate+approve — pikepdf sets /Alt on /Figure once approved.",v:"PARTIAL",note:"remediate_pdf.py:775-872 — auto-applies when the vision description is grounded (:852-861), only deferring when ungrounded. Catalog claims pure auto, understating the deferred path."}]},
+"1.3.1":{docx:[{c:"Uses Heading Styles",s:"Structural rebuild — p.style='Heading N', strip manual bold/size so style governs.",v:"GAP",note:"remediate_office.py:891-930 — writes w:pStyle but only for paragraphs an existing heuristic flags, and never strips manual w:b/w:sz overrides."},
+    {c:"Lists Use Proper Formatting",s:"Structural rebuild — p.style='List Bullet'/'List Number', strip literal prefix.",v:"NOFIX",note:"Nothing — confirmed by grep across api/*.py, rule-catalog.json, and remediation_capability.py's docx table."},
+    {c:"Simple Tables with Headers",s:"Auto-fix — w:tblHeader on row 0's trPr.",v:"GAP",note:"remediate_office.py:932-951 — exact mechanism match, but V3's merged-cell caveat isn't honored: no gridSpan/vMerge check exists."},
+    {c:"Table Captions or Descriptions",s:"Generate+approve — insert a Caption-styled paragraph.",v:"NOFIX",note:"Nothing — confirmed by grep for 'table caption', w:tblCaption, 'Caption' across fixer code."}],
+  xlsx:[{c:"Use Table Headers",s:"Auto-fix — headerRowCount=1 on the table definition.",v:"PARTIAL",note:"remediate_office.py:1068-1090 — flips the attribute, matching tier — but no first-row-looks-like-data check exists; V3's 'verify before batch-applying' caveat isn't honored."}],
+  pptx:[{c:"Uses Slide Layouts",s:"Source/author — moving content into placeholders isn't safely automatable.",v:"CONFIRMED",note:"Nothing — confirmed by grep; ACP doesn't attempt this and doesn't claim to."},
+    {c:"Meaningful Table Headers",s:"Auto-fix — a:tblPr/@firstRow='1', deterministic, low risk.",v:"MATCH",note:"remediate_office.py:674-707 — exact mechanism match, fails closed on ≤1 row, no caveat missed."}],
+  pdf:[{c:"PDF is Tagged",s:"Structural rebuild — Adobe Auto-Tag API or PDFix SDK; veraPDF validates, doesn't remediate.",v:"CONFIRMED",note:"Nothing — confirmed by grep for 'pdfix'/'auto-tag' (0 hits). Catalog already says human-only, matching V3's own 'fix at source' caveat; ADR 0028 lists Auto-Tag as unbuilt future work."},
+    {c:"Headings Tagged Properly",s:"Structural rebuild — auto-tag assigns heading tags, correct levels via tag-tree edit.",v:"DIFF",note:"remediate_pdf.py:296-330,183-214 — no tag-tree write happens; ACP derives candidate headings from font-size ranking and surfaces a human-confirmed 'heading map,' never writing the tag tree."},
+    {c:"Table Headers Tagged",s:"Structural rebuild — pikepdf/PDFix sets /TH and /Scope in the tag tree.",v:"NOFIX",note:"Nothing — confirmed by grep for /TH, /Scope, 'table_header' scoped to PDF (0 hits)."}]},
+"1.3.2":{pptx:[{c:"Logical Reading Order",s:"Structural rebuild — reorder spTree nodes; V3 flags this highest-risk, can alter appearance.",v:"GAP",note:"remediate_office.py:753-788 — exact reorder mechanism, but applied unconditionally with zero approval, despite the catalog calling it human-only (contradicted by the live code)."}],
+  pdf:[{c:"Correct Reading Order",s:"Structural rebuild — reorder the structure tree via PDFix/Acrobat/pikepdf.",v:"DIFF",note:"remediate_pdf.py:144-180 — never reorders the structure tree; untagged PDFs get a vision-proposed order for human confirmation, never auto-applied; tagged PDFs get nothing (order already comes from structure)."}]},
+"1.4.3":{docx:[{c:"Color Contrast",s:"Source/author — writable, but palette choice is a design decision; propose, don't apply.",v:"GAP",note:"remediate_office.py:1004-1041 — auto-recolors w:color unconditionally, no approval gate, directly contradicting the rule's own human-only catalog/docs policy — the single most consequential finding of this audit."}],
+  xlsx:[{c:"Color Contrast",s:"Source/author — writable, but a design decision; prefer a compliant built-in style; keep conditional formatting separate.",v:"DIFF",note:"remediate_office.py:820-863 — auto-applies immediately, flattens fonts to pure black/white rather than switching styles as V3 recommends. Does correctly leave dxf/cfRule blocks untouched."}],
+  pptx:[{c:"Color Contrast",s:"Source/author — writable, palette is a design decision; algorithmic assist available.",v:"GAP",note:"remediate_office.py:721-751 — the algorithmic assist exists, but auto-applies unconditionally (catalog says human-only) and never touches slide masters/templates."}],
+  pdf:[{c:"Color Contrast",s:"Source/author — not reliably fixable, colors baked into content streams; not worth attempting.",v:"DIFF",note:"remediate_pdf.py:97-141 — the sharpest disagreement in the audit: ACP rewrites content-stream text-fill operators to darken them, applied automatically, exactly what V3 says isn't worth attempting."}]},
+"1.4.5":{docx:[{c:"No Use of Images for Text Only",s:"Source/author — no safe automated path; OCR gives a starting transcript, never auto-applied as alt.",v:"CONFIRMED",note:"api/ocr.py + proposals.py:542-580 — OCRs the baked-in text, proposes the transcript for a human to paste as real text; never silently applied as alt text."}],
+  pdf:[{c:"No Scanned Images of Text (OCR)",s:"Structural rebuild — run OCR to add a real text layer.",v:"NOFIX",note:"Nothing adds a text layer — confirmed by grep for 'ocrmypdf' (0 hits). ACP's OCR usage is detection/evidence only, feeding a human re-keying workflow, never text-layer injection."}]},
+"2.1.1":{pptx:[{c:"Keyboard Accessible Navigation",s:"Structural rebuild — same mechanism as reading order, fix shape order in spTree.",v:"DIFF",note:"remediation_capability.py:150-157 marks this HUMAN, always — ACP disagrees with V3's premise that fixing shape order also fixes 2.1.1, and never applies the reading-order fixer on 2.1.1's behalf."}]},
+"2.4.2":{docx:[{c:"Document Title Set (Metadata)",s:"Generate+approve — doc.core_properties.title = '...'.",v:"PARTIAL",note:"remediate_office.py:1239-1241 — same target, filename-derived value, but writes unconditionally with no approval step."}],
+  xlsx:[{c:"Unique Names for Worksheets",s:"Auto-fix — ws.title='...'; wb.remove(ws) for blanks; V3 flags MAJOR risk (breaks formula refs).",v:"DIFF",note:"proposals.py:868-926 — AI-drafted, human-approval-only, and NO write-back applier exists at all — nothing renames or deletes a sheet in ACP today, despite the catalog claiming auto. No formula-reference tracking exists anywhere."}],
+  pptx:[{c:"Unique Slide Titles",s:"Generate+approve — set title text; add a placeholder from the layout if missing.",v:"PARTIAL",note:"remediate_office.py:660-671,790-802 — adds a placeholder+text, but writes unconditionally (AUTO), and fabricates a new off-slide placeholder rather than applying an existing layout as V3 prefers."}],
+  pdf:[{c:"Title and Metadata Set",s:"Auto-fix — set docinfo /Title AND DisplayDocTitle=true, both needed.",v:"MATCH",note:"remediate_pdf.py:386-388,471-505 — writes both halves deterministically, only when a title is genuinely absent."}]},
+"2.4.3":{pdf:[{c:"Logical Tab Order",s:"Auto-fix — set each page's /Tab to /S, deterministic write.",v:"NOFIX",note:"Nothing — confirmed by grep for /Tab, TabOrder scoped to PDF (0 hits); not in the catalog's PDF list, no detector either."}]},
+"2.4.4":{docx:[{c:"Descriptive Hyperlinks",s:"Generate+approve — replace run text inside w:hyperlink, target unchanged.",v:"GAP",note:"proposals.py:612-696 drafts correctly — but NO write-back applier exists (handlers.py:1108-1112: only Office alt text has an applier today). Approving produces no document change."}],
+  xlsx:[{c:"Meaningful Hyperlink Text",s:"Generate+approve — set cell display value, target unchanged; low risk.",v:"GAP",note:"proposals.py:675-727 mirrors V3's approach — same missing-applier gap as DOCX/PPTX. XLSX-LINK-001.md's stated reason ('lane not built') is stale — the lane IS built, it just has no applier."}],
+  pptx:[{c:"Descriptive Hyperlinks",s:"Generate+approve — set run.text, leave hyperlink.address unchanged; low risk.",v:"GAP",note:"proposals.py:675 — same drafting mechanism, same missing-applier gap as DOCX/XLSX."}],
+  pdf:[{c:"Links Are Descriptive and Active",s:"Generate+approve — descriptive-text edit + separate dead-link workflow.",v:"PARTIAL",note:"remediate_pdf.py:221-294 covers descriptive text well (human-confirm, never auto-applied) — but there is no dead-link/liveness-check workflow at all; V3's second workflow is simply unbuilt."}]},
+"3.1.1":{docx:[{c:"Document Language",s:"Auto-fix — w:lang/@val in styles.xml docDefaults + on runs.",v:"DIFF",note:"remediate_office.py:1236-1237 — never touches w:lang; writes the OPC package-level dc:language property instead, a different target than V3 describes. Tier (auto, immediate) matches."}],
+  pptx:[{c:"Slide Language",s:"Auto-fix — a:rPr/@lang on runs + defaultTextStyle in presentation.xml.",v:"DIFF",note:"remediate_office.py:1236-1237 — same as DOCX: only writes dc:language metadata, never per-run lang. Still clears the finding since DocumentLanguageRule.cs accepts metadata OR run-level lang as an OR condition."}],
+  pdf:[{c:"Language Declared",s:"Auto-fix — pdf.Root.Lang = 'en-US', one-line deterministic write.",v:"MATCH",note:"remediate_pdf.py:352-395 via the vendored PdfLanguageFixer — deterministic, immediate, no human step, exactly V3's description."}]},
+"4.1.2":{docx:[{c:"Accessible Form Fields",s:"Generate+approve — w:sdtPr/w:alias/@val on the content control.",v:"PARTIAL",note:"form_labels.py:214-227, called from remediate_office.py:1050-1058 — exact target match, but filed under 3.3.2 internally and applies immediately whenever adjacent label text is found; only genuinely bare fields route to review."}],
+  pdf:[{c:"Form Fields Have Labels",s:"Generate+approve — pikepdf sets /TU on each AcroForm field, deterministic once approved.",v:"MATCH",note:"remediate_pdf.py:630-676,679-709 — exactly the two-tier split V3 implies: real label on /T writes /TU deterministically; generic auto-name defers to a human-authored proposal."}]}};
+
 
 
 // Deva's V3 checklist ("accessibility-checklist-automation V3.xlsx") vs. this matrix's conclusion —
@@ -1072,6 +1122,13 @@ function renderDrawer(sc,f,trigger){
       <div><b>Our conclusion:</b> <span class="dv ${dv.k}">${esc(dv.ours)}</span> — ${esc(dv.note)}</div></div>`;}
 
   html+=`<h4>4 · Remediation — current vs. potential</h4>${remediationCVP(row,f,rub)}`;
+  const rspec=REMEDIATION_SPEC[row.sc]&&REMEDIATION_SPEC[row.sc][f];
+  if(rspec&&rspec.length){
+    html+=`<div class="aspec"><div class="aspec-title">Deva's V3 remediation spec — vs. ACP's fixer code</div>${rspec.map(x=>
+      `<div class="aspec-item"><span class="c">${esc(x.c)}</span><span class="avbadge ${x.v}">${esc(AV_LABEL[x.v])}</span>
+        <div class="s">${esc(x.s)}</div>
+        <div class="aspec-note"><b>ACP today:</b> ${esc(x.note)}</div></div>`).join("")}</div>`;
+  }
   if(rub)html+=`<p class="why">${linkify(esc(rub.fWhy),row.sc,f)}</p>`;
   const c2=CHECKLIST2[row.sc]&&CHECKLIST2[row.sc][f];
   if(c2&&c2.length){
