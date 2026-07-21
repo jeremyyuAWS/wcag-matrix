@@ -8,6 +8,30 @@ falsifiable claims as a first pass. All 38 are now verified against ACP's actual
 **Per Deva's request, her Assessment grid is the primary reference for "how should this be
 assessed" — this doc exists so the delta against what ACP actually does is never ambiguous.**
 
+**Re-verified 2026-07-20** against the latest copy of the V3 file (it had been re-saved since the
+first pass — size/mtime changed — but a full re-dump of all 5 sheets confirms the content is
+byte-for-byte the same as what's quoted below; the delta was calc-chain/metadata noise, not an
+edit). "ACP today" below reflects what's merged to `main` only, per the standing rule that
+code-backed means shipped, not just committed on a branch — see the **Pipeline** note under each
+affected row for what's open but not yet counted.
+
+## In flight, not yet counted below
+
+Three PRs are open against `mova-io/acp` `main`, plus two more branches short of a PR. None are
+merged as of this pass, so none of the verdicts below reflect them yet — but they'd move 5 of the
+38 rows if/when they land:
+
+| PR / branch | Rows it would move |
+|---|---|
+| [#46](https://github.com/mova-io/acp/pull/46) — theme-colour resolution for DOCX/XLSX contrast | DOCX Color Contrast, XLSX Color Contrast (both 🟠 GAP → likely 🟢/🟡) |
+| [#47](https://github.com/mova-io/acp/pull/47) — AltTextRule honors the decorative marker | PPTX Alt Text for Images (🟡 PARTIAL → 🟢 MATCH) |
+| [#48](https://github.com/mova-io/acp/pull/48) — XLSX blank-worksheet + hyperlink-text detectors | XLSX Meaningful Hyperlink Text (⚪ NO DETECTOR → likely 🟢/🟡) |
+| `claude/amazing-hertz-fc50fc` (committed, no PR yet) — `HeadingStructureRule` reads `w:outlineLvl` | DOCX Uses Heading Styles (🟡 PARTIAL → likely 🟢 MATCH) |
+| `optimistic-morse-13db9b` (staged, uncommitted) — PPTX `DocumentLanguageRule` reads `@altLang` | PPTX Slide Language (🟠 GAP → likely 🟢 MATCH) |
+
+If all five land, the scorecard's MATCH+PARTIAL share moves from 17/38 (45%) toward roughly 22/38
+(58%). Not counted until merged.
+
 ## Verdict key
 
 - 🟢 **MATCH** — ACP's mechanism does what her spec describes.
@@ -36,7 +60,7 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 |---|---|---|---|---|
 | DOCX | Descriptive Alt Text | Require `@descr`; reject `@title` (legacy, AT ignores it) | `AltTextRule.cs:57` — only reads `Description` (`@descr`), never `@title` | 🟢 MATCH |
 | XLSX | Alt Text for Images | `xdr:cNvPr/@descr`+`@title`; cover pics AND charts | `Xlsx/Rules/AltTextRule.cs:72,80-84` — only `@descr`, covers `Picture`(45) + `GraphicFrame`(52) | 🟢 MATCH |
-| PPTX | Alt Text for Images | `p:cNvPr/@descr`+`@title`; non-decorative shapes only | `Pptx/Rules/AltTextRule.cs:26-51` — covers both shape types via `@descr`; never reads `@title` (fine) but **never checks decorative marking at all** (separate, already-tracked bug) | 🟡 PARTIAL |
+| PPTX | Alt Text for Images | `p:cNvPr/@descr`+`@title`; non-decorative shapes only | `Pptx/Rules/AltTextRule.cs:26-51` — covers both shape types via `@descr`; never reads `@title` (fine) but **never checks decorative marking at all** (separate, already-tracked bug) — fix open in [PR #47](https://github.com/mova-io/acp/pull/47), not yet merged | 🟡 PARTIAL |
 | PPTX | Decorative Images Marked Correctly | Detect the `adec:decorative` extension flag | Nothing — confirmed absent (the decorative-marker finding from earlier this session) | ⚪ NO DETECTOR |
 | PDF | Descriptive Alt Text | Require `/Alt`; reject `/ActualText` (text substitute, not a description) | `image_alt_text.py:105-113` — only `/Alt`, no `/ActualText` reference | 🟢 MATCH |
 
@@ -44,7 +68,7 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 
 | Format | Item | Her spec (abridged) | ACP today | Verdict |
 |---|---|---|---|---|
-| DOCX | Uses Heading Styles | Primary: `w:outlineLvl`; secondary: canonical style ID | `HeadingStructureRule.cs:14-28,40-46` — matches by style ID only (correctly non-localized), never reads `outlineLvl` | 🟡 PARTIAL |
+| DOCX | Uses Heading Styles | Primary: `w:outlineLvl`; secondary: canonical style ID | `HeadingStructureRule.cs:14-28,40-46` — matches by style ID only (correctly non-localized), never reads `outlineLvl` — fix committed on `claude/amazing-hertz-fc50fc`, no PR opened yet | 🟡 PARTIAL |
 | DOCX | Lists Use Proper Formatting | Resolve `w:numPr` through the style-inheritance chain | Nothing | ⚪ NO DETECTOR |
 | DOCX | Simple Tables with Headers | `w:tblHeader` on row 0 AND merged-cell detection (`w:vMerge`/`w:gridSpan`) | `TableHeaderRule.cs:26,50-66` — checks `w:tblHeader`, **no merged-cell detection anywhere in the file** | 🟡 PARTIAL |
 | DOCX | Table Captions or Descriptions | Canonical-name `caption` style before/after the table | Nothing | ⚪ NO DETECTOR |
@@ -65,8 +89,8 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 
 | Format | Item | Her spec (abridged) | ACP today | Verdict |
 |---|---|---|---|---|
-| DOCX | Color Contrast | Resolve direct hex OR theme color + `themeTint`/`themeShade` math | `ColourContrastRule.cs:44-49` — direct hex only; `continue`s (skips) on theme/`auto`. **No theme resolution exists at all** | 🟠 GAP |
-| XLSX | Color Contrast | Theme + XLSX-specific tint float formula (different math than DOCX) | No `Xlsx/Rules/ColourContrastRule.cs` exists; Python fallback resolves only direct `rgb=`, explicitly skips theme/indexed by design | 🟠 GAP |
+| DOCX | Color Contrast | Resolve direct hex OR theme color + `themeTint`/`themeShade` math | `ColourContrastRule.cs:44-49` — direct hex only; `continue`s (skips) on theme/`auto`. **No theme resolution exists at all** — fix open in [PR #46](https://github.com/mova-io/acp/pull/46), not yet merged | 🟠 GAP |
+| XLSX | Color Contrast | Theme + XLSX-specific tint float formula (different math than DOCX) | No `Xlsx/Rules/ColourContrastRule.cs` exists; Python fallback resolves only direct `rgb=`, explicitly skips theme/indexed by design — theme/tint resolution added to `api/office_structure.py` in [PR #46](https://github.com/mova-io/acp/pull/46), not yet merged | 🟠 GAP |
 | PPTX | Color Contrast | `solidFill` (`srgbClr`/`schemeClr`+theme) vs. shape→layout→master chain | `ColourContrastRule.cs:112-167` — full shape→layout→master chain confirmed, **but only explicit RGB/SystemColor hex; `schemeClr`+theme-color-map resolution isn't handled** | 🟡 PARTIAL |
 | PDF | Color Contrast | veraPDF WCAG profile, OR render+pdfplumber-bbox+pixel-sample | `office_structure.py:340-390` — neither: content-stream `non_stroking_color` extraction + luma heuristic, no rendering at all | 🔴 DIFFERENT MECHANISM |
 
@@ -104,7 +128,7 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 | Format | Item | Her spec (abridged) | ACP today | Verdict |
 |---|---|---|---|---|
 | DOCX | Descriptive Hyperlinks | Resolve `r:id`→rels; flag generic text AND raw URLs (`^https?://`) | `LinkPurposeRule.cs:70-84` — resolves rels correctly, flags generic-text set, **no raw-URL regex check exists** | 🟡 PARTIAL |
-| XLSX | Meaningful Hyperlink Text | Public `cell.hyperlink` + scan formulas for `HYPERLINK(` | Nothing | ⚪ NO DETECTOR |
+| XLSX | Meaningful Hyperlink Text | Public `cell.hyperlink` + scan formulas for `HYPERLINK(` | Nothing on `main` — new `Xlsx/Rules/LinkPurposeRule.cs` (`XLSX-LINK-001`) covers both mechanisms exactly as she describes, open in [PR #48](https://github.com/mova-io/acp/pull/48), not yet merged | ⚪ NO DETECTOR |
 | PPTX | Descriptive Hyperlinks | `run.hyperlink.address`+text; flag generic AND raw URLs | `LinkPurposeRule.cs:26-57` — same pattern as DOCX, generic-text yes, **raw-URL regex no** | 🟡 PARTIAL |
 | PDF | Links Are Descriptive and Active | Descriptive text check + HTTP liveness check | Nothing | ⚪ NO DETECTOR |
 
@@ -113,7 +137,7 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 | Format | Item | Her spec (abridged) | ACP today | Verdict |
 |---|---|---|---|---|
 | DOCX | Document Language | Read `@val`, `@eastAsia`, AND `@bidi` | `DocumentLanguageRule.cs:69-72` — `LangSet()` checks all three | 🟢 MATCH |
-| PPTX | Slide Language | Read `@lang` AND `@altLang` | `DocumentLanguageRule.cs:66-70` — only `@lang`, never `@altLang` | 🟠 GAP |
+| PPTX | Slide Language | Read `@lang` AND `@altLang` | `DocumentLanguageRule.cs:66-70` — only `@lang`, never `@altLang` — fix staged (uncommitted) on `optimistic-morse-13db9b` | 🟠 GAP |
 | PDF | Language Declared | Catalog `/Lang` present, valid BCP-47 | `document_language.py:31-34` — reads `/Lang` | 🟢 MATCH |
 
 ### 4.1.2 Name, Role, Value
