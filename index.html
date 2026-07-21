@@ -27,18 +27,18 @@
   td.sc{font-weight:700;text-align:left;white-space:nowrap}
   td.name{text-align:left;min-width:170px}
   tr.flagged td.name{color:var(--red);font-weight:700}
-  .devamark{font-weight:800;margin-left:3px;font-size:.9em}
+  .devamark{font-weight:800;margin-left:3px;font-size:.95em}
   .devamark.augment{color:#6a3fb5}
   .devamark.disagree{color:#b3261e}
   .legend .devamark{margin-left:0;margin-right:2px}
   td.cell{padding:0;font-weight:700;position:relative}
-  /* Corner flag, not a full border+tint — same info, far less visual weight across ~40% of assess cells.
-     A real border (not box-shadow) is used for the triangle itself, since box-shadow on <td> is unreliable
-     across browsers under border-collapse:collapse (tried first; silently failed to render live). */
+  /* Corner badge, not a full border+tint — same info, far less visual weight across ~40% of assess
+     cells. Uses the SAME glyph as the inline devamark (▲ augment / ⊗ disagree) rather than a plain
+     color-only triangle — meaning never rests on color alone, in a WCAG-compliance tool of all places. */
   td.cell.deva-disagree::after,td.cell.deva-augment::after,.swatch.deva-disagree::after,.swatch.deva-augment::after{
-    content:"";position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 12px 12px 0;pointer-events:none}
-  td.cell.deva-disagree::after,.swatch.deva-disagree::after{border-color:transparent #b3261e transparent transparent}
-  td.cell.deva-augment::after,.swatch.deva-augment::after{border-color:transparent #6a3fb5 transparent transparent}
+    position:absolute;top:1px;right:2px;font-size:8px;line-height:1;font-weight:900;pointer-events:none}
+  td.cell.deva-augment::after,.swatch.deva-augment::after{content:"◆";color:#6a3fb5}
+  td.cell.deva-disagree::after,.swatch.deva-disagree::after{content:"⊗";color:#b3261e}
   .swatch{display:inline-block;position:relative;padding:3px 7px;border-radius:4px;font-weight:700;font-size:12px;color:var(--blue);margin-right:2px;vertical-align:middle;background:#f6f7fa;border:1px solid var(--line)}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
@@ -146,8 +146,8 @@
     <span><span class="dot" style="background:var(--orange)"></span>Human judgment / Re-authoring (ceiling)</span>
     <span><span class="dot" style="background:var(--gray)"></span>N/A (rule can't be broken in this format)</span>
     <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
-    <span><span class="swatch deva-augment">Guided <b class="devamark augment">†</b></span> our conclusion augments Deva's checklist (agree, with nuance)</span>
-    <span><span class="swatch deva-disagree">Guided <b class="devamark disagree">‡</b></span> our conclusion disagrees with Deva's checklist (documents vs. web, or a real correction)</span>
+    <span><span class="swatch deva-augment">Guided <b class="devamark augment">◆</b></span> our conclusion augments Deva's V3 checklist (agree, with nuance)</span>
+    <span><span class="swatch deva-disagree">Guided <b class="devamark disagree">⊗</b></span> our conclusion disagrees with Deva's V3 checklist (documents vs. web, or a real correction)</span>
   </div>
 
   <table id="tbl">
@@ -635,29 +635,31 @@ const ASSESS_SPEC={
 "4.1.2":{docx:[{c:"Accessible Form Fields",s:"w:sdtPr/w:alias/@val non-empty AND w:tag set — both.",v:"GAP",note:"Only @alias checked (filed under 3.3.2, not 4.1.2, in ACP's catalog); w:tag never read."}],
   pdf:[{c:"Form Fields Have Labels",s:"AcroForm /Fields, each needs /TU, /FT, /V.",v:"NONE",note:"No detector exists."}]}};
 
-// Deva's conformance-checklist verdicts (jeremy.xlsx, verbatim) vs. this matrix's conclusion.
-// v = her Validation Approach · t = her How-to-Test note · k = agree|augment|disagree · ours/note = our conclusion + reason.
+// Deva's V3 checklist ("accessibility-checklist-automation V3.xlsx") vs. this matrix's conclusion —
+// now the sole source (jeremy.xlsx retired 2026-07-21). v = her V3 automation tier for this SC's
+// item(s) (Deterministic / Det + model / Model-primary / Det + human, Assessment tab col C) ·
+// t = her V3 mechanism, paraphrased from col D · k = agree|augment|disagree · ours/note = our
+// conclusion + reason. Five SCs jeremy.xlsx used to cover here — 1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2 —
+// are dropped, not ported: V3's own "Gaps vs WCAG" sheet states outright that her V3 checklist
+// doesn't address them ("missing from checklist"), so there is nothing in V3 to agree/augment/disagree
+// WITH for those five; carrying forward jeremy.xlsx-sourced verdicts under a "V3 is canonical" banner
+// would misattribute them.
 const DEVA={
-"1.1.1":{v:"Automated + Agentic",t:"Check alt text; verify with a screen reader (NVDA/VoiceOver); confirm decorative images use null alt / aria-hidden.",k:"agree",ours:"Agree",note:"alt PRESENCE is deterministic in the file; alt QUALITY is the agentic half — exactly her split."},
-"1.3.1":{v:"Automated + Agentic",t:"Inspect semantic markup/ARIA; screen-reader test; automated scan (axe).",k:"agree",ours:"Agree",note:"document translation: header rows / heading skips / PDF tags deterministic; correctness of relationships is the agentic remainder."},
-"1.3.2":{v:"Human / AT",t:"Disable CSS or use a screen reader to verify order.",k:"disagree",ours:"Disagree (documents)",note:"right for web, where order lives in the rendered DOM; in PPTX/PDF/XLSX the reading order is written into the file, so machines detect mismatches and a person confirms — documents beat her class here."},
-"1.3.3":{v:"Automated + Agentic",t:"Manual review of instructional text.",k:"augment",ours:"Agree + augment",note:"detectable without an LLM — a deterministic pattern check (shipped) finds 'click the round button'-style phrasing reproducibly; human confirms."},
-"2.4.6":{v:"Automated + Agentic",t:"Review heading/label text.",k:"agree",ours:"Agree",note:"structure (skips, empties) deterministic; DESCRIPTIVENESS agentic — the canonical split rule."},
-"3.1.1":{v:"Automated",t:"Inspect <html lang>.",k:"agree",ours:"Agree",note:"deterministic in all four document formats (core properties / settings / PDF /Lang). No caveats."},
-"3.1.2":{v:"Automated",t:"Inspect lang on foreign-language content.",k:"disagree",ours:"Disagree (nuance)",note:"her test only verifies passages already marked; finding UNMARKED language changes needs ML language-ID + human confirm — her own Automated + Agentic class, not Automated."},
-"1.4.4":{v:"Automated",t:"Zoom browser to 200%; check for clipping/overlap.",k:"disagree",ours:"Disagree (documents)",note:"browser technique with no document equivalent — viewers zoom natively. N/A for files; her class stands for web."},
-"1.4.5":{v:"Automated",t:"Identify text rendered as images.",k:"augment",ours:"Augment",note:"automatable, but via OCR (ML) with thresholds — and the 'essential' exception (logos) is judgment → machine-detected + human-confirmed."},
-"1.4.10":{v:"Automated",t:"Zoom to 400% / 320px viewport; check for horizontal scroll.",k:"disagree",ours:"Disagree (documents)",note:"viewport test is web-only. Fixed-layout OOXML: N/A. PDF: tagged-structure presence is the honest machine proxy."},
-"1.4.12":{v:"Automated",t:"Apply text-spacing bookmarklet; check for clipping.",k:"disagree",ours:"Disagree (documents)",note:"bookmarklet is web-only; user spacing overrides aren't a document-author obligation. N/A for files."},
-"1.4.1":{v:"Human / AT",t:"Manual review; grayscale check.",k:"augment",ours:"Agree + augment",note:"agree today; her grayscale check is exactly the future machine assist (render-and-diff), which would lift this to machine-detected later."},
-"1.4.3":{v:"Automated",t:"Use a contrast analyzer on text/background pairs.",k:"augment",ours:"Agree + augment",note:"the ratio math is deterministic; in documents the hard part is resolving EFFECTIVE colors (themes, fills). Where colors resolve → certified; where not → review, never a silent pass."},
-"1.4.11":{v:"Automated",t:"Contrast analyzer on buttons, borders, icons, focus rings.",k:"augment",ours:"Augment",note:"on web the analyzer reads computed styles; document shapes/charts need render-and-measure (ML/vision). Her class is the ceiling — today it's human for files."},
-"2.4.2":{v:"Automated",t:"Inspect the <title> element.",k:"agree",ours:"Agree",note:"deterministic in all four formats, shipped both directions. ('Descriptive' titles are judgment — the same remainder she assigns 2.4.6.)"},
-"2.4.3":{v:"Human / AT",t:"Tab through; verify logical order.",k:"augment",ours:"Agree + augment",note:"agree for anything interactive. OOXML has no focus order (N/A); PDF FORMS expose a tab-order key (/Tabs) that is deterministically checkable — a cheap detector her web lens misses."},
-"2.4.4":{v:"Automated + Agentic",t:"Review link text ('click here' fails).",k:"agree",ours:"Agree",note:"generic-text detection deterministic (her own example); purpose-in-context agentic. Shipped as exactly that split."},
-"2.1.1":{v:"Human / AT",t:"Tab/arrow through all controls with no mouse.",k:"augment",ours:"Agree + augment",note:"behavioral where content is interactive. Static DOCX/XLSX: N/A. PPTX: one machine proxy (auto-advancing animations, shipped). PDF forms/scripts: human."},
-"2.1.2":{v:"Human / AT",t:"Tab into and out of every widget/modal.",k:"agree",ours:"Agree",note:"documents mostly N/A; PDF-with-scripts human."},
-"4.1.2":{v:"Human / AT",t:"Screen-reader test; inspect ARIA; automated scan.",k:"augment",ours:"Agree + augment",note:"agree for the full SC; the document slice — do form fields expose a name? — is deterministically checkable (DOCX content-control labels shipped; PDF AcroForm /T · /TU is the same check waiting to be written)."}};
+"1.1.1":{v:"Det + model",t:"Presence via @descr is deterministic; alt is drafted from the image + context and human-approved — same split for the decorative-marking flag.",k:"agree",ours:"Agree",note:"Her V3 tier for every 1.1.1 item (docx/xlsx/pptx/pdf alt, pptx decorative) is Det+model — presence deterministic, quality model-assisted — exactly ACP's machine-assisted ceiling. All four alt-text items now MATCH her spec (PR #47 closed the pptx decorative-marking suppression gap); only a distinct V3 line item — verifying decorative marking ITSELF was applied correctly, not just honoring it — has no detector yet."},
+"1.3.1":{v:"Mixed — mostly Deterministic, 3 of 9 items Det + model",t:"Presence checks (list numbering, table headerRowCount, tblHeader, layouts) are pure Deterministic; her heading, caption, and PPTX table-header items call for a MODEL to corroborate presence.",k:"augment",ours:"Augment",note:"She's asking for more than our RUBRIC ceiling models for 3 of the 9 items — heading/caption descriptiveness and PPTX table-header cell-content corroboration — real nuance worth folding into that ceiling. Layered on top: DOCX Lists and Table Captions have no detector at all; DOCX merged-cell detection and PDF /Scope are declared gaps."},
+"1.3.2":{v:"Det + model",t:"spTree order vs. geometric sort (PPTX); structure-tree vs. content-stream vs. visual x/y (PDF) — order EXISTS is deterministic, order is CORRECT needs a person.",k:"agree",ours:"Agree",note:"A genuine correction from the retired jeremy.xlsx verdict, which read her as a web CSS-disable technique and marked 'disagree (documents)'. V3's own item text is written against files, not the DOM, and matches ACP's structure-vs-geometry comparison exactly."},
+"2.4.6":{v:"Det + model",t:"Structural presence (heading skips, empty titles) is deterministic; whether the text actually DESCRIBES the section is the model half.",k:"agree",ours:"Agree",note:"Exactly RUBRIC's machine-assisted split for this SC — presence is the deterministic sub-signal, descriptiveness is the semantic remainder neither side claims to auto-certify."},
+"3.1.1":{v:"Deterministic",t:"Read the language attribute/property directly — docx: @val/@eastAsia/@bidi; pptx: @lang/@altLang; pdf: /Lang.",k:"agree",ours:"Agree",note:"All three formats now MATCH her spec verbatim (PR #51 closed the last gap, pptx @altLang) — full agreement, tier and implementation both."},
+"1.4.4":{v:"—",t:"Not on her checklist — her own Gaps vs WCAG sheet calls 1.4.4/1.4.10/1.4.12 'Correctly absent: viewport behaviors static documents cannot fail.'",k:"agree",ours:"Agree",note:"A genuine correction from the retired jeremy.xlsx verdict ('disagree (documents)'), which assumed her class was a browser-zoom technique. V3 already reasons about documents-vs-web explicitly and reaches ACP's own N/A conclusion — nothing left to disagree about."},
+"1.4.5":{v:"Model-primary / Det + model",t:"DOCX/PPTX/XLSX images-of-text: OCR only, no deterministic path. PDF: near-zero text layer + large image = scan, no OCR needed to DETECT.",k:"augment",ours:"Augment",note:"Tier roughly matches ACP's machine-assisted ceiling, but her PDF item describes a cheap, purely deterministic pre-OCR heuristic (text-layer density) that ACP hasn't built for PDF at all — a specific, buildable gap her spec identifies."},
+"1.4.10":{v:"—",t:"Not on her checklist — same Gaps-sheet note as 1.4.4.",k:"agree",ours:"Agree",note:"Same correction as 1.4.4/1.4.12 — her V3 Gaps sheet explicitly agrees reflow is a viewport behavior with no static-document failure mode, matching RUBRIC's N/A (PDF's tagged-structure proxy aside)."},
+"1.4.12":{v:"—",t:"Not on her checklist — same Gaps-sheet note as 1.4.4.",k:"agree",ours:"Agree",note:"Same correction as 1.4.4/1.4.10 — her V3 Gaps sheet explicitly agrees user text-spacing overrides have no static-document equivalent, matching RUBRIC's N/A."},
+"1.4.3":{v:"Deterministic (docx/xlsx/pptx) / Det + model (pdf)",t:"Resolve direct hex OR theme + tint/shade (format-specific math). PDF: veraPDF WCAG profile OR render + pixel-sample.",k:"augment",ours:"Agree + augment",note:"DOCX and XLSX now fully MATCH (PR #46 closed theme resolution); PPTX still only resolves explicit RGB, not schemeClr+theme. PDF is the real divergence — her spec calls for veraPDF or rendering, ACP uses a content-stream luma heuristic — a different mechanism, not a narrower version of hers."},
+"2.4.2":{v:"Deterministic to Det + model, by item",t:"Presence is deterministic everywhere; DOCX's descriptiveness judgment is the one model-assisted piece she calls out.",k:"augment",ours:"Augment",note:"Presence-level items MATCH (docx, pdf); PPTX is the one gap her spec calls out that ACP's per-slide-only check misses — no cross-slide uniqueness check, exactly as she specifies."},
+"2.4.3":{v:"Det + human (pptx, shared with 2.1.1) / Deterministic (pdf)",t:"PPTX: extract interactive shape + hyperlink order, tab order is extractable not judgeable. PDF: each page's /Tab entry should be /S (structure order), plus AcroForm field order.",k:"disagree",ours:"Disagree",note:"Two real misses: the PPTX item shares AnimationOrderRule with 2.1.1, which checks a genuinely different signal (auto-advancing timing, not shape/hyperlink tab order) — not a narrower version of her spec. The PDF item — /Tab=/S — has no detector in ACP at all; V3 already specifies this exact check, so the gap is ours, not a novel finding ACP contributed (the retired jeremy.xlsx-era note claimed the opposite)."},
+"2.4.4":{v:"Det + model",t:"Resolve the target; flag her generic-phrase deny-list AND raw URLs (regex) — consistent across docx/pptx/xlsx/pdf.",k:"augment",ours:"Agree + augment",note:"Tier matches ACP's machine-assisted ceiling and XLSX now fully MATCHES (PR #48). DOCX and PPTX still lack the raw-URL check her spec explicitly calls for alongside the generic-phrase deny-list — a small, specific, two-format gap. PDF link-purpose has no detector at all."},
+"2.1.1":{v:"Det + human",t:"Extract interactive shape order (spTree) + hyperlink/action shapes; tab order is extractable, not judgeable.",k:"disagree",ours:"Disagree",note:"AnimationOrderRule checks auto-advancing animation timing entirely — a real, legitimate 2.1.1 signal, but not the shape/hyperlink tab-order extraction her V3 spec describes. Both are defensible ways to attack 2.1.1 in PPTX; they're just not the same check."},
+"4.1.2":{v:"Det + model",t:"DOCX: w:sdtPr/w:alias/@val non-empty AND w:tag set — both required. PDF: AcroForm /Fields, each needs /TU, /FT, /V.",k:"disagree",ours:"Disagree",note:"Tier matches ACP's machine-assisted ceiling, but implementation is behind on both formats: DOCX checks only @alias (filed under 3.3.2 in ACP's own catalog, not 4.1.2) and never reads w:tag; PDF has no form-field-label detector at all. Her spec, not just her tier, is ahead of what's built."}};
 
 // RUBRIC = the rule-inherent classification: what does WCAG + this file format allow,
 // independent of what ACP has shipped. aClass/fClass are ceilings, not ACP status.
@@ -818,9 +820,10 @@ const RUBRIC={
 
 const FM=["docx","xlsx","pptx","pdf"];
 const tb=document.querySelector("#tbl tbody");
-// Deva-vs-ours marker: her checklist evaluates ASSESSMENT approach only (no remediation column in
-// jeremy.xlsx), so the tag applies to the 4 assess cells, never the 4 remediate cells. "agree" gets no mark.
-const DEVA_MARK={augment:{sym:"†",word:"augments"},disagree:{sym:"‡",word:"disagrees with"}};
+// Deva-vs-ours marker: her V3 checklist evaluates ASSESSMENT approach only (Remediation is a
+// separate V3 tab this matrix doesn't compare per-SC), so the tag applies to the 4 assess cells,
+// never the 4 remediate cells. "agree" gets no mark.
+const DEVA_MARK={augment:{sym:"◆",word:"augments"},disagree:{sym:"⊗",word:"disagrees with"}};
 for(const row of ROWS){
   const tr=document.createElement("tr");
   if(row.flag)tr.className="flagged";
@@ -964,7 +967,7 @@ function renderDrawer(sc,f,trigger){
 
   if(DEVA[row.sc]){const dv=DEVA[row.sc];
     html+=`<div class="deva">
-      <div><b>vs. the conformance checklist (Deva):</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
+      <div><b>vs. Deva's V3 checklist:</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
       <div><b>Our conclusion:</b> <span class="dv ${dv.k}">${esc(dv.ours)}</span> — ${esc(dv.note)}</div></div>`;}
 
   html+=`<h4>4 · Remediation — current vs. potential</h4>${remediationCVP(row,f,rub)}`;
