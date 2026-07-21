@@ -178,6 +178,17 @@
     </ul>
   </div>
   <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
+
+  <div class="corr">
+    <h3>What V3's checklist does and doesn't cover</h3>
+    <p style="margin:0 0 8px;color:var(--muted);font-size:13px">From V3's own "Gaps vs WCAG" sheet — its checklist and the 20 WCAG criteria this matrix tracks don't cover the same ground. Neither list is wrong; they answer different questions.</p>
+    <ul>
+      <li><b>5 items have no WCAG SC behind them at all</b> — Accessible Fonts (sans-serif, 11pt: no success criterion mandates a typeface or size, a legitimate house-style check, not a conformance one) and, in XLSX, Name the Table / Named Ranges / Cell A1 Text / Unique Sheet Names (Microsoft authoring hygiene that helps screen-reader navigation, but maps to no criterion). None of these five appear as rows in the table above — reporting them as WCAG failures would misrepresent them.</li>
+      <li><b>2 items check real WCAG criteria outside this matrix's 20-SC scope</b> — Captioning for Multimedia (1.2.x, time-based media) and No Auto-Playing Audio (1.4.2, Audio Control). Both are real, checkable criteria; they're just not among the 20 this matrix was scoped to track.</li>
+      <li><b>3 items are sub-checks, not separate criteria</b> — Table Captions, Decorative Marking, and Uses Slide Layouts are useful operational decompositions of 1.3.1 and 1.1.1, not criteria of their own. They appear in the table under their parent SC's row, not as independent entries.</li>
+      <li><b>5 WCAG criteria have no V3 checklist item at all</b> — 1.3.3 (Sensory Characteristics), 1.4.1 (Use of Color), 1.4.11 (Non-text Contrast), 3.1.2 (Language of Parts), and 2.1.2 (No Keyboard Trap). This is why the drawer's "vs. Deva's V3 checklist" comparison (§3) has no entry for these five rows — there's nothing in V3 to agree, augment, or disagree with.</li>
+    </ul>
+  </div>
 </div>
 
 <div id="backdrop"></div>
@@ -645,6 +656,64 @@ const ASSESS_SPEC={
 "4.1.2":{docx:[{c:"Accessible Form Fields",s:"w:sdtPr/w:alias/@val non-empty AND w:tag set — both.",v:"GAP",note:"Only @alias checked (filed under 3.3.2, not 4.1.2, in ACP's catalog); w:tag never read."}],
   pdf:[{c:"Form Fields Have Labels",s:"AcroForm /Fields, each needs /TU, /FT, /V.",v:"PARTIAL",note:"pdf_form_field_checks() (api/office_structure.py) walks /AcroForm/Fields and flags missing /TU as PDF_FORM_NO_ACCESSIBLE_NAME — live in the .pdf scan path since 2026-07-15. Checks /TU only; /FT and /V from V3's spec are never read. Corrected 2026-07-21 — this cell wrongly said 'no detector,' a miss in the original audit (the detector predates it), not code drift."}]}};
 
+// ASSESS_META = per-item Human role (Assessment tab col F) + Model recommendation (col E,
+// verbatim local+cloud, unlike LOCAL_MODEL on wcag-deva-v3 which strips cloud). Keyed by
+// "format|c" matching ASSESS_SPEC item names exactly (note: two items use a SHORTER name
+// in ASSESS_SPEC than V3's own literal text -- "Descriptive Alt Text for Images" -> "Descriptive
+// Alt Text", "Document Title Set (Metadata)" -> "Document Title Set" -- renamed here to match,
+// do not use V3's literal names for those two or the decoration lookup below silently no-ops.
+const ASSESS_META={
+  "docx|Uses Heading Styles":{m:"Pseudo-heading detection: bold/large manual paragraphs that LOOK like headings. Local: Qwen3-8B or Llama 3.x 8B (text). Cloud: Haiku 4.5.",h:"Confirm flagged pseudo-headings."},
+  "docx|Lists Use Proper Formatting":{m:"None needed.",h:"Spot-audit only."},
+  "docx|Descriptive Alt Text":{m:"Equivalence + drafting. Local: Qwen2.5-VL-7B (24GB) or Llama 3.2 Vision 11B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt."},
+  "docx|Simple Tables with Headers":{m:"None needed.",h:"Confirm complex/nested tables."},
+  "docx|Table Captions or Descriptions":{m:"Is the caption descriptive of the table's purpose? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm vague captions."},
+  "docx|Descriptive Hyperlinks":{m:"Purpose-in-context on non-generic links. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links."},
+  "docx|Color Contrast":{m:"None on solid fills.",h:"Spot-audit text over images."},
+  "docx|Document Language":{m:"Optional: declared-vs-actual mismatch via fastText lid.176 (classifier, not LLM).",h:"Confirm flagged mismatches."},
+  "docx|Accessible Fonts Used":{m:"None needed.",h:"None."},
+  "docx|Document Title Set":{m:"Does the title describe the document's purpose? Flag generic ('Document1'). Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm generic titles."},
+  "docx|No Use of Images for Text Only":{m:"OCR + judgment. Local: Qwen2.5-VL-7B (strongest open OCR) or PaddleOCR/Tesseract for pure transcription. Cloud: Sonnet 5.",h:"Confirm logo/essential exceptions."},
+  "docx|Accessible Form Fields":{m:"Is the label meaningful for the field's purpose? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm vague field labels."},
+  "pptx|Unique Slide Titles":{m:"Optional: is the title descriptive? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm generic titles."},
+  "pptx|Logical Reading Order":{m:"Does the order preserve meaning? Local VLMs are weakest here. Cloud: Sonnet 5 preferred.",h:"Adjudicate flagged slides (decisive)."},
+  "pptx|Alt Text for Images":{m:"Equivalence + drafting. Local: Qwen2.5-VL-7B / Llama 3.2 Vision 11B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt."},
+  "pptx|Decorative Images Marked Correctly":{m:"Is the decorative DECISION correct (is this image actually informative)? Local: Qwen2.5-VL-7B. Cloud: Sonnet 5.",h:"Confirm decorative calls on flagged images."},
+  "pptx|Color Contrast":{m:"Text over picture/gradient: render slide (soffice -> PNG) and pixel-sample. Local: any VLM can flag; math is better done in code.",h:"Spot-audit text-over-image slides."},
+  "pptx|Uses Slide Layouts":{m:"None needed.",h:"None."},
+  "pptx|Descriptive Hyperlinks":{m:"Purpose-in-context. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links."},
+  "pptx|Meaningful Table Headers":{m:"Confirm the first row holds real header labels. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm complex tables."},
+  "pptx|Captioning for Multimedia":{m:"Caption accuracy/sync cannot be judged from the file alone; transcription via local Whisper is possible for comparison.",h:"Review caption quality and sync (decisive)."},
+  "pptx|No Auto-Playing Audio":{m:"None needed.",h:"Confirm intent on flagged media."},
+  "pptx|Keyboard Accessible Navigation":{m:"Limited value; operability is behavioral.",h:"Tab through in slideshow mode (decisive)."},
+  "pptx|Slide Language":{m:"Optional: declared-vs-actual via fastText lid.176.",h:"Confirm flagged mismatches."},
+  "xlsx|Alt Text for Images":{m:"Equivalence; charts need a data-summary alt. Local: Qwen2.5-VL-7B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt; charts need care."},
+  "xlsx|Name the Table":{m:"None needed.",h:"None."},
+  "xlsx|Use Table Headers":{m:"None needed.",h:"Confirm irregular ranges."},
+  "xlsx|Add Text to Cell A1":{m:"Is A1 a useful title/overview for the sheet? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm usefulness on complex sheets."},
+  "xlsx|Meaningful Hyperlink Text":{m:"Purpose-in-context. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links."},
+  "xlsx|Unique Names for Worksheets":{m:"None needed.",h:"None."},
+  "xlsx|Name Cells and Ranges":{m:"None needed.",h:"None."},
+  "xlsx|Color Contrast":{m:"None on resolvable colors.",h:"Spot-audit gradient/image backgrounds."},
+  "pdf|PDF is Tagged":{m:"None needed.",h:"None - gate the pipeline on this."},
+  "pdf|Correct Reading Order":{m:"Linearized coherence. Cloud: Sonnet 5 / Opus 4.8. Local VLMs weakest here.",h:"Adjudicate (Matterhorn human checkpoint)."},
+  "pdf|Headings Tagged Properly":{m:"Descriptiveness of heading text: Local Qwen3-8B / Cloud Haiku 4.5.",h:"Confirm vague headings."},
+  "pdf|Descriptive Alt Text":{m:"Equivalence + drafting. Local: Qwen2.5-VL-7B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt."},
+  "pdf|Table Headers Tagged":{m:"None needed.",h:"Confirm complex/nested tables."},
+  "pdf|Language Declared":{m:"Declared-vs-actual via fastText lid.176 (classifier).",h:"Confirm flagged mismatches."},
+  "pdf|Title and Metadata Set":{m:"Descriptiveness: Local Qwen3-8B / Cloud Haiku 4.5.",h:"Confirm generic titles."},
+  "pdf|Form Fields Have Labels":{m:"Is the label meaningful for the field? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm vague field labels."},
+  "pdf|No Scanned Images of Text (OCR)":{m:"OCR to remediate. Local: Qwen2.5-VL-7B or PaddleOCR/Tesseract. Cloud: Sonnet 5.",h:"Verify OCR accuracy on remediated pages."},
+  "pdf|Color Contrast":{m:"Ambiguous backgrounds only. Cloud: Sonnet 5.",h:"Spot-audit overlays; cross-check with PAC."},
+  "pdf|Logical Tab Order":{m:"Order preserves meaning: Cloud Sonnet 5.",h:"Confirm on form-heavy PDFs."},
+  "pdf|Links Are Descriptive and Active":{m:"Purpose-in-context. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links; review dead-link list."},
+};
+(function(){for(const sc in ASSESS_SPEC)for(const f in ASSESS_SPEC[sc])for(const item of ASSESS_SPEC[sc][f]){
+  const meta=ASSESS_META[f+"|"+item.c];
+  if(meta){item.m=meta.m;item.h=meta.h;}
+}})();
+
+
 // Deva's V3 checklist ("accessibility-checklist-automation V3.xlsx") vs. this matrix's conclusion —
 // now the sole source (jeremy.xlsx retired 2026-07-21). v = V3's automation tier for this SC's
 // item(s) (Deterministic / Det + model / Model-primary / Det + human, Assessment tab col C) ·
@@ -988,7 +1057,9 @@ function renderDrawer(sc,f,trigger){
     if(aspec&&aspec.length){
       html+=`<div class="aspec"><div class="aspec-title">Deva's assessment spec — primary reference</div>${aspec.map(x=>
         `<div class="aspec-item"><span class="c">${esc(x.c)}</span><span class="avbadge ${x.v}">${esc(AV_LABEL[x.v])}</span>
-          <div class="s">${esc(x.s)}</div>
+          <div class="s">${esc(x.s)}</div>${x.m&&x.m!=="None needed."?
+          `<div class="aspec-note"><b>V3's model role:</b> ${esc(x.m)}</div>`:""}${x.h&&x.h!=="None."&&!x.h.startsWith("None -")?
+          `<div class="aspec-note"><b>V3's human role:</b> ${esc(x.h)}</div>`:""}
           <div class="aspec-note"><b>ACP today:</b> ${esc(x.note)}</div></div>`).join("")}</div>
         <div class="aspec-vs">This matrix's framing</div>`;
     }
