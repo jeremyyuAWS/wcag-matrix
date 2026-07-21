@@ -19,6 +19,11 @@
   .tile b{display:block;font-size:22px}
   .tile span{color:var(--muted);font-size:12px}
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 14px;font-size:12px;color:var(--muted)}
+  .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
+  .filterbar label{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--navy);cursor:pointer}
+  .filterbar input[type=checkbox]{width:15px;height:15px;cursor:pointer}
+  .filterbar-note{color:var(--muted);font-size:12px}
+  tr.v3-hidden{display:none}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
   table{border-collapse:collapse;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
   th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}
@@ -148,6 +153,11 @@
     <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
     <span><span class="swatch deva-augment">Guided <b class="devamark augment">◆</b></span> our conclusion augments Deva's V3 checklist (agree, with nuance)</span>
     <span><span class="swatch deva-disagree">Guided <b class="devamark disagree">⊗</b></span> our conclusion disagrees with Deva's V3 checklist (documents vs. web, or a real correction)</span>
+  </div>
+
+  <div class="filterbar">
+    <label><input type="checkbox" id="v3only"> Show only the SCs in Deva's V3 checklist (<span id="v3count"></span>)</label>
+    <span class="filterbar-note">Off = ACP's full 20-SC rubric. On = just what her V3 file actually checks — the other 5 (1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2) aren't in it at all, per her own "Gaps vs WCAG" sheet.</span>
   </div>
 
   <table id="tbl">
@@ -824,8 +834,13 @@ const tb=document.querySelector("#tbl tbody");
 // separate V3 tab this matrix doesn't compare per-SC), so the tag applies to the 4 assess cells,
 // never the 4 remediate cells. "agree" gets no mark.
 const DEVA_MARK={augment:{sym:"◆",word:"augments"},disagree:{sym:"⊗",word:"disagrees with"}};
+// V3_COVERED = the SCs Deva's V3 checklist actually addresses — exactly DEVA's keys, since DEVA
+// is itself derived from V3 (see the DEVA comment above) and already excludes the 5 SCs her own
+// "Gaps vs WCAG" sheet admits aren't in it. Drives the #v3only filter toggle below.
+const V3_COVERED=new Set(Object.keys(DEVA));
 for(const row of ROWS){
   const tr=document.createElement("tr");
+  tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
   let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
   const dv=DEVA[row.sc], dm=dv&&DEVA_MARK[dv.k];
@@ -842,6 +857,21 @@ for(const row of ROWS){
   for(const f of FM){const v=row.r[f];h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
 }
+
+// "Show only Deva's V3 checklist SCs" toggle — per her feedback that the full 20-SC rubric table
+// includes rows outside what her V3 file actually checks. Filters rows only (via tr.dataset.sc
+// set above); doesn't touch the ceiling tiles, which describe ACP's own rubric-wide ceiling and
+// are intentionally independent of any one checklist's scope.
+(function(){
+  const cb=document.getElementById("v3only"), countEl=document.getElementById("v3count");
+  countEl.textContent=`${V3_COVERED.size} of ${ROWS.length}`;
+  function apply(){
+    for(const tr of tb.querySelectorAll("tr"))
+      tr.classList.toggle("v3-hidden", cb.checked && !V3_COVERED.has(tr.dataset.sc));
+  }
+  cb.addEventListener("change",apply);
+  apply();
+})();
 
 // Ceiling tiles: computed from RUBRIC across all 80 (SC × format) cells — the rule-inherent denominator.
 (function(){
