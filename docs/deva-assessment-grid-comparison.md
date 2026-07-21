@@ -32,6 +32,19 @@ Verified against the merged code on `main` (not just the PR diffs) before flippi
 `ThemeColorHelper.Resolve` in DOCX and `_apply_xlsx_tint`/`_parse_xlsx_theme` in
 `api/office_structure.py` both do exactly what her spec describes, same for the other three.
 
+## Full re-verification, 2026-07-21
+
+Ran an independent re-check of all 38 rows against current `main` (a fresh clone, not the working
+checkout, to avoid any doubt about which commit was actually read) — not just the 5 rows the 5 PRs
+touched. Found one real audit gap: **PDF Form Fields Have Labels was wrongly marked NO DETECTOR**.
+`pdf_form_field_checks()` in `api/office_structure.py` has walked `/AcroForm/Fields` and flagged
+missing `/TU` since 2026-07-15 — six days before the original audit — so this was a miss in that
+first pass, not code drift since. Flipped to PARTIAL below (it checks `/TU` only; her spec also
+wants `/FT` and `/V`). Also corrected two stale file:line citations (PDF Color Contrast, DOCX
+Accessible Form Fields) whose line numbers had drifted from unrelated code changes elsewhere in
+the same files — substance of both verdicts was already correct, only the citation was wrong. No
+other verdict-affecting issues found in the other 35 rows.
+
 ## Verdict key
 
 - 🟢 **MATCH** — ACP's mechanism does what her spec describes.
@@ -46,10 +59,10 @@ Verified against the merged code on `main` (not just the PR diffs) before flippi
 
 ## Scorecard
 
-**38 items: 16 🟢 MATCH · 5 🟡 PARTIAL · 5 🟠 GAP · 2 🔴 DIFFERENT MECHANISM · 9 ⚪ NO DETECTOR · 1 ⬜**
+**38 items: 16 🟢 MATCH · 6 🟡 PARTIAL · 5 🟠 GAP · 2 🔴 DIFFERENT MECHANISM · 8 ⚪ NO DETECTOR · 1 ⬜**
 
-Read generously: MATCH + PARTIAL (21/38, 55%) means ACP's mechanism is at least fundamentally the
-right one for that item. GAP + DIFFERENT MECHANISM + NO DETECTOR (16/38, 42%) is the honest build
+Read generously: MATCH + PARTIAL (22/38, 58%) means ACP's mechanism is at least fundamentally the
+right one for that item. GAP + DIFFERENT MECHANISM + NO DETECTOR (15/38, 39%) is the honest build
 list — some are cheap (one more attribute), some are genuinely unbuilt.
 
 ## Full comparison
@@ -61,7 +74,7 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 | DOCX | Descriptive Alt Text | Require `@descr`; reject `@title` (legacy, AT ignores it) | `AltTextRule.cs:57` — only reads `Description` (`@descr`), never `@title` | 🟢 MATCH |
 | XLSX | Alt Text for Images | `xdr:cNvPr/@descr`+`@title`; cover pics AND charts | `Xlsx/Rules/AltTextRule.cs:72,80-84` — only `@descr`, covers `Picture`(45) + `GraphicFrame`(52) | 🟢 MATCH |
 | PPTX | Alt Text for Images | `p:cNvPr/@descr`+`@title`; non-decorative shapes only | `Pptx/Rules/AltTextRule.cs:26-51,64` — covers both shape types via `@descr`; never reads `@title` (fine); now also skips flagging images marked decorative via `AltTextHeuristics.IsMarkedDecorative()`, merged in [PR #47](https://github.com/mova-io/acp/pull/47) (`1fc3c2a`, 2026-07-21) | 🟢 MATCH |
-| PPTX | Decorative Images Marked Correctly | Detect the `adec:decorative` extension flag | Nothing — confirmed absent (the decorative-marker finding from earlier this session) | ⚪ NO DETECTOR |
+| PPTX | Decorative Images Marked Correctly | Detect the `adec:decorative` extension flag | `AltTextHeuristics.IsMarkedDecorative()` (merged PR #47) now READS this flag — but only to suppress a false alt-text-missing finding, not to verify the flag itself was applied correctly. Her item asks a different question ("is this image actually informative, i.e. was decorative marked correctly") that nothing checks | ⚪ NO DETECTOR |
 | PDF | Descriptive Alt Text | Require `/Alt`; reject `/ActualText` (text substitute, not a description) | `image_alt_text.py:105-113` — only `/Alt`, no `/ActualText` reference | 🟢 MATCH |
 
 ### 1.3.1 Info and Relationships
@@ -92,7 +105,7 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 | DOCX | Color Contrast | Resolve direct hex OR theme color + `themeTint`/`themeShade` math | `ColourContrastRule.cs` — direct hex OR `ThemeColorHelper.Resolve()` (new `ThemeColorHelper.cs`, full 12-slot scheme + tint/shade HSL math). Merged [PR #46](https://github.com/mova-io/acp/pull/46), 2026-07-21 | 🟢 MATCH |
 | XLSX | Color Contrast | Theme + XLSX-specific tint float formula (different math than DOCX) | `api/office_structure.py` — new `_parse_xlsx_theme()` + `_apply_xlsx_tint()`, using the correct SpreadsheetML-specific tint float formula (distinct from DOCX's). Merged [PR #46](https://github.com/mova-io/acp/pull/46), 2026-07-21 | 🟢 MATCH |
 | PPTX | Color Contrast | `solidFill` (`srgbClr`/`schemeClr`+theme) vs. shape→layout→master chain | `ColourContrastRule.cs:112-167` — full shape→layout→master chain confirmed, **but only explicit RGB/SystemColor hex; `schemeClr`+theme-color-map resolution isn't handled** | 🟡 PARTIAL |
-| PDF | Color Contrast | veraPDF WCAG profile, OR render+pdfplumber-bbox+pixel-sample | `office_structure.py:340-390` — neither: content-stream `non_stroking_color` extraction + luma heuristic, no rendering at all | 🔴 DIFFERENT MECHANISM |
+| PDF | Color Contrast | veraPDF WCAG profile, OR render+pdfplumber-bbox+pixel-sample | `office_structure.py:740-764` (`pdf_contrast_checks`; citation corrected 2026-07-21 — was stale at :340-390) — neither: content-stream `non_stroking_color` extraction + luma heuristic, no rendering at all | 🔴 DIFFERENT MECHANISM |
 
 ### 1.4.5 Images of Text
 
@@ -144,8 +157,8 @@ list — some are cheap (one more attribute), some are genuinely unbuilt.
 
 | Format | Item | Her spec (abridged) | ACP today | Verdict |
 |---|---|---|---|---|
-| DOCX | Accessible Form Fields | `w:sdtPr/w:alias/@val` non-empty AND `w:tag` set | `office_structure.py:83-92,167-175` (filed under 3.3.2, confirmed) — checks **only `@alias`**, `w:tag` never read | 🟠 GAP |
-| PDF | Form Fields Have Labels | AcroForm `/Fields`, each needs `/TU`, `/FT`, `/V` | Nothing | ⚪ NO DETECTOR |
+| DOCX | Accessible Form Fields | `w:sdtPr/w:alias/@val` non-empty AND `w:tag` set | `office_structure.py:259-266` (filed under 3.3.2, confirmed; citation corrected 2026-07-21 — was stale at :83-92,167-175, unrelated code today) — checks **only `@alias`**, `w:tag` never read | 🟠 GAP |
+| PDF | Form Fields Have Labels | AcroForm `/Fields`, each needs `/TU`, `/FT`, `/V` | `office_structure.py:1257-1286` (`pdf_form_field_checks`, wired into `checks_for()` for `.pdf`) — walks `/AcroForm/Fields` via `_pdf_terminal_fields`, flags `PDF_FORM_NO_ACCESSIBLE_NAME` when `/TU` is missing/blank. **Corrected 2026-07-21** — this row previously said "Nothing," missed in the original audit; the detector predates this session (added 2026-07-15, commit `9f1e1c3`), so this was an audit gap, not code drift. Checks only `/TU`; `/FT` and `/V` from her spec are never read | 🟡 PARTIAL |
 
 ## What's new here vs. the earlier 11-item audit
 
