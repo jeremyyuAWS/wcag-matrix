@@ -129,6 +129,6 @@ The 28 🟢/🟡 matched items (23 + 5) are wired directly into the live drawer 
 `index.html`, keyed `sc → format → [{criteria, how-to-text}]` since this checklist is inherently
 per-format (unlike `jeremy.xlsx`'s SC-level entries). They render in drawer §4 "Remediation" as
 "HITL today — Deva's team's own manual step" — grounding the Current/Human-assisted mechanism in
-the exact procedure her team already follows, rather than an abstract label. Deliberately excludes
+the exact procedure V3's team already follows, rather than an abstract label. Deliberately excludes
 the 10 🔴 and 6 ⚪ items — showing those as "today's manual step" would wrongly imply ACP has a cell
 for them to correspond to.
