@@ -100,6 +100,10 @@
   #panel details.faqitem{margin:8px 0 0;border:1px solid var(--line);border-radius:6px;padding:0 10px}
   #panel details.faqitem summary{cursor:pointer;padding:8px 0;font-size:13px;font-weight:600;color:var(--navy)}
   #panel details.faqitem p{margin:0 0 9px;font-size:12.5px;line-height:1.5}
+  #panel details.faqitem .faq-a{margin:0 0 9px;font-size:12.5px;line-height:1.5}
+  #panel details.faqitem .faq-a ul{margin:0 0 6px}
+  #panel details.faqitem .faq-a li{margin-bottom:4px}
+  #panel details.faqitem .faq-a code{font-size:11px;background:var(--bg);padding:1px 4px;border-radius:3px}
   #panel details.faqitem summary:focus-visible{outline:2px solid #0b57d0}
   #panel button:focus-visible, #panel a:focus-visible{outline:2px solid #0b57d0;outline-offset:1px}
   #panel .todaychip{display:inline-block;margin:6px 0 0 8px;font-size:12px;color:var(--muted);vertical-align:middle}
@@ -1064,11 +1068,15 @@ function buildFAQ(row,f,rub){
   const faqs=[];
   if(rub&&rub.aClass!=="NAx"&&ad.b&&ad.b.length){
     // Full detail, not just the headline bullet: every mechanism bullet ACP's own technical notes
-    // (§6) carry for this cell, plus the evidence file paths, joined into one thorough answer —
-    // no new authoring, this data already existed and was being truncated to bullet[0].
-    const bullets=ad.b.map(x=>esc(x)).join(" ");
-    const evList=(ad.ev||[]).length?` <b>Evidence:</b> ${ad.ev.map(x=>`<code>${esc(x)}</code>`).join(", ")}.`:"";
+    // (§6) carry for this cell, rendered as an actual bulleted list (not one run-on paragraph),
+    // plus the evidence file paths — no new authoring, this data already existed and was being
+    // truncated to bullet[0].
+    const bullets=`<ul style="margin:0 0 6px;padding-left:18px">${ad.b.map(x=>`<li style="margin-bottom:4px">${esc(x)}</li>`).join("")}</ul>`;
+    const evList=(ad.ev||[]).length?`<b>Evidence:</b> ${ad.ev.map(x=>`<code>${esc(x)}</code>`).join(", ")}.`:"";
     faqs.push({q:"What exactly does ACP check today for this rule and format?",a:bullets+evList,html:true});
+  }
+  if(rub&&rub.aClass!=="NAx"){
+    faqs.push({q:"What % can ACP automate, how much human augmentation closes the rest, and what would this cost in hours by hand?",a:manualVsAugmented(row,f,rub),html:true});
   }
   if(ad.c&&ad.c.length)
     faqs.push({q:"What's a known blind spot reviewers should expect?",a:ad.c.join(" ")});
@@ -1085,7 +1093,6 @@ function buildFAQ(row,f,rub){
   if(drift)faqs.push({q:"Is there a catalog/code drift on this rule?",a:drift});
   if(rub&&rub.aClass!=="NAx"){
     const ca=costAutomation(row,f,rub);
-    faqs.push({q:"What % of files can be fully automated vs. need a human, today?",a:ca.auto,html:true});
     faqs.push({q:"Roughly what does this cost per flagged item? (assumptions stated)",a:ca.cost,html:true});
   }
   return faqs;
@@ -1100,6 +1107,9 @@ const COST_ASSUMPTIONS={
   minutesPerFixApprove:2,     // minutes to review + approve one drafted remediation (already-written, just needs a decision)
   minutesPerHumanOnly:8,      // minutes for a fully human assessment/fix with no machine assist at all (find it, judge it, act)
   cloudCallCost:"$0.01–0.05", // per model call at current Sonnet 5 / Haiku 4.5 pricing — vision calls trend toward the high end, short text toward the low end
+  minutesManualPerSC:15,      // fully-manual baseline: a human audits a whole document for ONE criterion with zero tool assistance (find every instance, judge each, fix it) and no machine pre-filter to triage against. Flat across tiers on purpose — manual effort doesn't know ACP's own DET/MA/HUM taxonomy; this is the "if ACP didn't exist" number.
+  findingRateTypical:0.40,    // same Typical scenario used in the pricing artifacts — the share of applicable checks that surface ≥1 item on a realistic document
+  minutesPerFixApprovePartial:1, // approval time where a faithful-source shortcut (AC/AP-shipped) already covers most cases — lighter than a full drafted-proposal approval
 };
 function money(mins){const h=mins/60; return "$"+(h*COST_ASSUMPTIONS.humanRatePerHour).toFixed(2);}
 function costAutomation(row,f,rub){
@@ -1138,6 +1148,45 @@ function costAutomation(row,f,rub){
   }
   cost+=` <span style="color:var(--muted);font-size:11px">Assumptions: $${A.humanRatePerHour}/hr loaded reviewer rate, ${A.minutesPerAssessConfirm}-${A.minutesPerHumanOnly} min/finding depending on tier, ${A.cloudCallCost}/cloud-model-call. ACP doesn't track actual $/finding or findings-per-doc today — treat this as a planning building block, not a measured cost. Multiply by your own average findings-per-document to get a per-doc estimate; that count varies too widely by document to state here as one number.</span>`;
   return {auto,cost};
+}
+// Manual-baseline comparison: "if ACP didn't exist" (minutesManualPerSC, flat, always incurred — a
+// human must inspect the whole document for this one criterion regardless of outcome) vs. ACP-
+// augmented time (0 where ACP fully automates; findingRateTypical-weighted human touch everywhere
+// else, using the SAME per-tier minute assumptions as costAutomation, computed independently here
+// rather than refactored out of it to keep each function's math easy to audit in isolation).
+function manualVsAugmented(row,f,rub){
+  const A=COST_ASSUMPTIONS, p=A.findingRateTypical;
+  const shipped=row.a[f], rshipped=row.r[f];
+  const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]};
+  const atCeiling=(AT_CEILING_A[rub.aClass]||[]).includes(shipped);
+  let acpMin=0, gateFlag=false;
+  if(rub.aClass==="DET")acpMin+=atCeiling?0:A.minutesPerHumanOnly;
+  else if(rub.aClass==="MA")acpMin+=p*A.minutesPerAssessConfirm;
+  else if(rub.aClass==="HUM")acpMin+=A.minutesPerHumanOnly;
+  if(rub.fClass&&rub.fClass!=="NAx"){
+    const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
+    const fAtCeiling=(AT_CEILING_F[rub.fClass]||[]).includes(rshipped);
+    if(rub.fClass==="MECH")acpMin+=fAtCeiling?0:p*A.minutesPerHumanOnly;
+    else if(rub.fClass==="GEN"){
+      if(rshipped==="A"){gateFlag=true;} // auto, no approval gate — $0/0min today, but see the drift warning, not a clean win
+      else if(["AC","AP"].includes(rshipped))acpMin+=p*A.minutesPerFixApprovePartial;
+      else if(rshipped==="AI")acpMin+=p*A.minutesPerFixApprove;
+      else acpMin+=p*A.minutesPerHumanOnly; // nothing shipped (N)
+    }else if(rub.fClass==="REAUTH")acpMin+=p*A.minutesPerHumanOnly;
+  }
+  const manualMin=A.minutesManualPerSC;
+  const pctAuto=Math.max(0,Math.min(100,Math.round((1-acpMin/manualMin)*100)));
+  const pctAugment=100-pctAuto;
+  const manualHrs=(manualMin/60).toFixed(2);
+  const acpHrs=(acpMin/60).toFixed(2);
+  const saved=Math.max(0,manualMin-acpMin);
+  let html=`<ul style="margin:0;padding-left:18px">
+    <li style="margin-bottom:6px"><b>${pctAuto}% automatable today</b> — the share of this cell's full assess-and-fix effort ACP removes from a human's plate, at a ${Math.round(p*100)}% finding-rate assumption (this matrix's "Typical" document).</li>
+    <li style="margin-bottom:6px"><b>${pctAugment}% still needs human augmentation</b> to reach a fully-remediated file — confirming flagged items, approving drafted fixes, or doing the whole thing by hand where ACP has no signal at all (see the badge above for which case this cell is).</li>
+    <li style="margin-bottom:6px"><b>Fully by hand (no ACP at all): ~${manualHrs} hr</b> per document for this one criterion (${A.minutesManualPerSC} min assumption — find every instance, judge it, fix it, with no machine pre-filter). <b>With ACP: ~${acpHrs} hr</b> — saves roughly ${Math.round(saved)} minutes of human time per document on this cell alone.</li>`;
+  if(gateFlag)html+=`<li style="margin-bottom:6px;color:var(--red,#b23b2f)"><b>Caveat:</b> this cell's remediation currently auto-writes with no approval gate — 0% human augmentation isn't a clean win here, it's a policy gap this session's audit flagged (see §4 and <code>docs/deva-remediation-comparison.md</code>).</li>`;
+  html+=`</ul><span style="color:var(--muted);font-size:11px">Assumptions: ${A.minutesManualPerSC} min manual-baseline per SC per document (flat, not finding-dependent — a human must look regardless of outcome), ${Math.round(p*100)}% finding rate (this matrix's Typical scenario), same $${A.humanRatePerHour}/hr rate and per-tier minute assumptions as the cost-per-item answer below. Not measured data — ACP doesn't track real findings-per-document or manual-audit time today.</span>`;
+  return html;
 }
 // Turns bare SC-code mentions (e.g. "1.3.2") inside already-escaped text into clickable cross-links
 // to that SC's drawer (same format where it has data). Regex runs on esc()'d text — safe, no new user input.
@@ -1201,7 +1250,9 @@ function renderDrawer(sc,f,trigger){
 
   const faqs=buildFAQ(row,f,rub);
   if(faqs.length){
-    html+=`<h4>5 · FAQ</h4>${faqs.map(x=>`<details class="faqitem"><summary>${esc(x.q)}</summary><p>${x.html?x.a:linkify(esc(x.a),row.sc,f)}</p></details>`).join("")}`;
+    html+=`<h4>5 · FAQ</h4>${faqs.map(x=>x.html
+      ?`<details class="faqitem"><summary>${esc(x.q)}</summary><div class="faq-a">${x.a}</div></details>`
+      :`<details class="faqitem"><summary>${esc(x.q)}</summary><p>${linkify(esc(x.a),row.sc,f)}</p></details>`).join("")}`;
   }
 
   html+=`<details class="tech"><summary>6 · Technical notes</summary>${techNotes(row,f)}</details>`;
