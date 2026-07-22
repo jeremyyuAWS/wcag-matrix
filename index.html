@@ -388,7 +388,7 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"C",xlsx:"Q",pptx:"C",pdf:"Q"},r:{docx:"A",xlsx:"A",pptx:"A",pdf:"N"},
+{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"Q"},r:{docx:"A",xlsx:"A",pptx:"A",pdf:"N"},
  ae:{
   docx:{b:["The .NET rule computes the TRUE WCAG relative-luminance contrast ratio — 4.5:1 normal text, 3:1 large (≥18pt or 14pt bold) — for every run with explicit colour (w:color) against its shading (w:shd). The real formula, not a luma shortcut.","The declared scope is the RIGHT scope: automatic-colour runs are skipped because their rendered colour depends on the viewer theme — outside the document.","Findings are actionable by design: fg/bg hex, measured ratio, required ratio, text excerpt — a designer can act without re-scanning."],
       c:["Effective backgrounds from table-cell or page fills aren't resolved (declared FP mode); theme-driven low contrast passes (declared FN mode)."],
@@ -452,7 +452,7 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"2.4.4",name:"Link Purpose (In Context)",lvl:"A",flag:false,a:{docx:"Q",xlsx:"H",pptx:"Q",pdf:"H"},r:{docx:"AI",xlsx:"N",pptx:"AI",pdf:"N"},
+{sc:"2.4.4",name:"Link Purpose (In Context)",lvl:"A",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"H"},r:{docx:"AI",xlsx:"AI",pptx:"AI",pdf:"N"},
  ae:{
   docx:{b:["Deterministic FAILURE detection: every w:hyperlink's display text is tested against a generic-phrase deny-list ('click here', 'read more', 'more', 'link'…) plus a bare-URL pattern.","The harm story is concrete: screen-reader users skim a links list; ten 'click here's are indistinguishable — the destination is only knowable by leaving the list.","Why Guided, not Certified: a PASS can't certify purpose — descriptive-sounding text that lies about its destination passes, because the rule never fetches the target (declared). Semantic criteria cap at Guided."],
       c:["Short-but-clear texts ('map') can false-positive against the deny-list (declared)."],
@@ -493,7 +493,7 @@ const ROWS=[
   pdf:{b:["The exception that proves the rule: PDF CAN embed JavaScript and form logic that traps focus. Nothing checks it → Human, honestly."],ev:["—"]}},
  re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"Q"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"AC"},
  ae:{
   docx:{b:["This SC targets UI components; in documents it bites on form controls. What exists nearby: docx content-control fields (checkbox, date, dropdown…) ARE checked for labels — but under 3.3.2, not 4.1.2 (DOCX_FORM_FIELD_NO_LABEL).","Watch the demo-catalog trap: wcagCatalog.js marks 4.1.2 'Shipped (demo)' — that's HTML axe coverage for web pages. Quoting it for documents is exactly the layer-mixing this brief exists to stop."],
       ev:["api/office_structure.py (3.3.2 form-field check — adjacent)","frontend/src/wcagCatalog.js (HTML-only 'Shipped' marker)"]},
@@ -1062,8 +1062,14 @@ function techNotes(row,f){
 function buildFAQ(row,f,rub){
   const ad=row.ae[f]||{}, rd=row.re[f]||{};
   const faqs=[];
-  if(rub&&rub.aClass!=="NAx"&&ad.b&&ad.b[0])
-    faqs.push({q:"What exactly does ACP check today for this rule and format?",a:ad.b[0]});
+  if(rub&&rub.aClass!=="NAx"&&ad.b&&ad.b.length){
+    // Full detail, not just the headline bullet: every mechanism bullet ACP's own technical notes
+    // (§6) carry for this cell, plus the evidence file paths, joined into one thorough answer —
+    // no new authoring, this data already existed and was being truncated to bullet[0].
+    const bullets=ad.b.map(x=>esc(x)).join(" ");
+    const evList=(ad.ev||[]).length?` <b>Evidence:</b> ${ad.ev.map(x=>`<code>${esc(x)}</code>`).join(", ")}.`:"";
+    faqs.push({q:"What exactly does ACP check today for this rule and format?",a:bullets+evList,html:true});
+  }
   if(ad.c&&ad.c.length)
     faqs.push({q:"What's a known blind spot reviewers should expect?",a:ad.c.join(" ")});
   if(rd.c&&rd.c.length)
@@ -1077,7 +1083,61 @@ function buildFAQ(row,f,rub){
   if(counter)faqs.push({q:"What's the strongest objection to this classification, and how does it hold up?",a:counter});
   const drift=ad.cat||rd.cat;
   if(drift)faqs.push({q:"Is there a catalog/code drift on this rule?",a:drift});
+  if(rub&&rub.aClass!=="NAx"){
+    const ca=costAutomation(row,f,rub);
+    faqs.push({q:"What % of files can be fully automated vs. need a human, today?",a:ca.auto,html:true});
+    faqs.push({q:"Roughly what does this cost per flagged item? (assumptions stated)",a:ca.cost,html:true});
+  }
   return faqs;
+}
+
+// Cost & automation methodology, stated once here — every number below traces back to these four
+// assumptions, not to any measured ACP data (ACP doesn't track $/finding or findings-per-doc today).
+// Change these constants, not the prose below, if the assumptions need revising.
+const COST_ASSUMPTIONS={
+  humanRatePerHour:50,        // loaded reviewer rate, $/hr — a mid-market accessibility-reviewer assumption, not ACP's actual cost
+  minutesPerAssessConfirm:3,  // minutes to review + confirm/reject one machine-assisted assessment finding
+  minutesPerFixApprove:2,     // minutes to review + approve one drafted remediation (already-written, just needs a decision)
+  minutesPerHumanOnly:8,      // minutes for a fully human assessment/fix with no machine assist at all (find it, judge it, act)
+  cloudCallCost:"$0.01–0.05", // per model call at current Sonnet 5 / Haiku 4.5 pricing — vision calls trend toward the high end, short text toward the low end
+};
+function money(mins){const h=mins/60; return "$"+(h*COST_ASSUMPTIONS.humanRatePerHour).toFixed(2);}
+function costAutomation(row,f,rub){
+  const A=COST_ASSUMPTIONS;
+  const shipped=row.a[f], rshipped=row.r[f];
+  const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]};
+  const atCeiling=(AT_CEILING_A[rub.aClass]||[]).includes(shipped);
+  let auto,cost;
+  if(rub.aClass==="DET"){
+    auto=atCeiling
+      ? `<b>~100% today.</b> This is a deterministic property read — same input, same output, every time. No human review needed for the assessment half of this cell.`
+      : `<b>0% today</b>, though the rule-inherent ceiling is 100% — this cell's mechanism is deterministic, but ACP hasn't shipped it at that ceiling yet (currently ${AL[shipped]||shipped}; see §2 for why). Once shipped, expect ~100%.`;
+    cost=atCeiling
+      ? `Assessment: near-$0 — a deterministic property check runs in milliseconds, no model call, no human minute spent per file.`
+      : `Assessment: currently human-priced (${A.minutesPerHumanOnly} min/finding assumption → ~${money(A.minutesPerHumanOnly)}/finding) until the deterministic check ships; the ceiling cost is near-$0 once it does.`;
+  }else if(rub.aClass==="MA"){
+    auto=`<b>0% end-to-end, by design — not a maturity gap.</b> The deterministic sub-signal (presence/structure) is ~100% automatable and usually already is; the semantic judgment layered on top (is it a GOOD description, not just a present one) requires a human confirmation on every single file. This project's own house rule caps any LLM-in-the-decision-path cell at Guided, never Certified — see Ground Rule 2 in CLAUDE.md.`;
+    cost=`Machine pass (presence + draft): near-$0 if a local model is used (self-hosted, GPU-amortized) or ${A.cloudCallCost} per call if a cloud model is used instead. Human confirmation: ${A.minutesPerAssessConfirm} min/finding assumption → ~${money(A.minutesPerAssessConfirm)}/finding. Total is dominated by the human minute, not the model call, at any realistic cloud price.`;
+  }else if(rub.aClass==="HUM"){
+    auto=`<b>0% — no machine verdict exists for this rule and format.</b> Every file needs a human assessor; there's no deterministic or model-assisted sub-signal to lean on for this specific cell.`;
+    cost=`Fully human-priced: ${A.minutesPerHumanOnly} min/finding assumption → ~${money(A.minutesPerHumanOnly)}/finding. No model cost applies — nothing machine-readable is being checked here.`;
+  }
+  const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
+  if(rub.fClass&&rub.fClass!=="NAx"){
+    const fAtCeiling=(AT_CEILING_F[rub.fClass]||[]).includes(rshipped);
+    if(rub.fClass==="MECH")
+      auto+=fAtCeiling?` <b>Remediation: ~100% today</b> — a mechanical property write with a safe default, no generated content, no approval step needed.`
+        :` <b>Remediation: below ceiling today</b> (currently ${RL[rshipped]||rshipped}) though the mechanism is mechanical enough to reach ~100% once shipped at ceiling.`;
+    else if(rub.fClass==="GEN")
+      auto+=["AC","AP"].includes(rshipped)
+        ? ` <b>Remediation: partially unattended today.</b> Where a faithful, non-invented source exists (the author's own caption/title/label text), ACP writes it deterministically with no approval step. Genuinely drafted/invented content still always needs human approval before it's written — never auto-write unreviewed content, this project's standing rule. Today's shipped tier (${RL[rshipped]||rshipped}) reflects that split, not a single automation rate for the whole cell.`
+        : ` <b>Remediation: 0% fully unattended today.</b> Every generated fix needs human approval before it's written — never auto-write unreviewed content, this project's standing rule. (A few sibling cells with a faithful-source shortcut reach partial auto-write; this one hasn't shipped that shortcut.)`;
+    else if(rub.fClass==="REAUTH")
+      auto+=` <b>Remediation: 0% — no safe default exists.</b> A person makes the actual edit; ACP's role here is routing and evidence, not the fix itself.`;
+    cost+=` Remediation ${rub.fClass==="MECH"?"(mechanical write)":rub.fClass==="GEN"?"(draft + approve)":"(human re-authoring)"}: ${rub.fClass==="MECH"?"near-$0, deterministic write":rub.fClass==="GEN"?`draft near-$0 (local) or ${A.cloudCallCost} (cloud) + ${A.minutesPerFixApprove} min approval assumption → ~${money(A.minutesPerFixApprove)}`:`${A.minutesPerHumanOnly} min assumption → ~${money(A.minutesPerHumanOnly)}`} per fixed item.`;
+  }
+  cost+=` <span style="color:var(--muted);font-size:11px">Assumptions: $${A.humanRatePerHour}/hr loaded reviewer rate, ${A.minutesPerAssessConfirm}-${A.minutesPerHumanOnly} min/finding depending on tier, ${A.cloudCallCost}/cloud-model-call. ACP doesn't track actual $/finding or findings-per-doc today — treat this as a planning building block, not a measured cost. Multiply by your own average findings-per-document to get a per-doc estimate; that count varies too widely by document to state here as one number.</span>`;
+  return {auto,cost};
 }
 // Turns bare SC-code mentions (e.g. "1.3.2") inside already-escaped text into clickable cross-links
 // to that SC's drawer (same format where it has data). Regex runs on esc()'d text — safe, no new user input.
@@ -1141,7 +1201,7 @@ function renderDrawer(sc,f,trigger){
 
   const faqs=buildFAQ(row,f,rub);
   if(faqs.length){
-    html+=`<h4>5 · FAQ</h4>${faqs.map(x=>`<details class="faqitem"><summary>${esc(x.q)}</summary><p>${linkify(esc(x.a),row.sc,f)}</p></details>`).join("")}`;
+    html+=`<h4>5 · FAQ</h4>${faqs.map(x=>`<details class="faqitem"><summary>${esc(x.q)}</summary><p>${x.html?x.a:linkify(esc(x.a),row.sc,f)}</p></details>`).join("")}`;
   }
 
   html+=`<details class="tech"><summary>6 · Technical notes</summary>${techNotes(row,f)}</details>`;
