@@ -24,6 +24,12 @@
   .filterbar input[type=checkbox]{width:15px;height:15px;cursor:pointer}
   .filterbar-note{color:var(--muted);font-size:12px}
   tr.v3-hidden{display:none}
+  /* v4-muted cells stay full-strength unless the toggle is on (table.v4-mute-on) — never mute by
+     default, only when the viewer has actively asked to see just Deva's V4-covered cells. Muting
+     de-emphasizes, it never hides: the button stays clickable and keeps its real status text. */
+  table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:.32;filter:grayscale(55%)}
+  table.v4-mute-on td.cell.v4-muted .cellbtn:hover,table.v4-mute-on td.cell.v4-muted .cellbtn:focus-visible{opacity:.7;filter:none}
+  .v4cond{color:var(--gray);font-weight:800;margin-left:2px;cursor:help}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
   table{border-collapse:collapse;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
   th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}
@@ -161,8 +167,8 @@
   </div>
 
   <div class="filterbar">
-    <label><input type="checkbox" id="v3only" checked> Show only the SCs in Deva's V3 checklist (<span id="v3count"></span>)</label>
-    <span class="filterbar-note">On (default) = just what V3's file actually checks. Off = ACP's full 20-SC rubric — the other 5 (1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2) aren't in V3's checklist at all, per V3's own "Gaps vs WCAG" sheet.</span>
+    <label><input type="checkbox" id="v3only" checked> Show only the SCs in Deva's V4 checklist (<span id="v3count"></span>)</label>
+    <span class="filterbar-note">On (default) = just what V4's applicability matrix actually checks — cells outside it dim rather than disappear, so real ACP status is never hidden, only de-emphasized. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
   </div>
 
   <table id="tbl">
@@ -185,13 +191,14 @@
   <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
 
   <div class="corr">
-    <h3>What V3's checklist does and doesn't cover</h3>
-    <p style="margin:0 0 8px;color:var(--muted);font-size:13px">From V3's own "Gaps vs WCAG" sheet — its checklist and the 20 WCAG criteria this matrix tracks don't cover the same ground. Neither list is wrong; they answer different questions.</p>
+    <h3>What Deva's checklist does and doesn't cover</h3>
+    <p style="margin:0 0 8px;color:var(--muted);font-size:13px">From V3's "Gaps vs WCAG" sheet plus V4's applicability matrix (the newer, cell-level source the toggle above now uses) — the checklist and the 20 WCAG criteria this matrix tracks don't cover the same ground. Neither list is wrong; they answer different questions.</p>
     <ul>
       <li><b>5 items have no WCAG SC behind them at all</b> — Accessible Fonts (sans-serif, 11pt: no success criterion mandates a typeface or size, a legitimate house-style check, not a conformance one) and, in XLSX, Name the Table / Named Ranges / Cell A1 Text / Unique Sheet Names (Microsoft authoring hygiene that helps screen-reader navigation, but maps to no criterion). None of these five appear as rows in the table above — reporting them as WCAG failures would misrepresent them.</li>
       <li><b>2 items check real WCAG criteria outside this matrix's 20-SC scope</b> — Captioning for Multimedia (1.2.x, time-based media) and No Auto-Playing Audio (1.4.2, Audio Control). Both are real, checkable criteria; they're just not among the 20 this matrix was scoped to track.</li>
       <li><b>3 items are sub-checks, not separate criteria</b> — Table Captions, Decorative Marking, and Uses Slide Layouts are useful operational decompositions of 1.3.1 and 1.1.1, not criteria of their own. They appear in the table under their parent SC's row, not as independent entries.</li>
-      <li><b>5 WCAG criteria have no V3 checklist item at all</b> — 1.3.3 (Sensory Characteristics), 1.4.1 (Use of Color), 1.4.11 (Non-text Contrast), 3.1.2 (Language of Parts), and 2.1.2 (No Keyboard Trap). This is why the drawer's "vs. Deva's V3 checklist" comparison (§3) has no entry for these five rows — there's nothing in V3 to agree, augment, or disagree with.</li>
+      <li><b>8 WCAG criteria have no checklist item at all, per V4</b> — 1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2 (never had one) plus 1.4.4, 1.4.10, 1.4.12 (V3's own commentary called these "correctly absent" — viewport behaviors static documents can't fail — and V4's applicability matrix confirms they were never actual checklist items either). None of these eight appear as rows when the toggle above is on, and the drawer's "vs. Deva's checklist" comparison (§3) has no entry for them — there's nothing in her checklist to agree, augment, or disagree with.</li>
+      <li><b>V4 is more precise than V3 at cell level, not just SC level</b> — several of the 12 SCs V4 does cover only apply to SOME formats (1.3.2/2.1.1/2.4.3: PPTX+PDF only; 1.4.5: DOCX+PDF only; 2.4.6/3.1.1: no XLSX item; 4.1.2: DOCX only conditionally, PDF only). Cells outside V4's applicability for a shown row dim rather than disappear — real ACP status is never hidden, only de-emphasized. V4's own file reports "34 applicable cells," but a direct count of every marked cell (and its own per-format column totals) both total 36 — a discrepancy in Deva's source file, noted here rather than silently corrected.</li>
     </ul>
   </div>
 </div>
@@ -957,16 +964,38 @@ const tb=document.querySelector("#tbl tbody");
 // separate V3 tab this matrix doesn't compare per-SC), so the tag applies to the 4 assess cells,
 // never the 4 remediate cells. "agree" gets no mark.
 const DEVA_MARK={augment:{sym:"◆",word:"augments"},disagree:{sym:"⊗",word:"disagrees with"}};
-// V3_COVERED = the SCs Deva's V3 checklist actually addresses — exactly DEVA's keys, since DEVA
-// is itself derived from V3 (see the DEVA comment above) and already excludes the 5 SCs V3's own
-// "Gaps vs WCAG" sheet admits aren't in it. Drives the #v3only filter toggle below.
-const V3_COVERED=new Set(Object.keys(DEVA));
+// V4_APPLICABLE = Deva's newest checklist artifact (assessment-applicability-matrix-v4.xlsx,
+// received 2026-07-22) — supersedes the SC-level V3_COVERED approximation this matrix used to
+// derive from V3's Gaps-vs-WCAG sheet. V4 is narrower AND more precise than V3: 12 WCAG codes, not
+// 15 (drops 1.4.4/1.4.10/1.4.12 — the "correctly absent" commentary rows, never real checklist
+// items in V3 either), and CELL-level, not SC-level: several codes only apply to some formats
+// (e.g. 1.3.2 has no DOCX/XLSX item at all). "yes" = X, "cond" = (X) "applies only if the feature
+// is present," absent from the inner object = blank = no checklist item for that format. V3.xlsx
+// remains the citation for the deeper technical-mechanism content in ASSESS_SPEC/REMEDIATION_SPEC/
+// DEVA — V4 doesn't carry that detail, only applicability. NOTE: V4's own footer says "34
+// applicable cells," but both the per-format column totals (9+5+10+12=36) and a direct count of
+// every X/(X) mark below total 36 — a discrepancy in Deva's own source file, not a transcription
+// error here; flagged, not silently corrected.
+const V4_APPLICABLE={
+"1.1.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
+"1.3.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
+"1.3.2":{pptx:"yes",pdf:"yes"},
+"1.4.3":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
+"1.4.5":{docx:"yes",pdf:"yes"},
+"2.1.1":{pptx:"yes",pdf:"yes"},
+"2.4.2":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
+"2.4.3":{pptx:"yes",pdf:"yes"},
+"2.4.4":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
+"2.4.6":{docx:"yes",pptx:"yes",pdf:"yes"},
+"3.1.1":{docx:"yes",pptx:"yes",pdf:"yes"},
+"4.1.2":{docx:"cond",pdf:"yes"}};
 for(const row of ROWS){
   const tr=document.createElement("tr");
   tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
   let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
   const dv=DEVA[row.sc], dm=dv&&DEVA_MARK[dv.k];
+  const v4row=V4_APPLICABLE[row.sc];
   for(const f of FM){const v=row.a[f];
     // Only mark cells that carry an actual assessment claim (aClass !== NAx) — Deva's per-SC verdict
     // sometimes covers only SOME formats (e.g. 1.3.2's "documents beat V3's class" is about XLSX/PPTX/PDF,
@@ -976,21 +1005,37 @@ for(const row of ROWS){
     const markHtml=showMark?` <b class="devamark ${dv.k}" aria-hidden="true">${dm.sym}</b>`:"";
     const markAria=showMark?` Our conclusion ${dm.word} Deva's conformance checklist for this rule.`:"";
     const tdCls=showMark?` deva-${dv.k}`:"";
-    h+=`<td class="cell${tdCls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria} Open details.">${SHORT_A[v]}${markHtml}</button></td>`;}
-  for(const f of FM){const v=row.r[f];h+=`<td class="cell"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
+    // v4state: "yes"/"cond" render normally; undefined (no checklist item per V4) mutes the cell
+    // when the toggle is on, WITHOUT hiding the real ACP status — never hide real capability data,
+    // this matrix's own standing rule. "cond" earns a small marker distinguishing it from a clean X.
+    const v4state=v4row&&v4row[f];
+    const v4Cls=v4state?"":" v4-muted";
+    const condHtml=v4state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
+    const v4Aria=v4state?"":" Not in Deva's V4 checklist for this format — real ACP status shown, just outside her checklist's scope.";
+    h+=`<td class="cell${tdCls}${v4Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria}${v4Aria} Open details.">${SHORT_A[v]}${markHtml}${condHtml}</button></td>`;}
+  for(const f of FM){const v=row.r[f];
+    const v4state=v4row&&v4row[f];
+    const v4Cls=v4state?"":" v4-muted";
+    h+=`<td class="cell${v4Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
 }
 
-// "Show only Deva's V3 checklist SCs" toggle — per V3's feedback that the full 20-SC rubric table
-// includes rows outside what V3's file actually checks. Filters rows only (via tr.dataset.sc
-// set above); doesn't touch the ceiling tiles, which describe ACP's own rubric-wide ceiling and
-// are intentionally independent of any one checklist's scope.
+// "Show only Deva's V4 checklist SCs" toggle — per V3's feedback that the full 20-SC rubric table
+// includes rows outside what her checklist actually checks, refined 2026-07-22 to cell-level using
+// V4. A row is shown if V4_APPLICABLE has ANY entry for that SC; within a shown row, individual
+// cells (both assess and remediate) mute to a quiet "—" when V4 has no item for that specific
+// format — real ACP status stays in the DOM and stays clickable, just visually de-emphasized, so
+// this never becomes "hide real data," only "de-emphasize what's outside her checklist's scope."
+// Doesn't touch the ceiling tiles, which describe ACP's own rubric-wide ceiling independent of any
+// one checklist's scope.
 (function(){
   const cb=document.getElementById("v3only"), countEl=document.getElementById("v3count");
-  countEl.textContent=`${V3_COVERED.size} of ${ROWS.length}`;
+  const v4Rows=Object.keys(V4_APPLICABLE).length;
+  countEl.textContent=`${v4Rows} of ${ROWS.length}`;
   function apply(){
     for(const tr of tb.querySelectorAll("tr"))
-      tr.classList.toggle("v3-hidden", cb.checked && !V3_COVERED.has(tr.dataset.sc));
+      tr.classList.toggle("v3-hidden", cb.checked && !V4_APPLICABLE[tr.dataset.sc]);
+    tb.closest("table").classList.toggle("v4-mute-on", cb.checked);
   }
   cb.addEventListener("change",apply);
   apply();
