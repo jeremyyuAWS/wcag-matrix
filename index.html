@@ -25,7 +25,9 @@
   .filterbar-note{color:var(--muted);font-size:12px}
   tr.v3-hidden{display:none}
   /* v4-muted cells stay full-strength unless the toggle is on (table.v4-mute-on) — never mute by
-     default, only when the viewer has actively asked to see just Deva's V4-covered cells. Muting
+     default, only when the viewer has actively asked to see just Deva's V5-covered cells (class
+     name kept as "v4-*" internally — an implementation detail, not a citation; see V5_APPLICABLE's
+     comment for why the visible "V4"→"V5" rename didn't touch these CSS hooks). Muting
      de-emphasizes, it never hides: the button stays clickable and keeps its real status text. */
   table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:.32;filter:grayscale(55%)}
   table.v4-mute-on td.cell.v4-muted .cellbtn:hover,table.v4-mute-on td.cell.v4-muted .cellbtn:focus-visible{opacity:.7;filter:none}
@@ -35,6 +37,9 @@
   th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}
   th{background:var(--navy);color:#fff;position:sticky;top:0;font-weight:600}
   th.grp{background:#141d36;font-size:12px;letter-spacing:.06em}
+  tr.techrow th{background:#fff;padding:5px 4px;position:static;border-bottom:2px solid var(--line)}
+  .tech-badge{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.01em;color:var(--navy);background:#eef1f8;border:1px solid var(--line);border-radius:9px;padding:1px 6px;margin:1px 1px;cursor:help;text-transform:none}
+  .tech-badge.tentative{color:var(--muted);background:#f4f4f4;border-style:dashed}
   td.sc{font-weight:700;text-align:left;white-space:nowrap}
   td.name{text-align:left;min-width:170px}
   tr.flagged td.name{color:var(--red);font-weight:700}
@@ -152,7 +157,7 @@
 <body>
 <div class="wrap">
   <h1>WCAG 2.1 AA — 20 Document Core Rules · Ceiling &amp; Coverage</h1>
-  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16.</div>
+  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's checklist: <code>assessment-applicability-matrix-v5.xlsx</code> · 2026-07-23.</div>
 
   <div class="tiles" id="ceilingTiles"></div>
   <div class="tiles" id="acpTiles" style="margin-top:0"></div>
@@ -167,17 +172,19 @@
   </div>
 
   <div class="filterbar">
-    <label><input type="checkbox" id="v3only" checked> Show only the SCs in Deva's V4 checklist (<span id="v3count"></span>)</label>
-    <span class="filterbar-note">On (default) = just what V4's applicability matrix actually checks — cells outside it dim rather than disappear, so real ACP status is never hidden, only de-emphasized. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
+    <label><input type="checkbox" id="v3only" checked> Show only the SCs in Deva's V5 checklist (<span id="v3count"></span>)</label>
+    <span class="filterbar-note">On (default) = just what V5's applicability matrix actually checks — cells outside it dim rather than disappear, so real ACP status is never hidden, only de-emphasized. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
   </div>
 
   <table id="tbl">
     <thead>
       <tr><th class="grp" colspan="2">WCAG 2.1 AA</th><th class="grp" colspan="4">ASSESS — can ACP decide pass/fail?</th><th class="grp" colspan="4">REMEDIATE — how does ACP fix it?</th></tr>
       <tr><th>SC</th><th style="text-align:left">Criterion</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th></tr>
+      <tr class="techrow" id="techrow"></tr>
     </thead>
     <tbody></tbody>
   </table>
+  <div class="filterbar-note" style="margin:6px 0 14px">Column-header badges are Deva's recommended stack per format, from V5's "KEY TECH" tab (quoted, not ACP's actual stack, not verified against ACP's code) — hover a badge for its full role. Applies to every format identically, cited once rather than repeated per column: <span class="tech-badge" title="AI/OCR service — Python + FastAPI (Deva's sheet also notes &quot;Lama&quot; alongside this row)">Python + FastAPI</span> <span class="tech-badge tentative" title="OCR — Deva's own annotation: &quot;We may not need this.&quot;">Tesseract</span> <span class="tech-badge tentative" title="Vision — Deva's own annotation: &quot;We may not need this.&quot;">OpenCV</span> — the dashed badges are the two she flagged herself as possibly unnecessary.</div>
 
   <div class="corr">
     <h3>How to read this version</h3>
@@ -193,13 +200,14 @@
 
   <div class="corr">
     <h3>What Deva's checklist does and doesn't cover</h3>
-    <p style="margin:0 0 8px;color:var(--muted);font-size:13px">From V3's "Gaps vs WCAG" sheet plus V4's applicability matrix (the newer, cell-level source the toggle above now uses) — the checklist and the 20 WCAG criteria this matrix tracks don't cover the same ground. Neither list is wrong; they answer different questions.</p>
+    <p style="margin:0 0 8px;color:var(--muted);font-size:13px">From V3's "Gaps vs WCAG" sheet plus V5's applicability matrix (the cell-level source the toggle above uses — V4's version of this same tab, byte-identical) plus V5's new per-format validation-assertion tabs (DOCX/PDF/PPTX/XLS, quoted verbatim in each drawer's §3 as V5_DETAIL) — the checklist and the 20 WCAG criteria this matrix tracks don't cover the same ground. Neither list is wrong; they answer different questions.</p>
     <ul>
       <li><b>5 items have no WCAG SC behind them at all</b> — Accessible Fonts (sans-serif, 11pt: no success criterion mandates a typeface or size, a legitimate house-style check, not a conformance one) and, in XLSX, Name the Table / Named Ranges / Cell A1 Text / Unique Sheet Names (Microsoft authoring hygiene that helps screen-reader navigation, but maps to no criterion). None of these five appear as rows in the table above — reporting them as WCAG failures would misrepresent them.</li>
-      <li><b>2 items check real WCAG criteria outside this matrix's 20-SC scope</b> — Captioning for Multimedia (1.2.x, time-based media) and No Auto-Playing Audio (1.4.2, Audio Control). Both are real, checkable criteria; they're just not among the 20 this matrix was scoped to track.</li>
+      <li><b>V5's per-format tabs add five genuinely new WCAG criteria outside this matrix's 20-SC scope</b> — 1.2.1 and 1.2.5 (PPTX: "Embedded audio and video provide required alternatives"), 2.2.2 and 2.3.1 (PPTX: "Animations, transitions, and flashing content do not create barriers"), and 3.3.2 (PDF/XLSX: "Interactive fields and controls are labeled and keyboard accessible" / "Interactive controls and input cells are keyboard accessible and properly labeled"). All five are quoted in V5_DETAIL for completeness, but none are added as table rows here — giving one a RUBRIC ceiling and an ACP-today status needs real capability verification against the engine code, not a plausible-sounding guess for a criterion this matrix has never tracked. (V3's older, separate "2 items outside scope" — Captioning for Multimedia and No Auto-Playing Audio — are a different pair from these five; V5 doesn't carry those old items forward under this framing.)</li>
       <li><b>3 items are sub-checks, not separate criteria</b> — Table Captions, Decorative Marking, and Uses Slide Layouts are useful operational decompositions of 1.3.1 and 1.1.1, not criteria of their own. They appear in the table under their parent SC's row, not as independent entries.</li>
-      <li><b>6 WCAG criteria have no checklist item at all, per V4</b> — 1.3.3, 1.4.11, 2.1.2 (never had one) plus 1.4.4, 1.4.10, 1.4.12 (V3's own commentary called these "correctly absent" — viewport behaviors static documents can't fail — and the Applicability Matrix tab agrees they were never actual checklist items either; though see the caveat below — the newer DOCX validation-assertion tab now has an item mapped to exactly these three, an unresolved tension flagged in each SC's drawer, not silently treated as a reversal). 1.4.1 and 3.1.2 were added to V4 on 2026-07-22 (both now X across all four formats) and moved out of this list. None of the remaining six appear as rows when the toggle above is on, and the drawer's "vs. Deva's checklist" comparison (§3) has no entry for them — there's nothing in her checklist to agree, augment, or disagree with.</li>
-      <li><b>V4 is more precise than V3 at cell level, not just SC level</b> — several of the 14 SCs V4 covers only apply to SOME formats (1.3.2/2.1.1/2.4.3: PPTX+PDF only; 1.4.5: DOCX+PDF only; 2.4.6/3.1.1: no XLSX item; 4.1.2: DOCX only conditionally, PDF only). 1.4.1 and 3.1.2 are the two newest additions, both currently X (full DOCX/XLSX/PPTX/PDF coverage) rather than partial. Cells outside V4's applicability for a shown row dim rather than disappear — real ACP status is never hidden, only de-emphasized. V4's own file reports "34 applicable cells," but a direct count of every marked cell (and its own per-format column totals) both total 36 — a discrepancy in Deva's source file, noted here rather than silently corrected.</li>
+      <li><b>Only 2 in-scope WCAG criteria are confirmed absent from V5 entirely</b> — 1.3.3 and 2.1.2 have no item in the Applicability Matrix tab AND no assertion in any V5_DETAIL format tab; genuinely never on her checklist. The picture is murkier for four others: 1.4.4, 1.4.10, 1.4.11, and 1.4.12 all show "no checklist item" in the Applicability Matrix tab, yet V5_DETAIL's per-format tabs contradict that for all four — real assertions exist (PDF/PPTX/XLSX for 1.4.4 & 1.4.10, all four formats for 1.4.11, PPTX only for 1.4.12). That's a direct disagreement between Deva's own two V5 artifacts, not a maturing-checklist story; each affected SC's drawer flags it rather than picking a side. 1.4.1 and 3.1.2 were added to the Applicability Matrix tab on 2026-07-22 (both now X across all four formats) and are no longer in either "absent" bucket. None of 1.3.3/2.1.2 appear as rows when the toggle above is on (nothing in either artifact to show); 1.4.4/1.4.10/1.4.11/1.4.12 also stay hidden under the toggle today, since it still keys off the Applicability Matrix tab, not V5_DETAIL.</li>
+      <li><b>V5 is more precise than V3 at cell level, not just SC level</b> — several of the 14 SCs the Applicability Matrix tab covers only apply to SOME formats (1.3.2/2.1.1/2.4.3: PPTX+PDF only; 1.4.5: DOCX+PDF only; 2.4.6/3.1.1: no XLSX item; 4.1.2: DOCX only conditionally, PDF only). 1.4.1 and 3.1.2 are the two newest additions, both currently X (full DOCX/XLSX/PPTX/PDF coverage) rather than partial. Cells outside V5's applicability for a shown row dim rather than disappear — real ACP status is never hidden, only de-emphasized. The file's own footer reports "34 applicable cells," but a direct count of every marked cell (and its own per-format column totals) both total 36 — a discrepancy in Deva's source file, carried over unchanged from v4.xlsx, noted here rather than silently corrected.</li>
+      <li><b>V5 also adds two tabs outside any per-cell scoring this matrix does</b> — a recommended tech stack ("KEY TECH": Open XML SDK for Office parsing, veraPDF Greenfield for PDF/UA validation, a Python+FastAPI AI/OCR service, PDFium or an enterprise SDK for PDF rendering, LibreOffice for Office rendering — Tesseract OCR and OpenCV are listed with her own annotation "We may not need this" against both), and a short UTSW institutional-applicability screening questionnaire (is a document public/patient-facing, new or republished, required to access a UTSW program/service/course, genuinely archived, an individualized secured record, or third-party-posted) that decides WHETHER a given document needs an accessibility pass at all, before any WCAG-level checking starts. Neither maps to a WCAG SC or an ACP cell, so neither appears in the table — cited here as context for what else is in v5.xlsx, not folded into the per-SC comparison.</li>
     </ul>
   </div>
 </div>
@@ -785,10 +793,711 @@ const REMEDIATION_SPEC={
 // doesn't address them ("missing from checklist"), so there is nothing in V3 to agree/augment/disagree
 // WITH for those five; carrying forward jeremy.xlsx-sourced verdicts under a "V3 is canonical" banner
 // would misattribute them.
+// V5_DETAIL = Deva's newest checklist artifact (assessment-applicability-matrix-v5.xlsx,
+// received 2026-07-23) — supersedes the DOCX-only docxV4 spot quotes above with full per-format
+// "Validation assertion / WCAG mapping / Recommended technical approach / Automation level" detail
+// across all four format tabs (DOCX, PDF, PPTX, XLS in her workbook — xlsx here, matching this
+// matrix's FM key). Content is quoted verbatim from the workbook, not paraphrased: a=assertion,
+// appr=her recommended technical approach, auto=her stated automation level. The Applicability
+// Matrix tab in v5.xlsx is byte-for-byte identical to v4.xlsx's (same 14 codes, same X/(X)/blank
+// pattern, same "34 vs 36" footer discrepancy) — V5_APPLICABLE below reuses that data under its
+// new citation rather than re-typing it. What's genuinely new in V5: (1) the technical-approach
+// and automation-level columns, for every format, not just DOCX; (2) explicit per-format coverage
+// for 1.4.4/1.4.10/1.4.11/1.4.12 — all four appear here with real assertions despite the
+// Applicability Matrix tab still listing them as having "no checklist item," a direct contradiction
+// between Deva's own two artifacts (flagged in each SC's drawer note below, not silently resolved
+// either direction); (3) five WCAG criteria entirely new to any version of her checklist — 1.2.1
+// (Audio-only/Video-only), 1.2.5 (Audio Description), 2.2.2 (Pause/Stop/Hide), 2.3.1 (Three
+// Flashes), and 3.3.2 (Labels/Instructions) — all outside this matrix's 20-SC scope, so quoted here
+// for completeness but not added as new rows (adding a RUBRIC ceiling and ACP-today status for a
+// criterion this matrix has never tracked needs real capability verification against the engine
+// code first, not a plausible-sounding guess).
+const V5_DETAIL={
+"1.1.1": {
+"docx": [
+{
+"a": "Images, charts, SmartArt, equations, and shapes have alternatives",
+"appr": "Enumerate DrawingML, VML, chart, diagram, embedded-object, and image relationships, including objects inside headers, footers, and text boxes. Read accessible title/description metadata such as drawing non-visual properties. Flag blank, filename-only, duplicated, or placeholder descriptions. Send the visual and surrounding text to a multimodal model to evaluate whether the description communicates the object’s purpose. Treat native Office Math separately from rasterized equations.",
+"auto": "Presence: Rule: High; quality: AI/Vision + manual"
+},
+{
+"a": "Decorative objects are marked or excluded correctly",
+"appr": "Read Office decorative-object metadata when available. Detect blank alternatives that are not explicitly decorative and decorative objects with verbose misleading descriptions. Use vision plus nearby text to classify borders, flourishes, repeated logos, spacers, and meaningful illustrations. Never assume that empty alternative text means decorative.",
+"auto": "Metadata: Rule: High; classification: AI/Vision + review"
+}
+],
+"pdf": [
+{
+"a": "PDF contains accessible text, not only scanned page images",
+"appr": "Inspect text objects, fonts, and Unicode mappings. Classify each page as native text, scanned, hybrid, or OCR-over-image. Run OCR and compare the recognized text with the existing text layer.",
+"auto": "Detection: High; OCR accuracy: AI/manual review"
+},
+{
+"a": "Images, charts, diagrams, formulas, and other figures have appropriate alternatives",
+"appr": "Use veraPDF to validate machine-testable figure structure and alternative-description requirements. Use vision AI with the image, caption, surrounding text, and /Alt value to assess whether the alternative explains the object’s purpose.",
+"auto": "Presence/structure: High; quality: AI/Vision + review"
+},
+{
+"a": "Decorative content is correctly excluded",
+"appr": "Inspect artifact marking and structure-tree exposure. Use repetition and visual analysis for borders, backgrounds, repeated logos, page furniture, and decorative images. Flag meaningful content incorrectly marked as an artifact.",
+"auto": "Marking: High; classification: AI/manual"
+},
+{
+"a": "Images do not unnecessarily replace accessible text or tables",
+"appr": "Run OCR over image regions and classify screenshots, scanned forms, raster tables, notices, and paragraphs presented as images. Check whether equivalent accessible text exists elsewhere in the document.",
+"auto": "OCR/Vision: Medium–High; exceptions: manual"
+}
+],
+"pptx": [
+{
+"a": "Images, charts, SmartArt, diagrams, equations, shapes, and grouped objects have appropriate alternatives",
+"appr": "Enumerate DrawingML, chart, diagram, media, image, and embedded-object relationships. Inspect title, description, and decorative metadata. Use vision AI with nearby slide text and speaker notes to evaluate alternative-text quality.",
+"auto": "Presence: High; semantic quality: AI/Vision + review"
+},
+{
+"a": "Decorative objects are correctly excluded",
+"appr": "Inspect decorative-object metadata where supported. Use visual classification and repetition analysis for backgrounds, borders, flourishes, repeated logos, and design elements. Never assume empty alternative text means decorative.",
+"auto": "Metadata: High; classification: AI/manual"
+},
+{
+"a": "Screenshots and images do not unnecessarily replace accessible text or tables",
+"appr": "Run OCR and visual classification on embedded raster images. Detect screenshots containing paragraphs, tables, forms, emails, or documents, then determine whether equivalent accessible text exists on the slide or in an accessible alternative.",
+"auto": "OCR/Vision: Medium–High; exceptions: manual"
+}
+],
+"xlsx": [
+{
+"a": "Images, charts, shapes, and objects have appropriate alternatives",
+"appr": "Enumerate drawing, image, chart, SmartArt, and embedded-object parts. Inspect title, description, and decorative metadata. Use vision AI to evaluate whether the alternative communicates the object’s purpose.",
+"auto": "Presence: High; quality: AI/Vision + review"
+},
+{
+"a": "Charts have meaningful titles and accessible underlying data",
+"appr": "Parse chart titles, axis titles, series names, legends, and source-cell references. Confirm that chart data exists in accessible worksheet cells. Use AI to assess whether the description communicates key trends or conclusions.",
+"auto": "Structure: High; meaning: AI/manual"
+},
+{
+"a": "Screenshots do not replace accessible text, tables, or forms",
+"appr": "Run OCR and visual analysis on embedded images. Detect screenshots containing paragraphs, tables, forms, emails, or dashboards and check whether equivalent cell-based content exists.",
+"auto": "OCR/Vision: Medium–High; exception: manual"
+}
+]
+},
+"1.2.1": {
+"pptx": [
+{
+"a": "Embedded audio and video provide required alternatives",
+"appr": "Activate only when media exists. Enumerate media relationships and inspect captions, subtitle tracks, transcripts, media descriptions, and nearby equivalent content. Use speech-to-text and media analysis as a preliminary review, followed by human verification.",
+"auto": "Presence: High; caption/description quality: AI/manual"
+}
+]
+},
+"1.2.5": {
+"pptx": [
+{
+"a": "Embedded audio and video provide required alternatives",
+"appr": "Activate only when media exists. Enumerate media relationships and inspect captions, subtitle tracks, transcripts, media descriptions, and nearby equivalent content. Use speech-to-text and media analysis as a preliminary review, followed by human verification.",
+"auto": "Presence: High; caption/description quality: AI/manual"
+}
+]
+},
+"1.3.1": {
+"docx": [
+{
+"a": "Real heading styles are used with a logical hierarchy",
+"appr": "Inspect each paragraph’s w:pPr/w:pStyle. Resolve the style through word/styles.xml, including w:basedOn and w:outlineLvl. Detect skipped levels, an empty heading, excessive headings, or a single paragraph styled as a heading only for appearance. Render the document and use NLP/layout analysis to detect visually heading-like text that lacks semantic heading markup.",
+"auto": "Semantic styles: Rule: High; false headings: AI/Vision + review"
+},
+{
+"a": "Real ordered and unordered lists are used",
+"appr": "Detect w:numPr, w:numId, and w:ilvl; resolve list definitions through word/numbering.xml. Detect broken nesting, unexplained level jumps, and paragraphs that begin with typed bullets, hyphens, numbers, or letters but have no list semantics.",
+"auto": "Proper lists: Rule: High; fake lists: Rule + NLP: High"
+},
+{
+"a": "Tables have identifiable headers and understandable structure",
+"appr": "Inspect w:tbl, w:tr, and w:tc. Detect header rows through w:tblHeader; detect merged cells through w:gridSpan and w:vMerge; detect nested tables, empty header cells, inconsistent column counts, and layout tables. Use NLP to determine whether the first row appears to contain labels even when it is not marked as a header. Complex header/data relationships should be escalated.",
+"auto": "Structure: Rule: High; understandable relationships: AI + manual"
+},
+{
+"a": "Columns, footnotes, headers, footers, and captions are read meaningfully",
+"appr": "Parse all document “stories,” not only word/document.xml: section properties and columns, header/footer parts, footnotes, endnotes, comments, and text boxes. Follow reference IDs to insert notes at their reference locations in the generated linear representation. Detect captions using caption styles and SEQ fields and associate them with nearby figures or tables.",
+"auto": "Extraction: Rule: High; meaningful association: AI + manual"
+}
+],
+"pdf": [
+{
+"a": "PDF has a valid logical structure tree",
+"appr": "Run veraPDF PDF/UA validation for structure-tree, role-map, marked-content, parent-tree, annotation, and object-reference requirements. Independently flag visible content that is untagged or incorrectly treated as an artifact.",
+"auto": "veraPDF/rules: High"
+},
+{
+"a": "Tags correctly identify headings, paragraphs, lists, figures, and sections",
+"appr": "Validate tag hierarchy and role mappings with veraPDF. Compare tags with rendered font size, position, spacing, and text patterns to detect visual headings tagged as paragraphs or visual lists lacking list tags.",
+"auto": "Structure: High; semantic accuracy: AI/manual"
+},
+{
+"a": "Tables have correct structures and understandable header relationships",
+"appr": "Use veraPDF for machine-verifiable table/tag requirements. Extract Table, TR, TH, and TD structures, spans, and cell relationships. Compare the tagged table with the rendered visual grid.",
+"auto": "Simple structure: High; complex headers: AI/manual"
+},
+{
+"a": "Hyperlinks are tagged, descriptive, and have valid destinations",
+"appr": "Validate /Link structure elements and annotation relationships. Resolve destinations and detect empty links, broken links, raw URLs, generic labels, and identical labels pointing to different destinations. Use NLP to assess purpose in context.",
+"auto": "Structure: High; link meaning: AI/NLP"
+}
+],
+"pptx": [
+{
+"a": "Every meaningful slide has a descriptive and preferably unique title",
+"appr": "Inspect each slide’s title placeholder and associated text. Flag missing titles, empty titles, duplicates, and text visually functioning as a title but stored in a generic text box. Use NLP to assess whether the title describes the slide.",
+"auto": "Presence/duplicates: High; quality: AI/review"
+},
+{
+"a": "Built-in layouts and placeholders are used appropriately",
+"appr": "Resolve each slide’s layout and master relationships. Detect slides built entirely from manually positioned text boxes and shapes when equivalent semantic title or content placeholders are absent.",
+"auto": "Detection: High; appropriateness: AI/manual"
+},
+{
+"a": "Tables have identifiable headers and understandable structures",
+"appr": "Parse PowerPoint table grids, rows, cells, merged cells, and text. Detect blank or duplicated headers, irregular grids, and tables represented only as grouped shapes or images. Compare the semantic table with the rendered layout.",
+"auto": "Simple structure: High; complex relationships: AI/manual"
+},
+{
+"a": "Important information in masters, backgrounds, headers, footers, or notes is available accessibly",
+"appr": "Inspect slide masters, layouts, headers, footers, date fields, slide numbers, background graphics, and notes. Flag vital warnings, classifications, instructions, or conclusions available only as unexposed background content or only in speaker notes.",
+"auto": "Detection: High; significance: AI/manual"
+}
+],
+"xlsx": [
+{
+"a": "Worksheets have unique and meaningful names",
+"appr": "Inspect workbook sheet names. Flag defaults such as Sheet1, duplicate or numeric-only names. Use AI to compare each name with the sheet’s content.",
+"auto": "Rule: High; meaning: AI"
+},
+{
+"a": "Each worksheet has a clear title, purpose, and logical starting point",
+"appr": "Identify the first meaningful cell, title region, and populated data regions. Flag important content beginning far from the top-left without labels or navigation.",
+"auto": "Rule: Medium–High; purpose: AI/review"
+},
+{
+"a": "Data tables have identifiable and meaningful headers",
+"appr": "Inspect built-in Excel table definitions, header rows, column names, and data regions. Flag missing, blank, duplicated, or generic headers.",
+"auto": "Structure: High; header quality: AI/review"
+},
+{
+"a": "Merged cells and irregular layouts do not break table relationships",
+"appr": "Parse merged-cell ranges and identify merges inside data tables. Detect inconsistent rows, split data regions, and multi-level visual headers that are not structurally represented.",
+"auto": "Rule: High; complex tables: manual review"
+},
+{
+"a": "Charts have meaningful titles and accessible underlying data",
+"appr": "Parse chart titles, axis titles, series names, legends, and source-cell references. Confirm that chart data exists in accessible worksheet cells. Use AI to assess whether the description communicates key trends or conclusions.",
+"auto": "Structure: High; meaning: AI/manual"
+}
+]
+},
+"1.3.2": {
+"docx": [
+{
+"a": "Floating objects and text boxes have a logical reading order",
+"appr": "Detect inline versus anchored drawings using wp:inline and wp:anchor. Extract text from modern and legacy text-box structures. Construct a linear reading sequence from XML order, then render pages and compare that sequence with visual positions and associations. Flag an object whose XML position is materially different from where users visually encounter it.",
+"auto": "Detection: Rule: High; logical order: Render + AI + manual"
+},
+{
+"a": "Columns, footnotes, headers, footers, and captions are read meaningfully",
+"appr": "Parse all document “stories,” not only word/document.xml: section properties and columns, header/footer parts, footnotes, endnotes, comments, and text boxes. Follow reference IDs to insert notes at their reference locations in the generated linear representation. Detect captions using caption styles and SEQ fields and associate them with nearby figures or tables.",
+"auto": "Extraction: Rule: High; meaningful association: AI + manual"
+}
+],
+"pdf": [
+{
+"a": "PDF has a valid logical structure tree",
+"appr": "Run veraPDF PDF/UA validation for structure-tree, role-map, marked-content, parent-tree, annotation, and object-reference requirements. Independently flag visible content that is untagged or incorrectly treated as an artifact.",
+"auto": "veraPDF/rules: High"
+},
+{
+"a": "Reading order is logical and meaningful",
+"appr": "Generate reading streams from the tag tree, extracted text, and visual page layout. Compare them for columns, sidebars, footnotes, captions, callouts, tables, and repeated headers or footers.",
+"auto": "Candidate detection: Medium–High; final decision: manual/AT"
+}
+],
+"pptx": [
+{
+"a": "Slide-object reading order is logical and meaningful",
+"appr": "Extract shape-tree order from each slide, including placeholders, text boxes, images, charts, tables, and grouped objects. Compare XML order with rendered visual positions and Microsoft’s Reading Order behavior.",
+"auto": "Candidate detection: Medium–High; final decision: manual/AT"
+},
+{
+"a": "Important information in masters, backgrounds, headers, footers, or notes is available accessibly",
+"appr": "Inspect slide masters, layouts, headers, footers, date fields, slide numbers, background graphics, and notes. Flag vital warnings, classifications, instructions, or conclusions available only as unexposed background content or only in speaker notes.",
+"auto": "Detection: High; significance: AI/manual"
+}
+],
+"xlsx": [
+{
+"a": "Each worksheet has a clear title, purpose, and logical starting point",
+"appr": "Identify the first meaningful cell, title region, and populated data regions. Flag important content beginning far from the top-left without labels or navigation.",
+"auto": "Rule: Medium–High; purpose: AI/review"
+},
+{
+"a": "Merged cells and irregular layouts do not break table relationships",
+"appr": "Parse merged-cell ranges and identify merges inside data tables. Detect inconsistent rows, split data regions, and multi-level visual headers that are not structurally represented.",
+"auto": "Rule: High; complex tables: manual review"
+},
+{
+"a": "Worksheet reading and navigation order is meaningful",
+"appr": "Build a semantic sequence from populated cells, tables, headings, charts, and objects. Compare it with visual position and keyboard navigation order. Include essential hidden rows or columns in the analysis.",
+"auto": "Detection: Medium–High; final judgment: manual/AT"
+}
+]
+},
+"1.4.1": {
+"docx": [
+{
+"a": "Color is not the only indicator",
+"appr": "Extract text colors, highlighting, shading, borders, shape fills, chart-series styling, and theme colors. Search instructions for phrases such as “shown in red,” “green items,” or “highlighted below.” Render pages and use vision to identify legends, categories, status indicators, and revisions that differ only by color.",
+"auto": "Candidate detection: Rule + NLP: Medium; decision: AI/Vision + manual"
+}
+],
+"pdf": [
+{
+"a": "Color is not the only indicator of meaning",
+"appr": "Inspect text, fills, strokes, charts, annotations, and form appearance states. Use NLP to detect phrases such as “shown in red” and vision analysis to identify categories or statuses distinguished only by color.",
+"auto": "Detection: Medium–High; semantic decision: AI/manual"
+}
+],
+"pptx": [
+{
+"a": "Color is not the only way information is communicated",
+"appr": "Inspect font colors, fills, chart-series colors, lines, icons, and theme variants. Use NLP to detect instructions such as “shown in red.” Use vision analysis to identify statuses, categories, or chart series distinguished only through color.",
+"auto": "Candidate detection: Medium–High; decision: AI/manual"
+}
+],
+"xlsx": [
+{
+"a": "Color and conditional formatting are not the only indicators",
+"appr": "Parse fills, font colors, conditional-formatting rules, color scales, icon sets, and data bars. Determine whether statuses are also represented through text, symbols, or labels.",
+"auto": "Candidate detection: High; semantic decision: AI/manual"
+}
+]
+},
+"1.4.3": {
+"docx": [
+{
+"a": "Text and graphics meet contrast requirements",
+"appr": "Resolve effective foreground and background colors through direct formatting, inherited styles, theme colors, tint/shade transformations, fills, transparency, and page backgrounds. Calculate WCAG contrast for simple cases. Render the document for text over images, gradients, overlapping shapes, WordArt, and transparency, then sample the actual pixels behind the text.",
+"auto": "Solid colors: Rule: High; complex backgrounds: Render/Vision + manual"
+}
+],
+"pdf": [
+{
+"a": "Text and meaningful graphics meet contrast requirements",
+"appr": "Resolve solid foreground and background colors from PDF graphics states. Render pages for text over images, gradients, transparency, watermarks, charts, icons, and overlapping objects, then calculate pixel-level contrast.",
+"auto": "Simple cases: High; complex visuals: render/manual"
+}
+],
+"pptx": [
+{
+"a": "Text and meaningful graphics meet contrast requirements",
+"appr": "Resolve effective text, fill, line, theme, tint, transparency, and background colors. Calculate solid-color contrast deterministically. Render slides for text over images, gradients, transparency, charts, icons, and overlapping objects.",
+"auto": "Simple cases: High; complex visuals: render/manual"
+}
+],
+"xlsx": [
+{
+"a": "Text and meaningful graphics meet contrast requirements",
+"appr": "Resolve effective font, fill, theme, and conditional-format colors. Calculate contrast for solid-color cells and render charts, gradients, and complex backgrounds for pixel analysis.",
+"auto": "Simple cases: High; complex visuals: render/manual"
+}
+]
+},
+"1.4.4": {
+"pdf": [
+{
+"a": "Text remains available when enlarged or reflowed",
+"appr": "Test in a reflow-capable PDF viewer. Compare text completeness, reading order, clipping, overlap, and horizontal scrolling before and after reflow or enlargement. Document valid two-dimensional exceptions for complex tables and diagrams.",
+"auto": "Rendered/manual review"
+}
+],
+"pptx": [
+{
+"a": "Text remains readable and does not clip or overlap when enlarged",
+"appr": "Detect text overflow, auto-fit reductions, off-slide objects, extremely small fonts, and clipped text boxes. Render at enlarged viewing settings. Treat presentation slides as potentially essential two-dimensional layouts, but record the exception rather than assuming it.",
+"auto": "Detection/rendering: Medium–High; final assessment: manual"
+}
+],
+"xlsx": [
+{
+"a": "Text remains visible and usable when enlarged",
+"appr": "Detect clipped cell text, narrow columns, hidden overflow, and ### displays. Render important sheets at increased zoom to identify clipping, overlap, or inaccessible content.",
+"auto": "Rule estimate: Medium; rendered review: High/manual"
+}
+]
+},
+"1.4.5": {
+"docx": [
+{
+"a": "Screenshots do not replace accessible text",
+"appr": "Run OCR and visual-language analysis over embedded raster images. Estimate the proportion of visible text contained in each image and compare it with surrounding body text and alternative text. Flag screenshots of notices, tables, forms, emails, slides, or paragraphs when no equivalent accessible text exists. AI should classify permissible cases such as logos or essential visual representations.",
+"auto": "Detection: OCR/Vision: Medium–High; exception: manual review"
+}
+],
+"pdf": [
+{
+"a": "PDF contains accessible text, not only scanned page images",
+"appr": "Inspect text objects, fonts, and Unicode mappings. Classify each page as native text, scanned, hybrid, or OCR-over-image. Run OCR and compare the recognized text with the existing text layer.",
+"auto": "Detection: High; OCR accuracy: AI/manual review"
+},
+{
+"a": "Images do not unnecessarily replace accessible text or tables",
+"appr": "Run OCR over image regions and classify screenshots, scanned forms, raster tables, notices, and paragraphs presented as images. Check whether equivalent accessible text exists elsewhere in the document.",
+"auto": "OCR/Vision: Medium–High; exceptions: manual"
+}
+],
+"pptx": [
+{
+"a": "Screenshots and images do not unnecessarily replace accessible text or tables",
+"appr": "Run OCR and visual classification on embedded raster images. Detect screenshots containing paragraphs, tables, forms, emails, or documents, then determine whether equivalent accessible text exists on the slide or in an accessible alternative.",
+"auto": "OCR/Vision: Medium–High; exceptions: manual"
+}
+],
+"xlsx": [
+{
+"a": "Screenshots do not replace accessible text, tables, or forms",
+"appr": "Run OCR and visual analysis on embedded images. Detect screenshots containing paragraphs, tables, forms, emails, or dashboards and check whether equivalent cell-based content exists.",
+"auto": "OCR/Vision: Medium–High; exception: manual"
+}
+]
+},
+"1.4.10": {
+"pdf": [
+{
+"a": "Text remains available when enlarged or reflowed",
+"appr": "Test in a reflow-capable PDF viewer. Compare text completeness, reading order, clipping, overlap, and horizontal scrolling before and after reflow or enlargement. Document valid two-dimensional exceptions for complex tables and diagrams.",
+"auto": "Rendered/manual review"
+}
+],
+"pptx": [
+{
+"a": "Text remains readable and does not clip or overlap when enlarged",
+"appr": "Detect text overflow, auto-fit reductions, off-slide objects, extremely small fonts, and clipped text boxes. Render at enlarged viewing settings. Treat presentation slides as potentially essential two-dimensional layouts, but record the exception rather than assuming it.",
+"auto": "Detection/rendering: Medium–High; final assessment: manual"
+}
+]
+},
+"1.4.11": {
+"docx": [
+{
+"a": "Text and graphics meet contrast requirements",
+"appr": "Resolve effective foreground and background colors through direct formatting, inherited styles, theme colors, tint/shade transformations, fills, transparency, and page backgrounds. Calculate WCAG contrast for simple cases. Render the document for text over images, gradients, overlapping shapes, WordArt, and transparency, then sample the actual pixels behind the text.",
+"auto": "Solid colors: Rule: High; complex backgrounds: Render/Vision + manual"
+}
+],
+"pdf": [
+{
+"a": "Text and meaningful graphics meet contrast requirements",
+"appr": "Resolve solid foreground and background colors from PDF graphics states. Render pages for text over images, gradients, transparency, watermarks, charts, icons, and overlapping objects, then calculate pixel-level contrast.",
+"auto": "Simple cases: High; complex visuals: render/manual"
+}
+],
+"pptx": [
+{
+"a": "Text and meaningful graphics meet contrast requirements",
+"appr": "Resolve effective text, fill, line, theme, tint, transparency, and background colors. Calculate solid-color contrast deterministically. Render slides for text over images, gradients, transparency, charts, icons, and overlapping objects.",
+"auto": "Simple cases: High; complex visuals: render/manual"
+}
+],
+"xlsx": [
+{
+"a": "Text and meaningful graphics meet contrast requirements",
+"appr": "Resolve effective font, fill, theme, and conditional-format colors. Calculate contrast for solid-color cells and render charts, gradients, and complex backgrounds for pixel analysis.",
+"auto": "Simple cases: High; complex visuals: render/manual"
+}
+]
+},
+"1.4.12": {
+"pptx": [
+{
+"a": "Text remains readable and does not clip or overlap when enlarged",
+"appr": "Detect text overflow, auto-fit reductions, off-slide objects, extremely small fonts, and clipped text boxes. Render at enlarged viewing settings. Treat presentation slides as potentially essential two-dimensional layouts, but record the exception rather than assuming it.",
+"auto": "Detection/rendering: Medium–High; final assessment: manual"
+}
+]
+},
+"2.1.1": {
+"pdf": [
+{
+"a": "Interactive fields and controls are labeled and keyboard accessible",
+"appr": "Activate only when forms or controls exist. Inspect AcroForm fields, widgets, accessible names, roles, values, required states, and structure placement. Simulate tab order and test keyboard and screen-reader interaction.",
+"auto": "Technical properties: High; behavior: manual/AT"
+}
+],
+"pptx": [
+{
+"a": "Interactive objects are keyboard accessible and correctly labeled",
+"appr": "Activate when action buttons, linked shapes, controls, macros, embedded objects, or interactive navigation exist. Inspect names and actions, then test keyboard focus, activation, focus order, and screen-reader exposure in PowerPoint.",
+"auto": "Technical detection: High; actual behavior: manual/AT"
+}
+],
+"xlsx": [
+{
+"a": "Interactive controls and input cells are keyboard accessible and properly labeled",
+"appr": "Activate only when the workbook contains data validation, unlocked input cells, form controls, ActiveX controls, slicers, or macros. Inspect labels and properties, then test actual keyboard and screen-reader behavior.",
+"auto": "Detection: High; behavior: manual/AT"
+}
+]
+},
+"2.2.2": {
+"pptx": [
+{
+"a": "Animations, transitions, and flashing content do not create barriers",
+"appr": "Activate when animations or transitions exist. Parse timing and animation trees, auto-advance behavior, looping, flashing frequency, and content revealed only through animation. Render or simulate the slide show for behavioral testing.",
+"auto": "Detection: High; behavioral result: manual/render"
+}
+]
+},
+"2.3.1": {
+"pptx": [
+{
+"a": "Animations, transitions, and flashing content do not create barriers",
+"appr": "Activate when animations or transitions exist. Parse timing and animation trees, auto-advance behavior, looping, flashing frequency, and content revealed only through animation. Render or simulate the slide show for behavioral testing.",
+"auto": "Detection: High; behavioral result: manual/render"
+}
+]
+},
+"2.4.2": {
+"docx": [
+{
+"a": "Document title property exists and is descriptive",
+"appr": "Read docProps/core.xml and extract dc:title. Fail when missing, blank, filename-like, or generic such as “Document1.” Use NLP to compare the title with the first heading, filename, and dominant document topics.",
+"auto": "Rule: High; descriptiveness: AI + review"
+}
+],
+"pdf": [
+{
+"a": "Document title exists and is descriptive",
+"appr": "Read the information-dictionary title, XMP title, and DisplayDocTitle setting. Use a veraPDF policy rule for title presence. Use NLP to compare the metadata title with the visible title, first heading, filename, and document topics.",
+"auto": "Presence: High; descriptiveness: AI/review"
+}
+],
+"pptx": [
+{
+"a": "Presentation title property exists and is descriptive",
+"appr": "Read the title from docProps/core.xml. Flag missing, blank, generic, or filename-like titles. Use AI to compare the metadata title with the title slide, filename, and presentation topics.",
+"auto": "Presence: High; descriptiveness: AI/review"
+}
+],
+"xlsx": [
+{
+"a": "Workbook title property exists and is descriptive",
+"appr": "Read the title from docProps/core.xml. Flag missing, blank, filename-like, or generic titles. Use AI to compare the title with workbook content and worksheet headings.",
+"auto": "Rule: High; description quality: AI/review"
+}
+]
+},
+"2.4.3": {
+"pdf": [
+{
+"a": "Interactive fields and controls are labeled and keyboard accessible",
+"appr": "Activate only when forms or controls exist. Inspect AcroForm fields, widgets, accessible names, roles, values, required states, and structure placement. Simulate tab order and test keyboard and screen-reader interaction.",
+"auto": "Technical properties: High; behavior: manual/AT"
+}
+],
+"pptx": [
+{
+"a": "Interactive objects are keyboard accessible and correctly labeled",
+"appr": "Activate when action buttons, linked shapes, controls, macros, embedded objects, or interactive navigation exist. Inspect names and actions, then test keyboard focus, activation, focus order, and screen-reader exposure in PowerPoint.",
+"auto": "Technical detection: High; actual behavior: manual/AT"
+}
+],
+"xlsx": [
+{
+"a": "Interactive controls and input cells are keyboard accessible and properly labeled",
+"appr": "Activate only when the workbook contains data validation, unlocked input cells, form controls, ActiveX controls, slicers, or macros. Inspect labels and properties, then test actual keyboard and screen-reader behavior.",
+"auto": "Detection: High; behavior: manual/AT"
+}
+]
+},
+"2.4.4": {
+"docx": [
+{
+"a": "Hyperlinks have descriptive text",
+"appr": "Detect both w:hyperlink elements and HYPERLINK field codes. Resolve internal anchors and external relationship destinations. Flag empty links, bare long URLs, “click here,” “read more,” and multiple identical labels pointing to different destinations. Use NLP with the enclosing sentence and heading to judge purpose in context.",
+"auto": "Detection: Rule: High; contextual purpose: AI: Medium–High"
+}
+],
+"pdf": [
+{
+"a": "Hyperlinks are tagged, descriptive, and have valid destinations",
+"appr": "Validate /Link structure elements and annotation relationships. Resolve destinations and detect empty links, broken links, raw URLs, generic labels, and identical labels pointing to different destinations. Use NLP to assess purpose in context.",
+"auto": "Structure: High; link meaning: AI/NLP"
+}
+],
+"pptx": [
+{
+"a": "Hyperlinks have meaningful text and valid destinations",
+"appr": "Inspect text hyperlinks, linked shapes, images, action settings, internal slide destinations, and external relationships. Flag empty links, broken targets, raw URLs, generic labels, and identical labels with different destinations.",
+"auto": "Structure: High; contextual meaning: AI/NLP"
+}
+],
+"xlsx": [
+{
+"a": "Hyperlinks have meaningful text and valid destinations",
+"appr": "Inspect worksheet hyperlinks, HYPERLINK() formulas, linked shapes, internal ranges, and external targets. Flag broken links, raw URLs, “click here,” and identical labels with different destinations.",
+"auto": "Structure: High; contextual purpose: AI/NLP"
+}
+]
+},
+"2.4.6": {
+"docx": [
+{
+"a": "Real heading styles are used with a logical hierarchy",
+"appr": "Inspect each paragraph’s w:pPr/w:pStyle. Resolve the style through word/styles.xml, including w:basedOn and w:outlineLvl. Detect skipped levels, an empty heading, excessive headings, or a single paragraph styled as a heading only for appearance. Render the document and use NLP/layout analysis to detect visually heading-like text that lacks semantic heading markup.",
+"auto": "Semantic styles: Rule: High; false headings: AI/Vision + review"
+}
+],
+"pdf": [
+{
+"a": "Tags correctly identify headings, paragraphs, lists, figures, and sections",
+"appr": "Validate tag hierarchy and role mappings with veraPDF. Compare tags with rendered font size, position, spacing, and text patterns to detect visual headings tagged as paragraphs or visual lists lacking list tags.",
+"auto": "Structure: High; semantic accuracy: AI/manual"
+}
+],
+"pptx": [
+{
+"a": "Every meaningful slide has a descriptive and preferably unique title",
+"appr": "Inspect each slide’s title placeholder and associated text. Flag missing titles, empty titles, duplicates, and text visually functioning as a title but stored in a generic text box. Use NLP to assess whether the title describes the slide.",
+"auto": "Presence/duplicates: High; quality: AI/review"
+}
+],
+"xlsx": [
+{
+"a": "Worksheets have unique and meaningful names",
+"appr": "Inspect workbook sheet names. Flag defaults such as Sheet1, duplicate or numeric-only names. Use AI to compare each name with the sheet’s content.",
+"auto": "Rule: High; meaning: AI"
+},
+{
+"a": "Each worksheet has a clear title, purpose, and logical starting point",
+"appr": "Identify the first meaningful cell, title region, and populated data regions. Flag important content beginning far from the top-left without labels or navigation.",
+"auto": "Rule: Medium–High; purpose: AI/review"
+},
+{
+"a": "Charts have meaningful titles and accessible underlying data",
+"appr": "Parse chart titles, axis titles, series names, legends, and source-cell references. Confirm that chart data exists in accessible worksheet cells. Use AI to assess whether the description communicates key trends or conclusions.",
+"auto": "Structure: High; meaning: AI/manual"
+}
+]
+},
+"3.1.1": {
+"docx": [
+{
+"a": "Default language and language changes are identified",
+"appr": "Resolve w:lang from document defaults, paragraph/character styles, and run properties. Inspect the main document plus headers, footers, footnotes, endnotes, comments, and text boxes. Use language identification on text segments and compare predicted language with declared language.",
+"auto": "Rule: High; mismatch detection: AI: Medium–High"
+}
+],
+"pdf": [
+{
+"a": "Default language and language changes are identified",
+"appr": "Inspect document-level and structure-element /Lang properties. Run language detection on substantial text passages and compare detected languages with declared values.",
+"auto": "Metadata: High; mismatches: AI/review"
+}
+],
+"pptx": [
+{
+"a": "Presentation language and substantial language changes are identifiable",
+"appr": "Inspect language properties on text runs, paragraphs, styles, and presentation metadata. Run language detection on sufficiently long text segments and compare detected and declared values.",
+"auto": "Metadata: High; mismatch detection: AI/review"
+}
+],
+"xlsx": [
+{
+"a": "Workbook language is identifiable",
+"appr": "Inspect available metadata and run language detection on meaningful text cells, chart labels, comments, and alternatives. Flag substantial language changes requiring review.",
+"auto": "Metadata: Rule; detection: AI/NLP"
+}
+]
+},
+"3.1.2": {
+"docx": [
+{
+"a": "Default language and language changes are identified",
+"appr": "Resolve w:lang from document defaults, paragraph/character styles, and run properties. Inspect the main document plus headers, footers, footnotes, endnotes, comments, and text boxes. Use language identification on text segments and compare predicted language with declared language.",
+"auto": "Rule: High; mismatch detection: AI: Medium–High"
+}
+],
+"pdf": [
+{
+"a": "Default language and language changes are identified",
+"appr": "Inspect document-level and structure-element /Lang properties. Run language detection on substantial text passages and compare detected languages with declared values.",
+"auto": "Metadata: High; mismatches: AI/review"
+}
+],
+"pptx": [
+{
+"a": "Presentation language and substantial language changes are identifiable",
+"appr": "Inspect language properties on text runs, paragraphs, styles, and presentation metadata. Run language detection on sufficiently long text segments and compare detected and declared values.",
+"auto": "Metadata: High; mismatch detection: AI/review"
+}
+],
+"xlsx": [
+{
+"a": "Workbook language is identifiable",
+"appr": "Inspect available metadata and run language detection on meaningful text cells, chart labels, comments, and alternatives. Flag substantial language changes requiring review.",
+"auto": "Metadata: Rule; detection: AI/NLP"
+}
+]
+},
+"3.3.2": {
+"pdf": [
+{
+"a": "Interactive fields and controls are labeled and keyboard accessible",
+"appr": "Activate only when forms or controls exist. Inspect AcroForm fields, widgets, accessible names, roles, values, required states, and structure placement. Simulate tab order and test keyboard and screen-reader interaction.",
+"auto": "Technical properties: High; behavior: manual/AT"
+}
+],
+"xlsx": [
+{
+"a": "Interactive controls and input cells are keyboard accessible and properly labeled",
+"appr": "Activate only when the workbook contains data validation, unlocked input cells, form controls, ActiveX controls, slicers, or macros. Inspect labels and properties, then test actual keyboard and screen-reader behavior.",
+"auto": "Detection: High; behavior: manual/AT"
+}
+]
+},
+"4.1.2": {
+"pdf": [
+{
+"a": "Hyperlinks are tagged, descriptive, and have valid destinations",
+"appr": "Validate /Link structure elements and annotation relationships. Resolve destinations and detect empty links, broken links, raw URLs, generic labels, and identical labels pointing to different destinations. Use NLP to assess purpose in context.",
+"auto": "Structure: High; link meaning: AI/NLP"
+},
+{
+"a": "Interactive fields and controls are labeled and keyboard accessible",
+"appr": "Activate only when forms or controls exist. Inspect AcroForm fields, widgets, accessible names, roles, values, required states, and structure placement. Simulate tab order and test keyboard and screen-reader interaction.",
+"auto": "Technical properties: High; behavior: manual/AT"
+}
+],
+"pptx": [
+{
+"a": "Interactive objects are keyboard accessible and correctly labeled",
+"appr": "Activate when action buttons, linked shapes, controls, macros, embedded objects, or interactive navigation exist. Inspect names and actions, then test keyboard focus, activation, focus order, and screen-reader exposure in PowerPoint.",
+"auto": "Technical detection: High; actual behavior: manual/AT"
+}
+],
+"xlsx": [
+{
+"a": "Interactive controls and input cells are keyboard accessible and properly labeled",
+"appr": "Activate only when the workbook contains data validation, unlocked input cells, form controls, ActiveX controls, slicers, or macros. Inspect labels and properties, then test actual keyboard and screen-reader behavior.",
+"auto": "Detection: High; behavior: manual/AT"
+}
+]
+}
+};
+
 const DEVA={
 "1.1.1":{v:"Det + model",t:"Presence via @descr is deterministic; alt is drafted from the image + context and human-approved — same split for the decorative-marking flag.",k:"agree",ours:"Agree",note:"V3's tier for every 1.1.1 item (docx/xlsx/pptx/pdf alt, pptx decorative) is Det+model — presence deterministic, quality model-assisted — exactly ACP's machine-assisted ceiling. All four alt-text items now MATCH V3's spec (PR #47 closed the pptx decorative-marking suppression gap); only a distinct V3 line item — verifying decorative marking ITSELF was applied correctly, not just honoring it — has no detector yet.",docxV4:["Images, charts, SmartArt, equations, and shapes have alternatives","Decorative objects are marked or excluded correctly"]},
 "1.3.1":{v:"Mixed — mostly Deterministic, 3 of 9 items Det + model",t:"Presence checks (list numbering, table headerRowCount, tblHeader, layouts) are pure Deterministic; V3's heading, caption, and PPTX table-header items call for a MODEL to corroborate presence.",k:"augment",ours:"Augment",note:"V3 asks for more than our RUBRIC ceiling models for 3 of the 9 items — heading/caption descriptiveness and PPTX table-header cell-content corroboration — real nuance worth folding into that ceiling. Layered on top: DOCX Lists and Table Captions have no detector at all; DOCX merged-cell detection and PDF /Scope are declared gaps.",docxV4:["Real heading styles are used with a logical hierarchy","Real ordered and unordered lists are used","Tables have identifiable headers and understandable structure","Columns, footnotes, headers, and captions are read meaningfully"]},
-"1.3.2":{v:"Det + model",t:"spTree order vs. geometric sort (PPTX); structure-tree vs. content-stream vs. visual x/y (PDF) — order EXISTS is deterministic, order is CORRECT needs a person.",k:"agree",ours:"Agree",note:"A genuine correction from the retired jeremy.xlsx verdict, which read the old checklist's approach as a web CSS-disable technique and marked 'disagree (documents)'. V3's own item text is written against files, not the DOM, and matches ACP's structure-vs-geometry comparison exactly. FLAG: V4_APPLICABLE marks DOCX blank for 1.3.2 (the Applicability Matrix tab has no X in that cell), but the new DOCX validation-assertion tab lists two items mapped to 1.3.2 — a discrepancy between Deva's own two V4 artifacts, not a transcription error here. Left as-is (row.a.docx for 1.3.2 stays whatever ACP's real status is) until Deva confirms which artifact is authoritative.",docxV4:["Floating objects and text boxes have a logical reading order","Columns, footnotes, headers, and captions are read meaningfully"]},
+"1.3.2":{v:"Det + model",t:"spTree order vs. geometric sort (PPTX); structure-tree vs. content-stream vs. visual x/y (PDF) — order EXISTS is deterministic, order is CORRECT needs a person.",k:"agree",ours:"Agree",note:"A genuine correction from the retired jeremy.xlsx verdict, which read the old checklist's approach as a web CSS-disable technique and marked 'disagree (documents)'. V3's own item text is written against files, not the DOM, and matches ACP's structure-vs-geometry comparison exactly. FLAG: V5_APPLICABLE marks DOCX blank for 1.3.2 (the Applicability Matrix tab has no X in that cell), but the per-format validation-assertion tabs (V5_DETAIL, both V4's DOCX-only version and V5's fuller one) list two items mapped to 1.3.2 for DOCX — a discrepancy between Deva's own artifacts, not a transcription error here. Left as-is (row.a.docx for 1.3.2 stays whatever ACP's real status is) until Deva confirms which artifact is authoritative.",docxV4:["Floating objects and text boxes have a logical reading order","Columns, footnotes, headers, and captions are read meaningfully"]},
 "2.4.6":{v:"Det + model",t:"Structural presence (heading skips, empty titles) is deterministic; whether the text actually DESCRIBES the section is the model half.",k:"agree",ours:"Agree",note:"Exactly RUBRIC's machine-assisted split for this SC — presence is the deterministic sub-signal, descriptiveness is the semantic remainder neither side claims to auto-certify.",docxV4:["Real heading styles are used with a logical hierarchy"]},
 "3.1.1":{v:"Deterministic",t:"Read the language attribute/property directly — docx: @val/@eastAsia/@bidi; pptx: @lang/@altLang; pdf: /Lang.",k:"agree",ours:"Agree",note:"All three formats now MATCH V3's spec verbatim (PR #51 closed the last gap, pptx @altLang) — full agreement, tier and implementation both.",docxV4:["Default language and language changes are identified"]},
 "3.1.2":{v:"Det + model (docx, mis-keyed) / Human (xlsx, pptx, pdf)",t:"V4's checklist item — \"Default language and language changes are identified\" — expects language switches to be caught and flagged under this SC; DOCX carries real detector logic for exactly that, but the other three formats have none.",k:"disagree",ours:"Disagree",note:"DOCX's two independent detectors (seeded langdetect over extracted text + a script-based LanguageOfPartsRule) are real and substantively match V4's ask, but the underlying .NET rule still reports under SC_3_1_1 — ADR 0012 deliberately deferred the remap after killing an earlier false-positive flood — so a coverage query keyed on SC_3_1_2 undercounts DOCX until that lands. A known, disclosed drift (see api/remediate docx language-of-parts evidence notes), not a hidden one. XLSX/PPTX/PDF have no equivalent detector at all — V4's checklist expects the same check ACP hasn't built for those three formats.",docxV4:["Default language and language changes are identified"]},
@@ -962,33 +1671,62 @@ const RUBRIC={
    fClass:"GEN",fWhy:"Same generate-then-approve ceiling as DOCX — a nearby label can sometimes be copied mechanically, but the general case needs a drafted, approved name."}}}};
 
 const FM=["docx","xlsx","pptx","pdf"];
+// KEY_TECH_BY_FORMAT / KEY_TECH_CROSSCUT = Deva's "KEY TECH" tab (assessment-applicability-matrix-
+// v5.xlsx), her recommended implementation stack — not ACP's own stack, and not verified against
+// ACP's actual code the way RUBRIC/ASSESS_SPEC are. Quoted, not endorsed. Two per-format tools
+// (parser/validator + renderer) badge each format's header; three cross-cutting tools apply to every
+// format identically and are captioned once below the table instead of repeated 4x. Tesseract and
+// OpenCV carry Deva's own annotation, verbatim ("We may not need this.") — rendered as a visually
+// distinct "tentative" badge, not silently dropped or silently treated as confirmed.
+const KEY_TECH_BY_FORMAT={
+  docx:[{name:"Open XML SDK",title:"Office parser — Open XML SDK"},{name:"LibreOffice / MS",title:"Office rendering — LibreOffice preliminary renderer plus optional high-fidelity Microsoft environment"}],
+  xlsx:[{name:"Open XML SDK",title:"Office parser — Open XML SDK"},{name:"LibreOffice / MS",title:"Office rendering — LibreOffice preliminary renderer plus optional high-fidelity Microsoft environment"}],
+  pptx:[{name:"Open XML SDK",title:"Office parser — Open XML SDK"},{name:"LibreOffice / MS",title:"Office rendering — LibreOffice preliminary renderer plus optional high-fidelity Microsoft environment"}],
+  pdf:[{name:"veraPDF",title:"PDF validator — veraPDF Greenfield container"},{name:"PDFium",title:"PDF renderer — PDFium or enterprise PDF SDK"}],
+};
+const KEY_TECH_CROSSCUT=[
+  {name:"Python + FastAPI",title:"AI/OCR service — Python + FastAPI (Deva's sheet also notes \"Lama\" alongside this row)"},
+  {name:"Tesseract",title:"OCR — Deva's own annotation: \"We may not need this.\"",tentative:true},
+  {name:"OpenCV",title:"Vision — Deva's own annotation: \"We may not need this.\"",tentative:true},
+];
+(function(){
+  const tr=document.getElementById("techrow");
+  if(!tr)return;
+  let h=`<th></th><th></th>`;
+  for(let i=0;i<2;i++)for(const f of FM){ // once for the ASSESS group, once for REMEDIATE — same badges, same tech per format regardless of which half of the table
+    h+=`<th>${(KEY_TECH_BY_FORMAT[f]||[]).map(t=>`<span class="tech-badge" title="${esc(t.title)}">${esc(t.name)}</span>`).join("")}</th>`;
+  }
+  tr.innerHTML=h;
+})();
 const tb=document.querySelector("#tbl tbody");
 // Deva-vs-ours marker: V3's checklist evaluates ASSESSMENT approach only (Remediation is a
 // separate V3 tab this matrix doesn't compare per-SC), so the tag applies to the 4 assess cells,
 // never the 4 remediate cells. "agree" gets no mark.
 const DEVA_MARK={augment:{sym:"◆",word:"augments"},disagree:{sym:"⊗",word:"disagrees with"}};
-// V4_APPLICABLE = Deva's newest checklist artifact (assessment-applicability-matrix-v4.xlsx,
-// received 2026-07-22, updated same day with two added rows — 1.4.1 Use of Color and 3.1.2
-// Language of Parts, both X across all four formats) — supersedes the SC-level V3_COVERED
-// approximation this matrix used to derive from V3's Gaps-vs-WCAG sheet. Originally 12 WCAG codes
-// (dropping 1.4.4/1.4.10/1.4.12 — the "correctly absent" commentary rows, never real checklist
-// items in V3 either), now 14 with the two additions above; still CELL-level, not SC-level:
-// several codes only apply to some formats (e.g. 1.3.2 has no DOCX/XLSX item at all). "yes" = X,
-// "cond" = (X) "applies only if the feature is present," absent from the inner object = blank = no
-// checklist item for that format. V3.xlsx remains the citation for the deeper technical-mechanism
-// content in ASSESS_SPEC/REMEDIATION_SPEC/DEVA — V4's applicability tab doesn't carry that detail,
-// only applicability; the workbook's separate DOCX tab (added 2026-07-22, 14 validation-assertion
-// rows with WCAG-code mapping) is more granular and is what DEVA[sc].docxV4 quotes from. NOTE: V4's
-// own footer says "34 applicable cells," but both the per-format column totals (9+5+10+12=36) and a
-// direct count of every X/(X) mark below total 36 — a discrepancy in Deva's own source file, not a
-// transcription error here; flagged, not silently corrected. A second discrepancy surfaced by the
-// DOCX tab: it has two assertions mapped to 1.3.2, but the Applicability Matrix tab marks DOCX
-// blank for 1.3.2 — also flagged (in DEVA["1.3.2"].note), not resolved. And a third: 1.4.4/1.4.10/
-// 1.4.12 are the "correctly absent" SCs this matrix drops from V4_APPLICABLE below, yet the DOCX
-// tab has a "Content survives zoom, reflow, and text-spacing changes" assertion mapped to exactly
-// those three codes — also flagged in each of their DEVA notes rather than silently treated as a
-// V4 policy reversal.
-const V4_APPLICABLE={
+// V5_APPLICABLE = Deva's newest checklist artifact (assessment-applicability-matrix-v5.xlsx,
+// received 2026-07-23) — the Applicability Matrix tab in v5.xlsx is byte-for-byte identical to
+// v4.xlsx's (verified: same 20 rows, same cell values), so this is the same data under its current
+// citation, not a re-derivation. Supersedes the SC-level V3_COVERED approximation this matrix used
+// to derive from V3's Gaps-vs-WCAG sheet. Originally 12 WCAG codes (dropping 1.4.4/1.4.10/1.4.12 —
+// the "correctly absent" commentary rows, never real checklist items in V3 either), 14 as of the
+// 2026-07-22 update (added 1.4.1 Use of Color and 3.1.2 Language of Parts, both X across all four
+// formats). Still CELL-level, not SC-level: several codes only apply to some formats (e.g. 1.3.2 has
+// no DOCX/XLSX item at all). "yes" = X, "cond" = (X) "applies only if the feature is present,"
+// absent from the inner object = blank = no checklist item for that format. V3.xlsx remains the
+// citation for the deeper technical-mechanism content in ASSESS_SPEC/REMEDIATION_SPEC/DEVA that
+// predates V5 — V5_DETAIL (defined above DEVA) is the current, richer per-format citation for new
+// content, quoted verbatim from v5.xlsx's DOCX/PDF/PPTX/XLS tabs. NOTE: this file's own footer still
+// says "34 applicable cells," but both the per-format column totals (9+5+10+12=36) and a direct
+// count of every X/(X) mark below total 36 — a discrepancy in Deva's own source file, carried over
+// unchanged from v4.xlsx, not a transcription error here; flagged, not silently corrected. A second
+// discrepancy: the per-format detail tabs have two assertions mapped to 1.3.2 for DOCX, but the
+// Applicability Matrix tab marks DOCX blank for 1.3.2 — also flagged (in DEVA["1.3.2"].note), not
+// resolved. A third, now confirmed MUCH more broadly in V5 than it first looked in V4: 1.4.4/1.4.10/
+// 1.4.11/1.4.12 are all "correctly absent" per the Applicability Matrix tab (dropped from
+// V5_APPLICABLE below), yet V5_DETAIL has real per-format assertions for all four across PDF/PPTX/
+// XLSX (1.4.11 is new evidence V4's DOCX-only tab didn't have) — flagged in each SC's DEVA note
+// rather than silently treated as a policy reversal either direction.
+const V5_APPLICABLE={
 "1.1.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "1.3.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "1.3.2":{pptx:"yes",pdf:"yes"},
@@ -1009,7 +1747,7 @@ for(const row of ROWS){
   if(row.flag)tr.className="flagged";
   let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
   const dv=DEVA[row.sc], dm=dv&&DEVA_MARK[dv.k];
-  const v4row=V4_APPLICABLE[row.sc];
+  const v5row=V5_APPLICABLE[row.sc];
   for(const f of FM){const v=row.a[f];
     // Only mark cells that carry an actual assessment claim (aClass !== NAx) — Deva's per-SC verdict
     // sometimes covers only SOME formats (e.g. 1.3.2's "documents beat V3's class" is about XLSX/PPTX/PDF,
@@ -1019,36 +1757,38 @@ for(const row of ROWS){
     const markHtml=showMark?` <b class="devamark ${dv.k}" aria-hidden="true">${dm.sym}</b>`:"";
     const markAria=showMark?` Our conclusion ${dm.word} Deva's conformance checklist for this rule.`:"";
     const tdCls=showMark?` deva-${dv.k}`:"";
-    // v4state: "yes"/"cond" render normally; undefined (no checklist item per V4) mutes the cell
+    // v5state: "yes"/"cond" render normally; undefined (no checklist item per V5) mutes the cell
     // when the toggle is on, WITHOUT hiding the real ACP status — never hide real capability data,
     // this matrix's own standing rule. "cond" earns a small marker distinguishing it from a clean X.
-    const v4state=v4row&&v4row[f];
-    const v4Cls=v4state?"":" v4-muted";
-    const condHtml=v4state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
-    const v4Aria=v4state?"":" Not in Deva's V4 checklist for this format — real ACP status shown, just outside her checklist's scope.";
-    h+=`<td class="cell${tdCls}${v4Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria}${v4Aria} Open details.">${SHORT_A[v]}${markHtml}${condHtml}</button></td>`;}
+    // (CSS class names below stay "v4-muted"/"v4cond" — internal styling hooks, not a citation, not
+    // worth the churn of renaming; the visible text and JS variable names are what say "V5" now.)
+    const v5state=v5row&&v5row[f];
+    const v5Cls=v5state?"":" v4-muted";
+    const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
+    const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
+    h+=`<td class="cell${tdCls}${v5Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria}${v5Aria} Open details.">${SHORT_A[v]}${markHtml}${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
-    const v4state=v4row&&v4row[f];
-    const v4Cls=v4state?"":" v4-muted";
-    h+=`<td class="cell${v4Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
+    const v5state=v5row&&v5row[f];
+    const v5Cls=v5state?"":" v4-muted";
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
 }
 
-// "Show only Deva's V4 checklist SCs" toggle — per V3's feedback that the full 20-SC rubric table
+// "Show only Deva's V5 checklist SCs" toggle — per V3's feedback that the full 20-SC rubric table
 // includes rows outside what her checklist actually checks, refined 2026-07-22 to cell-level using
-// V4. A row is shown if V4_APPLICABLE has ANY entry for that SC; within a shown row, individual
-// cells (both assess and remediate) mute to a quiet "—" when V4 has no item for that specific
-// format — real ACP status stays in the DOM and stays clickable, just visually de-emphasized, so
-// this never becomes "hide real data," only "de-emphasize what's outside her checklist's scope."
-// Doesn't touch the ceiling tiles, which describe ACP's own rubric-wide ceiling independent of any
-// one checklist's scope.
+// V4 (data unchanged, now cited as V5 — see V5_APPLICABLE's own comment). A row is shown if
+// V5_APPLICABLE has ANY entry for that SC; within a shown row, individual cells (both assess and
+// remediate) mute to a quiet "—" when V5 has no item for that specific format — real ACP status
+// stays in the DOM and stays clickable, just visually de-emphasized, so this never becomes "hide
+// real data," only "de-emphasize what's outside her checklist's scope." Doesn't touch the ceiling
+// tiles, which describe ACP's own rubric-wide ceiling independent of any one checklist's scope.
 (function(){
   const cb=document.getElementById("v3only"), countEl=document.getElementById("v3count");
-  const v4Rows=Object.keys(V4_APPLICABLE).length;
-  countEl.textContent=`${v4Rows} of ${ROWS.length}`;
+  const v5Rows=Object.keys(V5_APPLICABLE).length;
+  countEl.textContent=`${v5Rows} of ${ROWS.length}`;
   function apply(){
     for(const tr of tb.querySelectorAll("tr"))
-      tr.classList.toggle("v3-hidden", cb.checked && !V4_APPLICABLE[tr.dataset.sc]);
+      tr.classList.toggle("v3-hidden", cb.checked && !V5_APPLICABLE[tr.dataset.sc]);
     tb.closest("table").classList.toggle("v4-mute-on", cb.checked);
   }
   cb.addEventListener("change",apply);
@@ -1291,11 +2031,19 @@ function renderDrawer(sc,f,trigger){
   }
 
   if(DEVA[row.sc]){const dv=DEVA[row.sc];
-    const docxAssertions=(f==="docx"&&dv.docxV4&&dv.docxV4.length)?
-      `<div class="deva-docxv4"><b>Deva's V4 DOCX validation assertion${dv.docxV4.length>1?"s":""}:</b> ${dv.docxV4.map(x=>`&ldquo;${esc(x)}&rdquo;`).join(" · ")}</div>`:"";
+    // V5_DETAIL supersedes the old docx-only docxV4 quotes (same DOCX content, now also PDF/PPTX/XLSX,
+    // now also with her recommended technical approach + automation level, quoted verbatim) — see the
+    // V5_DETAIL comment block above DEVA for the full citation. Shown for whichever format tab is open,
+    // not just DOCX.
+    const v5items=(V5_DETAIL[row.sc]&&V5_DETAIL[row.sc][f])||[];
+    const v5Block=v5items.length?
+      `<div class="aspec"><div class="aspec-title">Deva's V5 validation assertion${v5items.length>1?"s":""} — ${f.toUpperCase()} (assessment-applicability-matrix-v5.xlsx)</div>${v5items.map(x=>
+        `<div class="aspec-item"><div class="s">&ldquo;${esc(x.a)}&rdquo;</div>
+          <div class="aspec-note"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
+          <div class="aspec-note"><b>Her stated automation level:</b> ${esc(x.auto)}</div></div>`).join("")}</div>`:"";
     html+=`<div class="deva">
       <div><b>vs. Deva's V3 checklist:</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
-      ${docxAssertions}
+      ${v5Block}
       <div><b>Our conclusion:</b> <span class="dv ${dv.k}">${esc(dv.ours)}</span> — ${esc(dv.note)}</div></div>`;}
 
   html+=`<h4>4 · Remediation — current vs. potential</h4>${remediationCVP(row,f,rub)}`;
