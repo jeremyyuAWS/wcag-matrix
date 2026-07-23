@@ -1150,6 +1150,12 @@ function buildFAQ(row,f,rub){
   if(counter)faqs.push({q:"What's the strongest objection to this classification, and how does it hold up?",a:counter});
   const drift=ad.cat||rd.cat;
   if(drift)faqs.push({q:"Is there a catalog/code drift on this rule?",a:drift});
+  // Same UPGRADE text the standalone "Gap to close" callout above already shows (§4) — repeated
+  // here as an explicit FAQ entry so it's findable by scanning §5's questions too, not just by
+  // reading the callout. UPGRADE is authored per-SC, not per-format-cell, so this answer is
+  // identical across a row's four format tabs when the gap itself is format-specific (e.g. 1.3.1's
+  // note calls out PPTX/PDF by name inside the same shared text) — intentional, not a bug.
+  if(UPGRADE[row.sc])faqs.push({q:"Any known gaps that can be coded to improve automation?",a:UPGRADE[row.sc],html:false});
   if(rub&&rub.aClass!=="NAx"){
     const ca=costAutomation(row,f,rub);
     faqs.push({q:"Roughly what does this cost per flagged item? (assumptions stated)",a:ca.cost,html:true});
