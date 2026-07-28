@@ -241,7 +241,12 @@
   .tech-badge.tentative{color:var(--muted);background:#f4f4f4;border-style:dashed}
   td.sc{font-weight:700;text-align:left;white-space:nowrap}
   td.name{text-align:left;min-width:170px}
-  tr.flagged td.name{color:var(--red);font-weight:700}
+  /* Corrected rows are no longer red. Red across a whole criterion name reads as "this rule is
+     failing", which is not what the flag means — it means the row was corrected against an old
+     infographic, a provenance note about OUR history, not a status about the document. The ▲
+     still marks it and the drawer still explains it; it just no longer shouts. */
+  tr.flagged td.name{font-weight:700}
+  tr.flagged td.name .flagmark{color:var(--muted);font-weight:400}
   td.cell{padding:0;font-weight:700;position:relative}
   .swatch{display:inline-block;position:relative;padding:3px 7px;border-radius:4px;font-weight:700;font-size:12px;color:var(--blue);margin-right:2px;vertical-align:middle;background:#f6f7fa;border:1px solid var(--line)}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
@@ -1940,7 +1945,7 @@ function buildTable(){
   const tr=document.createElement("tr");
   tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
-  let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
+  let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?` <span class="flagmark" title="Row corrected against the July-14 infographic">▲</span>`:""}</td>`;
   const v5row=V5_APPLICABLE[row.sc];
   for(const f of FM){const v=row.a[f];
     // v5state: "yes"/"cond" render normally; undefined (no checklist item per V5) mutes the cell
