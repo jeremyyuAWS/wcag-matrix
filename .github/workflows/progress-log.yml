@@ -59,6 +59,10 @@ jobs:
           set -euo pipefail
           python3 scripts/apply_progress_log.py /tmp/entries.json
           python3 scripts/apply_maturity.py /tmp/coverage.json
+          # A sync IS an edit: it changes what the page says. Without this the stamp goes stale
+          # in the one direction that misleads — the page claiming to be older than its content,
+          # on the tab people screenshot. After the splices, never before.
+          python3 scripts/bump_build.py
 
       - name: Verify the result still parses
         run: |
