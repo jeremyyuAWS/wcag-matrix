@@ -51,10 +51,20 @@ def render(e: dict) -> str:
     repo = f',repo:{_js_str(e["repo"])}' if e.get("repo") else ""
     scs = ",".join(_js_str(s) for s in e["scs"])
     fmts = ",".join(_js_str(f) for f in e["formats"])
+    # `points` is optional: a commit describing one change emits no bullets and the entry keeps
+    # the exact shape it had before the field existed. One bullet per line, since these are the
+    # part a human is most likely to come back and reword.
+    points = ""
+    if e.get("points"):
+        rendered = ",\n".join(
+            "  {" + (f'label:{_js_str(p["label"])},' if p.get("label") else "")
+            + f'text:{_js_str(p["text"])}}}'
+            for p in e["points"])
+        points = f',\n points:[\n{rendered}]'
     return (f'{{date:{_js_str(e["date"])},hash:{_js_str(e["hash"])},pr:{pr}{repo},\n'
             f' title:{_js_str(e["title"])},\n'
             f' scs:[{scs}],formats:[{fmts}],\n'
-            f' summary:{_js_str(e["summary"])}}},')
+            f' summary:{_js_str(e["summary"])}{points}}},')
 
 
 def validate(entries: list[dict]) -> None:
@@ -65,6 +75,9 @@ def validate(entries: list[dict]) -> None:
         bad = [f for f in e["formats"] if f not in FORMATS]
         if bad:
             raise SystemExit(f"entry {e['hash']}: unknown format(s) {bad}")
+        for i, p in enumerate(e.get("points") or []):
+            if not isinstance(p, dict) or not (p.get("text") or "").strip():
+                raise SystemExit(f"entry {e['hash']}: points[{i}] has no text")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", e["date"]):
             raise SystemExit(f"entry {e['hash']}: date must be YYYY-MM-DD")
 
