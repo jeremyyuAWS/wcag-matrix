@@ -37,6 +37,17 @@
   .logbadge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:9px;background:#eef1f8;color:var(--navy);border:1px solid var(--line)}
   .logbadge.fmt{background:#fff7e6;color:#8a5a00;border-color:#f0d9a0}
   .logsummary{font-size:12.5px;color:var(--ink);line-height:1.5}
+  /* Collapsed by default: the log is a scannable timeline first (date · title · SCs ·
+     formats), with the mechanism detail one click away. Mirrors details.faqitem/.tech
+     in the drawer rather than inventing a third disclosure style. <details>/<summary>
+     is natively keyboard-operable, so this needs no JS and no focus-trap changes —
+     the log lives in #tab-log, outside the #panel dialog. */
+  .logentry details.logdetails{border-top:1px solid var(--line);margin-top:2px}
+  .logentry details.logdetails summary{cursor:pointer;padding:7px 0 0;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .logentry details.logdetails summary:hover{color:var(--navy)}
+  .logentry details.logdetails summary:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:3px}
+  .logentry details.logdetails[open] summary{margin-bottom:2px}
+  .logentry details.logdetails .logsummary{padding:4px 0 4px}
   tr.v3-hidden{display:none}
   /* v4-muted cells stay full-strength unless the toggle is on (table.v4-mute-on) — never mute by
      default, only when the viewer has actively asked to see just Deva's V5-covered cells (class
@@ -2158,6 +2169,10 @@ document.addEventListener("keydown",(e)=>{
 // silently folded into "0 findings" for those. ref is a PR number when the commit cites one
 // (mova-io/acp), else the short commit hash with no link. Add new entries at the top as real
 // engine/remediate PRs land — don't backfill placeholder rows for work that hasn't happened yet.
+// <<<PROGRESS_LOG:BEGIN — entries below are spliced by scripts/apply_progress_log.py
+// from acp's `Matrix-Note:` commit trailers. Keep the markers intact; hand-edits inside
+// them survive (the splice only PREPENDS entries whose hash is not already present), but
+// prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
 {date:"2026-07-24",hash:"062642f",pr:6,repo:"jeremyyuAWS/acp",
  title:"feat(engine): Tier-1 WCAG matrix gaps — DOCX 4.1.2, XLSX/PPTX uniqueness, PDF 1.4.5, 2.4.4 write-back",
@@ -2212,6 +2227,7 @@ const PROGRESS_LOG=[
  scs:["1.3.2","1.1.1"],formats:["xlsx"],
  summary:"HiddenContentRule now reads inline-string cells (t=“inlineStr” — openpyxl's default), previously read as empty so a hidden inline-string row/column was never flagged (1.3.2). AltTextRule now walks every Picture/GraphicFrame regardless of anchor kind, not just TwoCellAnchor — a one-cell-anchored image (also openpyxl's default) was previously never alt-checked (1.1.1)."},
 ];
+// <<<PROGRESS_LOG:END>>>
 (function(){
   const FMT_LABEL={docx:"DOCX",xlsx:"XLSX",pptx:"PPTX",pdf:"PDF"};
   const list=document.getElementById("logList");
@@ -2228,7 +2244,7 @@ const PROGRESS_LOG=[
       <div class="logdate">${e.date} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
       <div class="logtitle">${ref}</div>
       <div class="logbadges">${scBadges}${fmtBadges}</div>
-      <div class="logsummary">${esc(e.summary)}</div>
+      <details class="logdetails"><summary>What changed</summary><div class="logsummary">${esc(e.summary)}</div></details>
     </div>`;
   }).join("");
 })();

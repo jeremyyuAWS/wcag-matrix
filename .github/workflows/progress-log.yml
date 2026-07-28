@@ -1,0 +1,84 @@
+# Sync the Progress Log from acp.
+#
+# Fires on a repository_dispatch from jeremyyuAWS/acp (sent by its
+# .github/workflows/matrix-progress-log.yml when a push to main contains a commit with
+# a `Matrix-Note:` trailer). The dispatch is a bare signal and carries no entry data:
+# this job clones acp, runs ITS generator, and splices the result in here.
+#
+# Full-history regeneration + hash de-duplication in apply_progress_log.py makes this
+# idempotent and self-healing: a missed or dropped dispatch is corrected by the next
+# one, and workflow_dispatch re-syncs from scratch at any time. No range state is kept.
+#
+# acp is a public repo, so the checkout needs no credentials. The only token used is
+# the default GITHUB_TOKEN, writing to this repo.
+#
+# SCOPE: this only ever rewrites the PROGRESS_LOG block between the BEGIN/END markers
+# in index.html. It never touches ROWS.a/ROWS.r — tier changes are capability claims a
+# human verifies against shipped code (CLAUDE.md ground rules 1-3).
+
+name: Update Progress Log
+
+on:
+  repository_dispatch:
+    types: [acp-progress-log]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Two pushes to acp in quick succession would otherwise race on this repo's main.
+  group: progress-log
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone acp
+        run: git clone --quiet https://github.com/jeremyyuAWS/acp.git /tmp/acp
+
+      - name: Generate entries
+        working-directory: /tmp/acp     # the generator shells out to `git log`
+        run: python3 scripts/gen_progress_log.py > /tmp/entries.json
+
+      - name: Splice into index.html
+        run: python3 scripts/apply_progress_log.py /tmp/entries.json
+
+      - name: Verify the result still parses
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs=require("fs"); const h=fs.readFileSync("index.html","utf8");
+            const s=h.indexOf("const PROGRESS_LOG=[");
+            if(s<0){console.error("PROGRESS_LOG not found");process.exit(1)}
+            let i=h.indexOf("[",s),d=0,j=i,q=null;
+            for(;j<h.length;j++){const c=h[j];
+              if(q){if(c==="\\\\"){j++;continue}if(c===q)q=null;continue}
+              if(c==="\"" || c==="\x27" || c==="`"){q=c;continue}
+              if(c==="[")d++;else if(c==="]"){d--;if(d===0)break}}
+            const L=eval(h.slice(i,j+1));
+            const bad=L.filter(e=>!e.date||!e.hash||!e.title||!e.scs||!e.formats||!e.summary);
+            if(bad.length){console.error("malformed entries:",bad.length);process.exit(1)}
+            console.log("PROGRESS_LOG parses —",L.length,"entries");
+          '
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- index.html; then
+            echo "no new entries — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "chore: sync Progress Log from acp
+
+          Spliced by .github/workflows/progress-log.yml from acp's Matrix-Note: commit
+          trailers. Generated — see scripts/apply_progress_log.py.
+
+          Trigger: ${{ github.event_name }} ${{ github.event.client_payload.sha }}"
+          git push
