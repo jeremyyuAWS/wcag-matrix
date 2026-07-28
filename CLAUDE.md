@@ -3,6 +3,26 @@
 ## What this is
 Interactive WCAG 2.1 AA assessment & remediation matrix for document formats (DOCX/XLSX/PPTX/PDF), built for the ACP (Accessibility Compliance Platform) GTM conversation with Deva. Single self-contained `index.html` (no build step) + methodology docs in `docs/`. Live at https://fabulous-crisp-14e424.netlify.app/ (Netlify Drop; redeploy by drag or `netlify deploy --prod --dir .`).
 
+## Deva's checklist — current artifact
+`~/Downloads/assessment-applicability-matrix-v5-28JUL.xlsx` (received 2026-07-28) is the version the page cites. **Content-identical to `assessment-applicability-matrix-v5.xlsx`** — diffed all seven sheets cell by cell, zero differing rows; only the filename and Excel's re-save metadata changed. So it is a relabel, not a revision, and **no per-cell verdict needed re-deriving**. This is the second time a re-save has arrived looking like a new version (the same happened 2026-07-21 with v3) — diff before re-reading, it takes seconds and has twice saved a full re-derivation.
+
+## Capability vocabulary (standardized 2026-07-28)
+Two INDEPENDENT axes, each answering one question about what ACP can *do* — not how it does it. The old labels (Certified/Guided/Human · Auto/Manual/AI proposal) mixed confidence, automation, human effort and mechanism into one word, which is why "Guided" meant different things on each axis.
+
+| Assessment | | Remediation | |
+|---|---|---|---|
+| `A4` | Fully Assessed | `R4` | Automatically Fixed |
+| `A3` | Potential Issue | `R3` | AI Generated Fix |
+| `A2` | Human Assessment Required | `R2` | Guided Remediation |
+| `NA` | Not Applicable | `R1` | No Remediation |
+| | | `NA` | Not Applicable |
+
+Levels are **ordinal within an axis**, which is what lets coverage be a weighted average rather than a count: `A4`×1.0 + `A3`×0.5, and `R4`×1.0 + `R3`×0.75 + `R2`×0.4, **over applicable cells only**. A criterion that doesn't apply to a format is not a gap and must never drag the percentage down, or formats stop being comparable.
+
+Legacy maps live in `LEGACY_A`/`LEGACY_R` — drawer prose and the Deva tabs still use old terms in places.
+
+**One deliberate deviation from the PRD's migration table**, which sends `Auto (part.)` → `R3` "AI Generated Fix". Every `AP` cell this matrix actually held — 1.3.2/xlsx (unhide hidden rows) and 2.4.2 on docx/xlsx/pdf (title derived from the filename) — is a *deterministic mechanical edit with no model involved*; `RTIER_HOW` classified all four as Rules-based for that reason. "Partial" described **scope, not mechanism**. Calling them AI-generated would assert the product uses a model where it doesn't, and cuts against the determinism bar in ground rule 2. They map to `R4`; partiality is recorded on the registry's coverage axis, which is where it belongs.
+
 ## Ground rules (non-negotiable)
 1. **Every capability claim must be code-backed** against the ACP repo at `~/projects/acp` — a tier is claimed only if the detector/fixer is shipped and in the scan path. Catalog labels alone don't count.
 2. **Determinism bar:** LLM in a decision path caps a rule at Guided/AI-Proposal. Certified/Automatic = same input → same output.
