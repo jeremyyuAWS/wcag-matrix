@@ -139,7 +139,6 @@
   .dcodes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 12px;padding:8px 10px;
     background:#f6f8fc;border:1px solid var(--line);border-radius:8px}
   .dcode{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--navy)}
-  #panel.potential .dcodes{background:#e8f0fe;border-color:#c3d8f7}
   .ccode{display:inline-block;min-width:26px;text-align:center;padding:1px 7px;border-radius:999px;
     font-size:10.5px;font-weight:800;letter-spacing:.03em;color:#fff}
   /* colour:#fff restated per-chip for the same reason as .lgchip: the bare .A4/.R3/... rules
@@ -163,7 +162,6 @@
      reading. The toggle sits at the top of the page and the drawer covers it, so without this
      an open drawer gives no clue which view produced it. Deliberately faint — it must read as
      a mode indicator, not as a status colour competing with the level chips inside. */
-  #panel.potential{background:#f4f8ff}
   #panel.potential .potential-flag{display:block}
   .potential-flag{display:none;margin:0 0 10px;padding:5px 10px;border-radius:6px;
     background:#e3edfd;border:1px solid #c3d8f7;color:#1e3a8a;font-size:11.5px;font-weight:700}
@@ -172,6 +170,16 @@
   .covhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
   .covsub{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
   .covformula{font-size:11px;color:var(--muted)}
+  .covexplain{flex:1 1 100%;margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--muted)}
+  /* Deva's checklist quoted the way the WCAG excerpt is — it is a primary source for this
+     matrix, and the reader should be able to check any line against her workbook. */
+  #panel .devaquote{margin:10px 0;padding:10px 12px;background:#f7f9fc;border:1px solid var(--line);border-radius:8px}
+  #panel .devasrc{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+  #panel .devasrc code{text-transform:none;letter-spacing:0;font-size:11px}
+  #panel blockquote.dq{margin:8px 0 4px;padding:6px 0 6px 12px;border-left:3px solid var(--blue);
+    font-style:italic;color:var(--navy);font-size:13px;line-height:1.5}
+  #panel blockquote.dq cite{display:block;margin-top:4px;font-style:normal;font-size:10.5px;color:var(--muted)}
+  #panel .dqmeta{font-size:12px;color:var(--muted);margin:2px 0 6px;line-height:1.45}
   .covgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   .covaxis h4{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   .covrow{display:grid;grid-template-columns:52px 1fr 44px;align-items:center;gap:8px;margin:3px 0;font-size:12.5px}
@@ -256,6 +264,26 @@
   td.cell{padding:0;font-weight:700;position:relative}
   .swatch{display:inline-block;position:relative;padding:3px 7px;border-radius:4px;font-weight:700;font-size:12px;color:var(--blue);margin-right:2px;vertical-align:middle;background:#f6f7fa;border:1px solid var(--line)}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
+  /* Toggle animation. Only cells whose LEVEL actually changed animate — 45 of 160 do, and
+     flashing all 160 would say nothing about which ones moved. A brief lift plus a colour wash
+     in the cell's own hue: enough to draw the eye across a dense grid, short enough not to
+     stand between the reader and the number. Honours reduced-motion. */
+  @keyframes cellmoved{
+    0%{transform:scale(.86);opacity:.35}
+    45%{transform:scale(1.06);opacity:1}
+    100%{transform:scale(1);opacity:1}
+  }
+  @keyframes cellwash{
+    0%,100%{background:transparent}
+    40%{background:color-mix(in srgb, currentColor 14%, transparent)}
+  }
+  .cellbtn.justchanged{animation:cellmoved .42s cubic-bezier(.2,.9,.25,1) both,cellwash .7s ease-out both}
+  .cellbtn.justchanged .donut{animation:cellmoved .5s .05s cubic-bezier(.2,.9,.25,1) both}
+  @media(prefers-reduced-motion:reduce){
+    .cellbtn.justchanged,.cellbtn.justchanged .donut{animation:none}
+    /* Still mark what moved, just without motion. */
+    .cellbtn.justchanged{outline:2px solid currentColor;outline-offset:-3px}
+  }
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
   .cellbtn:focus-visible{outline:3px solid #0b57d0;outline-offset:-2px;background:#eaf1fd}
   tr:nth-child(even) td{background:#fafbfd}
@@ -380,8 +408,15 @@
        counting every non-N/A level would overstate it. -->
   <div class="covcard">
     <div class="covhead">
-      <h3>Capability coverage <span class="covsub">weighted, over applicable cells only</span></h3>
+      <h3>Capability coverage <span class="covsub">today <b>&rarr;</b> potential, over Deva's V5 checklist</span></h3>
       <div class="covformula" id="covFormula"></div>
+      <p class="covexplain">Each cell scores what ACP delivers there: a full assessment counts 1, a
+        <b>Potential Issue</b> counts &frac12; (ACP finds it, a person confirms it), and a criterion
+        needing human judgement counts 0. Remediation the same way — an automatic fix counts 1, an
+        AI-drafted fix &frac34;, guided instructions 0.4, nothing 0. The <b>first number is today</b>;
+        the <b>second is the ceiling</b> — the most any tool could do for that rule and format.
+        Cells the rule cannot apply to are excluded entirely, so no format is penalised for rules it
+        was never subject to.</p>
     </div>
     <div class="covgrid" id="covGrid"></div>
   </div>
@@ -413,8 +448,8 @@
         <h4>The donut in each cell</h4>
         <span class="lgitem lgdonut"><span id="lgDonutHi"></span> <b>At potential</b> — nothing more this rule allows</span>
         <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <b>Partway</b> — headroom remains for this cell</span>
-        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>At the floor</b> — the rule allows much more than ships</span>
-        <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format. <b>Not a roadmap.</b></span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>0 — nothing yet</b> — the rule allows a fix (or an automated assessment) and ACP does not provide one today</span>
+        <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format, not what ACP has committed to build. A <b>0 does not mean impossible</b>: it means possible in principle, absent in ACP today.</span>
       </div>
 
     </div>
@@ -1945,7 +1980,13 @@ function codeChip(level){
 
 // Wrapped in a function so the view toggle can rebuild the table in place. It was a bare
 // top-level loop, which was fine while the table rendered exactly once.
+// Level shown per cell on the LAST render, so a rebuild can tell which cells actually moved.
+// Only populated after the first paint — the initial render animates nothing, since everything
+// would "change" from undefined and the whole grid would flash on load.
+let PREV_LEVELS=null;
+
 function buildTable(){
+  const prev=PREV_LEVELS, next={};
   tb.innerHTML="";
   for(const row of ROWS){
   const tr=document.createElement("tr");
@@ -1965,21 +2006,26 @@ function buildTable(){
     const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
     const pg=cellProgress(row,f,"a");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const key=`${row.sc}|${f}|a`; next[key]=shown;
+    const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${AL[v]}, potential ${AL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${condHtml}</button></td>`;}
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
     const pg=cellProgress(row,f,"r");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const key=`${row.sc}|${f}|r`; next[key]=shown;
+    const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${RL[v]}, potential ${RL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}</span></button></td>`;}
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}</span></button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
   }
   // The V5 filter styles rows after they exist, so re-apply it on every rebuild or a rebuild
   // silently drops the filtering the user had switched on.
   const cb=document.getElementById("v3only");
   if(cb)cb.dispatchEvent(new Event("change"));
+  PREV_LEVELS=next;
 }
 buildTable();
 
@@ -2030,8 +2076,14 @@ buildTable();
 // The denominator is APPLICABLE cells only. A criterion that does not apply to a format is not
 // a gap and must not drag the percentage down — otherwise a format is punished for the rules it
 // was never subject to, and the number stops meaning anything comparable across formats.
-(function(){
+function renderCoverage(){
   const grid=document.getElementById("covGrid"); if(!grid)return;
+  // SCOPE: Deva's V5 checklist only, when the filter above the table is on (its default).
+  // Coverage previously counted all 80 cells regardless, so the headline described a rubric
+  // wider than the checklist anyone is measured against — and it did not move when the filter
+  // did. Following the checkbox keeps the number and the table describing one population.
+  const onlyV5=!!(document.getElementById("v3only")||{}).checked;
+  const inScope=(sc,f)=>!onlyV5 || !!(V5_APPLICABLE[sc]&&V5_APPLICABLE[sc][f]);
   const AXES=[
     {key:"a", label:"Assessment", weight:A_WEIGHT, cls:{A4:"A4",A3:"A3",A2:"A2"}},
     {key:"r", label:"Remediation", weight:R_WEIGHT, cls:{R4:"R4",R3:"R3",R2:"R2",R1:"R1"}},
@@ -2046,6 +2098,8 @@ buildTable();
   function coverage(axis, fmts){
     let num=0, den=0, pnum=0;
     for(const row of ROWS) for(const f of fmts){
+      if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
+      if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
       const lvl=row[axis.key][f];
       if(!lvl||lvl==="NA")continue;            // not applicable — outside the denominator
       den++; num+=axis.weight[lvl]??0;
@@ -2085,8 +2139,12 @@ buildTable();
   const f=document.getElementById("covFormula");
   if(f)f.innerHTML=`Assessment ${Object.entries(A_WEIGHT).map(([k,v])=>`${k}×${v}`).join(" + ")}`
     +` · Remediation ${Object.entries(R_WEIGHT).map(([k,v])=>`${k}×${v}`).join(" + ")}`
-    +` · ÷ applicable cells`;
-})();
+    +` · ÷ applicable cells${(document.getElementById("v3only")||{}).checked?" in Deva's V5 checklist":""}`;
+}
+renderCoverage();
+// Recompute when the V5 filter flips, so the score always describes the cells on screen.
+(function(){const cb=document.getElementById("v3only");
+  if(cb)cb.addEventListener("change",renderCoverage);})();
 
 // Ceiling tiles: computed from RUBRIC across all 80 (SC × format) cells — the rule-inherent denominator.
 (function(){
@@ -2329,10 +2387,18 @@ function renderDrawer(sc,f,trigger){
   {
     const v5items=(V5_DETAIL[row.sc]&&V5_DETAIL[row.sc][f])||[];
     if(v5items.length){
-      html+=`<div class="aspec"><div class="aspec-title">Deva's V5 validation assertion${v5items.length>1?"s":""} — ${f.toUpperCase()}</div>${v5items.map(x=>
-        `<div class="aspec-item"><div class="s">&ldquo;${esc(x.a)}&rdquo;</div>
-          <div class="aspec-note"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
-          <div class="aspec-note"><b>Her stated automation level:</b> ${esc(x.auto)}</div></div>`).join("")}</div>`;
+      // Cited the same way the WCAG excerpt above is: a source line naming the exact file and
+      // tab, then the words verbatim in quotes, then a <cite>. Deva's checklist is a primary
+      // source for this matrix, and a paraphrase of it is not checkable against the workbook.
+      html+=`<div class="devaquote">`
+        +`<div class="devasrc">Source: <code>assessment-applicability-matrix-v5-28JUL.xlsx</code>`
+        +` &middot; <b>${f.toUpperCase()}</b> tab &middot; ${v5items.length} assertion${v5items.length>1?"s":""} for ${row.sc}</div>`
+        + v5items.map(x=>
+        `<blockquote class="dq">${esc(x.a)}
+          <cite>— Deva's V5 checklist, ${f.toUpperCase()} tab, &ldquo;Validation assertion&rdquo;</cite></blockquote>
+         <div class="dqmeta"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
+         <div class="dqmeta"><b>Her stated automation level:</b> ${esc(x.auto)}</div>`).join("")
+        +`</div>`;
     }
   }
 
