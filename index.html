@@ -91,6 +91,21 @@
   .rmnone{color:var(--muted);padding:10px 0}
   .logshipped{margin:0 0 4px;font-size:15px}
   .logbuild{font-size:11px;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
+  /* Detection maturity. The five levels are an ORDERED scale, so they get a single-hue ramp
+     (stronger = more saturated) rather than five unrelated colours — the ordering is the
+     information. `unsupported` steps outside the ramp to grey: it isn't a weaker degree of
+     coverage, it's a statement that the format can't express the criterion at all. */
+  .mattable td:nth-child(n+2){width:19%;white-space:nowrap}
+  .mattable td:nth-child(1),.mattable th:nth-child(1){width:24%}
+  .matchip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;
+    border:1px solid transparent;white-space:nowrap;cursor:help}
+  .matchip.full{background:#d8efdc;color:#14532d;border-color:#a9d9b5}
+  .matchip.partial{background:#e4ecfa;color:#1e3a8a;border-color:#c0d2f0}
+  .matchip.heuristic{background:#fdf1e3;color:#8a4b12;border-color:#f0d6b8}
+  .matchip.declared{background:#fbe6e6;color:#8a1c1c;border-color:#eec4c4}
+  .matchip.unsupported{background:#eceef1;color:#5f6368;border-color:#dadce0}
+  .matnone{color:#b8bcc2}
+  .maturity .rmlegend .matchip{margin-left:6px}
   @media(max-width:700px){
     /* The three columns stop being a table on a phone: each row becomes a stacked block so the
        prose column isn't squeezed to two words wide. */
@@ -329,6 +344,21 @@
       <table class="rmtable"><thead><tr>
         <th scope="col">Criterion</th><th scope="col">Open cells</th><th scope="col">What would close it</th>
       </tr></thead><tbody id="roadmapBody"></tbody></table>
+    </div>
+
+    <!-- Detection maturity: how much of a criterion each format's detector actually reaches,
+         declared in acp's capability registry rather than inferred here. Hidden entirely while
+         no pair has been migrated, so it never renders as an empty promise. -->
+    <div class="roadmap maturity" id="maturityCard" style="display:none">
+      <div class="roadmaphead">
+        <h3>Detection maturity <span id="maturityCount" class="rmcount"></span></h3>
+        <div class="rmlegend" id="maturityLegend"></div>
+      </div>
+      <p class="sub" style="margin:0 0 10px">How much of a criterion <b>acp</b>'s detector actually reaches for each format — declared in code next to the detector, not judged here. Only <b>full</b> coverage can certify a pass, so a <b>partial</b> or <b>heuristic</b> cell reports for review even when it finds nothing. A blank cell means that pair hasn't been migrated to the registry yet, which is <i>not</i> the same as unsupported.</p>
+      <table class="rmtable mattable"><thead><tr>
+        <th scope="col">Criterion</th><th scope="col">DOCX</th><th scope="col">XLSX</th>
+        <th scope="col">PPTX</th><th scope="col">PDF</th>
+      </tr></thead><tbody id="maturityBody"></tbody></table>
     </div>
 
     <h3 class="logshipped">Shipped so far</h3>
@@ -2263,6 +2293,29 @@ document.addEventListener("keydown",(e)=>{
 // silently folded into "0 findings" for those. ref is a PR number when the commit cites one
 // (mova-io/acp), else the short commit hash with no link. Add new entries at the top as real
 // engine/remediate PRs land — don't backfill placeholder rows for work that hasn't happened yet.
+// MATURITY = how much of a criterion acp's detector for a given format actually reaches, as
+// DECLARED IN ACP'S CODE (api/rule_registry.py) rather than inferred here. Five levels:
+// unsupported < declared < heuristic < partial < full. Only `full` may certify a pass, which is
+// why a `partial` cell's clean scan is a Review, not a green tick.
+//
+// This answers a question ROWS cannot. A tier says where acp lands on a cell; coverage says how
+// much of the criterion was examined to get there. 4.1.2 on PDF is the case that forced the
+// distinction: its detector runs on every PDF and can fail a file three ways, but only over
+// AcroForm fields — so it was neither "assessed" nor "not assessed", and for a long time the
+// scan reported the latter for work it had genuinely done.
+//
+// A criterion/format ABSENT from this object has not been migrated to acp's registry yet. That
+// is NOT the same as `unsupported` (migrated, and the format genuinely can't express it) and the
+// table below renders the two differently — conflating them would turn an unfinished migration
+// into a false claim about the format.
+// <<<MATURITY:BEGIN — regenerated wholesale by scripts/apply_maturity.py from acp's
+// gen_matrix_coverage.py. Unlike PROGRESS_LOG this is a CURRENT-STATE snapshot, not a history:
+// hand-edits here are overwritten on the next sync. Change coverage in acp, beside the detector.>>>
+const MATURITY={
+ "2.4.3":{pdf:{c:"heuristic",conf:"medium",why:"pages with form widgets are checked for /Tabs = /S, a proxy for tab order following reading order; actually comparing the widget order to the structure order needs a /StructTreeRoot walk that is not built"}},
+ "4.1.2":{pdf:{c:"partial",conf:"high",why:"interactive AcroForm fields are checked exactly (/TU name, /FT role, /V value); components expressed through the tagged-structure tree are not examined, which needs a /StructTreeRoot walker this codebase does not have yet"}}};
+// <<<MATURITY:END>>>
+
 // <<<PROGRESS_LOG:BEGIN — entries below are spliced by scripts/apply_progress_log.py
 // from acp's `Matrix-Note:` commit trailers. Keep the markers intact; hand-edits inside
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
@@ -2393,6 +2446,54 @@ const PROGRESS_LOG=[
         <td>${next?esc(next):"<i>No upgrade note on file for this criterion yet.</i>"}</td>
       </tr>`;
     }).join("");
+  })();
+
+  // ── Detection maturity ──────────────────────────────────────────────────────────────
+  // Renders MATURITY, which acp regenerates wholesale each sync. Nothing is judged here: the
+  // coverage level and its justification both come from the registration beside the detector.
+  (function(){
+    const card=document.getElementById("maturityCard"),
+          body=document.getElementById("maturityBody");
+    if(!card||!body)return;
+    const scs=Object.keys(MATURITY||{});
+    if(!scs.length)return;                 // not a promise we can keep yet — stay hidden
+    card.style.display="";
+
+    const LEVELS=["full","partial","heuristic","declared","unsupported"];
+    const BLURB={
+      full:"the whole criterion, as far as the format allows — the only level that can certify a pass",
+      partial:"a sound technique over a strict subset of the criterion",
+      heuristic:"a proxy signal that correlates, and can be wrong in both directions",
+      declared:"known to apply, with no technique built yet",
+      unsupported:"the format cannot express what this criterion is about",
+    };
+    const legend=document.getElementById("maturityLegend");
+    if(legend)legend.innerHTML=LEVELS
+      .map(l=>`<span class="matchip ${l}" title="${esc(BLURB[l])}">${l}</span>`).join("");
+
+    const byName={}; for(const r of ROWS) byName[r.sc]=r.name;
+    const order=sc=>sc.split(".").map(Number);
+    scs.sort((a,b)=>{const x=order(a),y=order(b);
+      return x[0]-y[0]||x[1]-y[1]||x[2]-y[2];});
+
+    let pairs=0;
+    body.innerHTML=scs.map(sc=>{
+      const row=MATURITY[sc];
+      const cells=FM.map(f=>{
+        const cell=row[f];
+        // Absent = not migrated. Deliberately a dash, not "unsupported": claiming a format
+        // can't do something we simply haven't got to yet would be a false statement.
+        if(!cell)return `<td><span class="matnone" title="not migrated to acp's capability registry yet">—</span></td>`;
+        pairs++;
+        const why=cell.why?`${cell.c} · ${cell.conf} confidence — ${cell.why}`:cell.c;
+        return `<td><span class="matchip ${esc(cell.c)}" title="${esc(why)}">${esc(cell.c)}</span></td>`;
+      }).join("");
+      return `<tr><td>${esc(byName[sc]||sc)}<span class="rmsc">${esc(sc)}</span></td>${cells}</tr>`;
+    }).join("");
+
+    const countEl=document.getElementById("maturityCount");
+    if(countEl)countEl.textContent=`— ${pairs} pair${pairs===1?"":"s"} declared, `
+      +`across ${scs.length} criteri${scs.length===1?"on":"a"}`;
   })();
 
   const list=document.getElementById("logList");
