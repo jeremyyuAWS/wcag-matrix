@@ -19,6 +19,32 @@
   .tile b{display:block;font-size:22px}
   .tile span{color:var(--muted);font-size:12px}
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 14px;font-size:12px;color:var(--muted)}
+  /* Legend card. Boxed so it reads as a key rather than as more body copy — it sits directly
+     above a dense 8-column table and was previously a flat grey run-on that scanned as prose. */
+  .legendcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px 12px;margin:8px 0 14px}
+  .legendhead{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+  .legendgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:12px 22px}
+  .legendcol h4{margin:0 0 5px;font-size:11px;color:var(--navy);font-weight:700}
+  .lgitem{display:flex;align-items:baseline;gap:6px;font-size:12px;color:var(--muted);margin:3px 0;line-height:1.4}
+  .lgitem b:not(.lgchip):not(.lgflag):not(.lgcond){color:var(--navy);font-weight:700}
+  /* The chip is the level code in its own cell colour — legend and table match on colour AND
+     code, so neither has to be memorised against the other. */
+  .lgchip{flex:none;display:inline-block;min-width:26px;text-align:center;padding:1px 6px;border-radius:999px;
+    font-size:10.5px;font-weight:800;color:#fff;letter-spacing:.02em}
+  /* colour:#fff must be restated per-chip: the bare .A4/.R3/... rules further down set the
+     level colour as TEXT colour for cell labels, and being later in the sheet they would win
+     over .lgchip alone — rendering green text on a green pill. The two-class selector outranks
+     them, which is the whole reason these are written as .lgchip.A4 rather than grouped. */
+  .lgchip.A4,.lgchip.R4{background:var(--green);color:#fff}
+  .lgchip.A3,.lgchip.R3{background:var(--blue);color:#fff}
+  .lgchip.A2{background:var(--orange);color:#fff}
+  .lgchip.R2{background:var(--amber,#8a6d00);color:#fff}
+  .lgchip.R1{background:var(--red,#b3261e);color:#fff}
+  .lgchip.NAx{background:var(--gray);color:#fff}
+  .lgflag{color:var(--red);font-weight:800;flex:none}
+  .lgcond{color:#6a3fb5;font-weight:800;flex:none}
+  .lgdonut .donut{flex:none;margin:0}
+  .lgnote{display:block;color:var(--muted);font-size:11.5px;margin-top:5px;line-height:1.45}
   .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
   .filterbar label{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--navy);cursor:pointer}
   .filterbar input[type=checkbox]{width:15px;height:15px;cursor:pointer}
@@ -95,6 +121,40 @@
      stated, not implied: commits come from contributors and CI runners in different zones, and
      an unlabelled hour is unorderable by eye. */
   .logentry .logtime{color:var(--muted);font-weight:400;letter-spacing:.02em}
+  /* Coverage dashboard. Two axes side by side, one row per format plus an overall. */
+  /* Per-cell donut: progress toward the rule-inherent ceiling. Sized to sit above the label
+     without changing row height much; the number is the whole point, so the ring is thin and
+     the digits carry the weight. */
+  .donut{display:block;margin:0 auto 1px}
+  .donut .dtrack{stroke:#e6e9ef}
+  .donut .darc{stroke:currentColor;transition:stroke-dashoffset .3s ease}
+  .donut .dnum{font-size:11px;font-weight:700;fill:currentColor;font-family:inherit}
+  .donut.t4{color:var(--green)} .donut.t3{color:var(--blue)}
+  .donut.t2{color:var(--orange)} .donut.t1{color:var(--red)}
+  .cellbtn .clab{display:block;font-size:11px;line-height:1.25}
+  .viewtoggle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0 0}
+  .vtlabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .vtbtn{all:unset;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;
+    border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#fff}
+  .vtbtn:hover{color:var(--navy)}
+  .vtbtn:focus-visible{outline:2px solid #0b57d0;outline-offset:2px}
+  .vtbtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .vthint{font-size:11.5px;color:var(--muted);flex:1 1 260px}
+  .covcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px 14px;margin:14px 0 0}
+  .covcard h3{margin:0;font-size:15px}
+  .covhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .covsub{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+  .covformula{font-size:11px;color:var(--muted)}
+  .covgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .covaxis h4{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .covrow{display:grid;grid-template-columns:52px 1fr 44px;align-items:center;gap:8px;margin:3px 0;font-size:12.5px}
+  .covrow.total{border-top:1px solid var(--line);margin-top:6px;padding-top:6px;font-weight:700}
+  .covrow .covfmt{color:var(--muted);font-weight:600}
+  .covrow.total .covfmt{color:var(--ink,inherit)}
+  .covbar{height:8px;background:#eef0f4;border-radius:5px;overflow:hidden}
+  .covbar i{display:block;height:100%;border-radius:5px}
+  .covrow .covpct{text-align:right;font-variant-numeric:tabular-nums}
+  @media(max-width:700px){.covgrid{grid-template-columns:1fr}}
   .logbuild{font-size:11px;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
   /* Detection maturity. The five levels are an ORDERED scale, so they get a single-hue ramp
      (stronger = more saturated) rather than five unrelated colours — the ordering is the
@@ -163,7 +223,13 @@
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
   .cellbtn:focus-visible{outline:3px solid #0b57d0;outline-offset:-2px;background:#eaf1fd}
   tr:nth-child(even) td{background:#fafbfd}
-  .C{color:var(--green)} .Q{color:var(--blue)} .H{color:var(--orange)} .NAx{color:var(--gray)}
+  /* Capability levels. Ordinal within an axis, so the ramp reads green -> blue -> orange -> red
+     as ACP does progressively less of the work. Kept as separate rules per level rather than a
+     shared ramp because the two axes have different depths (3 scored levels vs 4). */
+  .A4{color:var(--green)} .A3{color:var(--blue)} .A2{color:var(--orange)} .NAx{color:var(--gray)}
+  .R4{color:var(--green)} .R3{color:var(--blue)} .R2{color:var(--amber,#8a6d00)} .R1{color:var(--red,#b3261e)}
+  /* Legacy aliases: drawer prose and the Deva tabs still render old-vocabulary swatches. */
+  .C{color:var(--green)} .Q{color:var(--blue)} .H{color:var(--orange)}
   .A,.AC,.AP{color:var(--green)} .AI{color:var(--purple)} .M{color:var(--orange)} .N{color:var(--red)}
   #backdrop{position:fixed;inset:0;background:rgba(15,20,35,.4);z-index:9;opacity:0;pointer-events:none;transition:opacity .18s}
   #backdrop.open{opacity:1;pointer-events:auto}
@@ -260,7 +326,7 @@
 <body>
 <div class="wrap">
   <h1>WCAG 2.1 AA — 20 Document Core Rules · Ceiling &amp; Coverage</h1>
-  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's checklist: <code>assessment-applicability-matrix-v5.xlsx</code> · 2026-07-23.</div>
+  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's checklist: <code>assessment-applicability-matrix-v5-28JUL.xlsx</code> · 2026-07-28.</div>
 
   <div class="tabbar">
     <button type="button" class="tabbtn active" id="tabbtn-matrix" data-tab="matrix">Matrix</button>
@@ -270,14 +336,70 @@
   <div id="tab-matrix" class="tabpanel">
   <div class="tiles" id="ceilingTiles"></div>
   <div class="tiles" id="acpTiles" style="margin-top:0"></div>
-  <div class="legend">
-    <span><span class="dot" style="background:var(--green)"></span>Deterministic / Mechanical (ceiling)</span>
-    <span><span class="dot" style="background:var(--blue)"></span>Machine-assisted / Generated+approval (ceiling)</span>
-    <span><span class="dot" style="background:var(--orange)"></span>Human judgment / Re-authoring (ceiling)</span>
-    <span><span class="dot" style="background:var(--gray)"></span>N/A (rule can't be broken in this format)</span>
-    <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
-    <span><span class="swatch deva-augment">Guided <b class="devamark augment">◆</b></span> our conclusion augments Deva's V3 checklist (agree, with nuance)</span>
-    <span><span class="swatch deva-disagree">Guided <b class="devamark disagree">⊗</b></span> our conclusion disagrees with Deva's V3 checklist (documents vs. web, or a real correction)</span>
+
+  <!-- Executive coverage: one number per format per axis, computed from the capability levels
+       rather than authored. Coverage is a WEIGHTED average, not a count of green cells — a
+       Potential Issue genuinely does half the work of a full assessment, and an AI Generated
+       Fix most of an automatic one, so counting only the top level would understate ACP and
+       counting every non-N/A level would overstate it. -->
+  <!-- Today vs Potential. "Potential" is RUBRIC's rule-inherent ceiling — what any tool could
+       achieve for this rule and format. It is NOT a roadmap, and the label says so: calling it
+       "Future" or "Planned" would imply a commitment to build things nobody has scoped, and the
+       first question that invites is "by when?". -->
+  <div class="viewtoggle" role="group" aria-label="Matrix view">
+    <span class="vtlabel">View</span>
+    <button type="button" class="vtbtn active" data-view="today" aria-pressed="true">Today</button>
+    <button type="button" class="vtbtn" data-view="potential" aria-pressed="false">Potential</button>
+    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
+  </div>
+
+  <div class="covcard">
+    <div class="covhead">
+      <h3>Capability coverage <span class="covsub">weighted, over applicable cells only</span></h3>
+      <div class="covformula" id="covFormula"></div>
+    </div>
+    <div class="covgrid" id="covGrid"></div>
+  </div>
+  <!-- Legend. Boxed and grouped by AXIS, because the two axes use different level sets and the
+       flat list did not say which colour belonged to which. The chips are the literal level
+       codes in their cell colour, so a reader matches the legend to the table by colour AND by
+       code rather than having to remember an ordering. -->
+  <div class="legendcard">
+    <div class="legendhead">Legend</div>
+
+    <div class="legendgrid">
+      <div class="legendcol">
+        <h4>Assessment — can ACP decide pass/fail?</h4>
+        <span class="lgitem"><b class="lgchip A4">A4</b> <b>Fully Assessed</b> — deterministic pass/fail with evidence</span>
+        <span class="lgitem"><b class="lgchip A3">A3</b> <b>Potential Issue</b> — likely violation, human confirms</span>
+        <span class="lgitem"><b class="lgchip A2">A2</b> <b>Human Assessment Required</b> — not reliably automatable</span>
+        <span class="lgitem"><b class="lgchip NAx">N/A</b> <b>Not Applicable</b> — rule can't be broken in this format</span>
+      </div>
+
+      <div class="legendcol">
+        <h4>Remediation — can ACP fix it?</h4>
+        <span class="lgitem"><b class="lgchip R4">R4</b> <b>Automatically Fixed</b> — ACP edits the document itself</span>
+        <span class="lgitem"><b class="lgchip R3">R3</b> <b>AI Generated Fix</b> — drafted, human approves before write</span>
+        <span class="lgitem"><b class="lgchip R2">R2</b> <b>Guided Remediation</b> — ACP explains, the user edits</span>
+        <span class="lgitem"><b class="lgchip R1">R1</b> <b>No Remediation</b> — no meaningful fix ACP can offer</span>
+      </div>
+
+      <div class="legendcol">
+        <h4>The donut in each cell</h4>
+        <span class="lgitem lgdonut"><span id="lgDonutHi"></span> <b>At potential</b> — nothing more this rule allows</span>
+        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <b>Partway</b> — headroom remains for this cell</span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>At the floor</b> — the rule allows much more than ships</span>
+        <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format. <b>Not a roadmap.</b></span>
+      </div>
+
+      <div class="legendcol">
+        <h4>Markers</h4>
+        <span class="lgitem"><b class="lgflag">▲</b> row corrected vs the July-14 infographic</span>
+        <span class="lgitem"><span class="swatch deva-augment">A3 <b class="devamark augment">◆</b></span> augments Deva's checklist (agree, with nuance)</span>
+        <span class="lgitem"><span class="swatch deva-disagree">A3 <b class="devamark disagree">⊗</b></span> disagrees with Deva's checklist (documents vs. web, or a correction)</span>
+        <span class="lgitem"><b class="lgcond">†</b> applies only if the feature is present</span>
+      </div>
+    </div>
   </div>
 
   <div class="filterbar">
@@ -377,14 +499,49 @@
 <div id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title" tabindex="-1"><button id="panel-close">✕ close</button><div id="panel-body"></div></div>
 
 <script>
-const AL={C:"Certified",Q:"Guided review",H:"Human assessment",NA:"Not applicable"};
-const RL={A:"Automatic",AC:"Automatic (conditional)",AP:"Automatic (partial)",AI:"AI proposal",M:"Manual (guided)",N:"No automated remediation",NA:"Not applicable"};
-const SHORT_A={C:"Certified",Q:"Guided",H:"Human",NA:"N/A"};
-const SHORT_R={A:"Auto",AC:"Auto*",AP:"Auto (part.)",AI:"AI proposal",M:"Manual",N:"None",NA:"N/A"};
+// ── Standardized capability model ─────────────────────────────────────────────────────
+// Two INDEPENDENT axes, each answering one question about what ACP can do — not how it does
+// it. The old vocabulary (Certified / Guided / Human · Auto / Manual / AI proposal) mixed four
+// separate ideas — confidence, automation, human effort, and remediation mechanism — into one
+// label, which is why "Guided" meant something different on each axis.
+//
+//   Assessment  — can ACP determine Pass or Fail for this Success Criterion?
+//   Remediation — can ACP fix it?
+//
+// Levels are ordinal within an axis (A4 > A3 > A2; R4 > R3 > R2 > R1), which is what lets
+// coverage be a weighted average rather than a count of labels.
+const AL={A4:"Fully Assessed",A3:"Potential Issue",A2:"Human Assessment Required",NA:"Not Applicable"};
+const RL={R4:"Automatically Fixed",R3:"AI Generated Fix",R2:"Guided Remediation",R1:"No Remediation",NA:"Not Applicable"};
+const SHORT_A={A4:"Fully Assessed",A3:"Potential Issue",A2:"Human Required",NA:"N/A"};
+const SHORT_R={R4:"Auto-Fixed",R3:"AI Fix",R2:"Guided",R1:"None",NA:"N/A"};
+
+// Coverage weights. A level is worth what ACP actually delivers at it: a Potential Issue does
+// half the work of a full assessment (it finds the candidate; a human still adjudicates), and
+// an AI Generated Fix does most but not all of an automatic one (a human still approves).
+// Anything requiring the user to do the work scores what that guidance is worth, not zero —
+// except A2/R1, where ACP contributes nothing mechanical.
+const A_WEIGHT={A4:1.0,A3:0.5,A2:0};
+const R_WEIGHT={R4:1.0,R3:0.75,R2:0.4,R1:0};
+
+// Migration from the pre-2026-07-28 vocabulary. Retained because the drawer prose, the Deva
+// comparison tabs and the Progress Log all still speak the old terms in places, and a reader
+// hitting "Certified" needs to be able to map it.
+//
+// ONE DELIBERATE DEVIATION from the PRD's migration table, which sends `Auto (part.)` to
+// R3 "AI Generated Fix". Every AP cell this matrix actually holds — 1.3.2/xlsx (unhide hidden
+// rows), 2.4.2/docx, 2.4.2/xlsx, 2.4.2/pdf (title derived from the filename) — is a
+// DETERMINISTIC mechanical edit with no model anywhere near it; `RTIER_HOW` classified all
+// four as Rules-based for exactly that reason. "Partial" described SCOPE, not mechanism.
+// Calling them AI-generated would tell a customer ACP uses a model where it does not, which is
+// a factual claim about the product and one that cuts against the determinism bar the whole
+// tool is sold on. They map to R4. Partiality is not lost — the capability registry records it
+// on the coverage axis, which is where it belongs.
+const LEGACY_A={C:"A4",Q:"A3",H:"A2",NA:"NA"};
+const LEGACY_R={A:"R4",AP:"R4",AC:"R3",AI:"R3",M:"R2",N:"R1",NA:"NA"};
 
 // Each cell: b = argument bullets · c = concede-up-front bullets · x = counterargument it survives · ev = evidence · cat = catalog/drift note
 const ROWS=[
-{sc:"1.1.1",name:"Non-text Content",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"AC",xlsx:"AC",pptx:"AC",pdf:"AC"},
+{sc:"1.1.1",name:"Non-text Content",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R3"},
  ae:{
   docx:{b:["The .NET AltTextRule reads descr= on every wp:docPr — a deterministic XML attribute check, so pass/fail is machine-decidable, not a heuristic.","Smarter than a bare presence check: bare filenames ('image1.png') and generic auto-names count as missing.","The rubric only certifies files with a clean ANALYSED run (scripts/rubric.py): if any rule errored, the score is an upper bound and the file is not certifiable."],
       c:["Certifies alt PRESENCE, not alt QUALITY — description quality is a review-queue question and the spec says so explicitly.","OLE-embedded images and chart/SmartArt internals are out of scope by declaration, not omission.","Corrected 2026-07-17: the assessment rule does NOT check the OOXML decorative marker (extLst decorative val=\"1\") at all — a properly-marked decorative image with empty descr is currently flagged as a false positive. The FIX side (api/remediate_office.py) does honor the marker and correctly skips it; the detection side doesn't. Real gap, not a documentation error — see the FAQ."],
@@ -413,7 +570,7 @@ const ROWS=[
       c:["Untagged PDFs get no alt remediation — that work is gated behind tagging (1.3.1), which is human/re-export territory."],
       ev:["api/remediate_pdf.py:_fix_pdf_figure_alt / _render_page_png"]}}},
 
-{sc:"1.3.1",name:"Info and Relationships",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"A",xlsx:"A",pptx:"M",pdf:"M"},
+{sc:"1.3.1",name:"Info and Relationships",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R4",xlsx:"R4",pptx:"R2",pdf:"R2"},
  ae:{
   docx:{b:["Two deterministic rules: TableHeaderRule — the first row of every table must carry w:tblHeader (exactly what AT uses to announce column labels) — and HeadingStructureRule — heading styles must not skip levels going down (H1→H3).","Both are structure reads on the document XML: no sampling, no thresholds, no model."],
       c:["Layout tables get flagged — Word has no reliable data-vs-layout marker, so every table is treated as data (declared).","'Fake headings' (bold 18pt body text) carry no outline level and are invisible to the heading rule (declared)."],
@@ -438,7 +595,7 @@ const ROWS=[
       x:"“Acrobat can auto-tag.” — Auto-tagging produces role and order errors that then fail 1.3.2 and 1.1.1; ACP refuses to generate defects it would immediately flag.",
       ev:["docs/rules/pdf.tagged.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.Tagged — guidance)"]}}},
 
-{sc:"1.3.2",name:"Meaningful Sequence",lvl:"A",flag:false,a:{docx:"NA",xlsx:"C",pptx:"Q",pdf:"Q"},r:{docx:"NA",xlsx:"AP",pptx:"A",pdf:"M"},
+{sc:"1.3.2",name:"Meaningful Sequence",lvl:"A",flag:false,a:{docx:"NA",xlsx:"A4",pptx:"A3",pdf:"A3"},r:{docx:"NA",xlsx:"R4",pptx:"R4",pdf:"R2"},
  ae:{
   docx:{b:["Word body content is a single linear flow — the reading order of the main story cannot diverge from the visual order the way slide shapes and PDF tag trees can.","N/A by content model is a stronger position than an unbuilt check: there is nothing for a rule to disagree with."],
       c:["Floating text boxes / shapes are a theoretical edge — concede as potential future scope, not as a gap in this claim."],
@@ -463,7 +620,7 @@ const ROWS=[
   pdf:{b:["Manual by the spec's own rationale: automated re-ordering 'can silently destroy meaning' — sidebars, pull quotes and captions are editorial intent.","The finding ships with concrete guidance: verify and correct in Acrobat's Order panel; may require re-tagging."],
       ev:["docs/rules/pdf.reading-order.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.ReadingOrder)"]}}},
 
-{sc:"1.3.3",name:"Sensory Characteristics",lvl:"A",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"Q"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"1.3.3",name:"Sensory Characteristics",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["textchecks.detect_sensory runs a deliberately tight regex — an instruction verb within 45 characters of a shape-only or position-only reference ('click the round button', 'see the box on the right') — over text extracted from every format the scanner reads (pii.extract_text covers docx/pptx/xlsx/pdf/html).","The posture is stated in the module docstring: deterministic and reproducible (no LLM — an audit tool must return the same findings for the same file every run), detect-and-route, NEVER auto-passed. That is the definition of Guided.","One finding per document by design: the reviewer inspects the phrasing; per-sentence hits would be queue noise, not coverage.","Why not Certified: absence of a regex match cannot prove instructions don't rely on sensory cues — a PASS is not machine-certifiable for a semantic criterion."],
    c:["Size- and colour-only references were consciously excluded as too noisy (they overlap other SCs) — the anchor is shape + position, the two strongest sensory-only signals."],
@@ -474,7 +631,7 @@ const ROWS=[
    ev:["— (report-and-route only)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})()},
 
-{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"Q",xlsx:"H",pptx:"Q",pdf:"H"},r:{docx:"A",xlsx:"N",pptx:"A",pdf:"N"},
+{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"A3",xlsx:"A2",pptx:"A3",pdf:"A2"},r:{docx:"R4",xlsx:"R1",pptx:"R4",pdf:"R1"},
  ae:{
   docx:{b:["DOCX_HEADING_SKIP (office_structure) fires on Heading1→Heading3 style skips — deterministic for that narrow signal, and exactly the outline defect that breaks jump-by-heading navigation.","The SC verdict stays Guided because 2.4.6 asks whether headings DESCRIBE their topic — semantic, human-confirmed. The skip check is evidence toward the criterion, not the whole criterion."],
       ev:["api/office_structure.py:docx_checks (DOCX_HEADING_SKIP)"]},
@@ -494,7 +651,7 @@ const ROWS=[
       ev:["api/remediate_office.py:_remediate_pptx_slides (title insertion)"]},
   pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"3.1.1",name:"Language of Page",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"A",xlsx:"A",pptx:"A",pdf:"A"},
+{sc:"3.1.1",name:"Language of Page",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  ae:{
   docx:{b:["Post-ADR-0012 the rule reads the REAL signal: conformant when EITHER metadata OR a content language is present (w:lang in style docDefaults or runs). The old metadata-only check false-failed properly-authored files; that bug is fixed, in-repo, with end-to-end tests (tests/test_office_language_rules.py).","Owning the analysers (ADR 0012) is itself a defense point: the partner wouldn't ship the fix, so the team vendored the projects and fixed the WCAG semantics."],
       c:["Declared false-negative: a wrong-but-present code (en-US on a French doc) passes — only absence is detected."],
@@ -514,7 +671,7 @@ const ROWS=[
   pdf:{b:["PdfLanguageFixer writes /Lang in stage 1 of the two-stage pipeline; the pikepdf→pypdf split exists precisely to make these writes reliable in a long-lived worker.","Applied to a copy; provenance-stamped in docinfo."],
       ev:["api/remediate_pdf.py (stage 1)","worker-python/remediation/fixers/pdf/language_fixer.py"]}}},
 
-{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"Q"},r:{docx:"M",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:{
   docx:{b:["Two independent detectors: (1) seeded langdetect over extracted text fires when ≥2 languages are confidently detected — ≥12-word segments, ≥0.90 confidence, thresholds chosen against false positives; DetectorFactory.seed=0 makes it reproducible run-to-run. (2) LanguageOfPartsRule flags long runs whose Unicode SCRIPT differs from the document's dominant script with no w:lang of their own — deliberately narrow after ADR 0012 killed the old false-positive flood (it used to flag every 20+ word run).","Guided because the hard call — foreign language vs proper noun vs quotation — is judgment; the spec says script detection 'drafts nothing safe enough to auto-apply'."],
       c:["Known drift to disclose before someone finds it: the .NET rule still reports under SC_3_1_1 (ADR 0012 defers separate 3.1.2 modelling). SC-keyed coverage queries under-report DOCX until the remap lands.","Latin-script switches (English→Spanish quote) pass the script detector; the langdetect check partially covers this at document level."],
@@ -532,14 +689,14 @@ const ROWS=[
   pptx:{b:["None — run-level overrides require knowing WHICH runs, which is the thing only review determines."],ev:["—"]},
   pdf:{b:["None — span-level /Lang in the tag tree is review-directed work."],ev:["—"]}}},
 
-{sc:"1.4.4",name:"Resize Text",lvl:"AA",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"1.4.4",name:"Resize Text",lvl:"AA",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["No document-format check exists — the 1.4.4 fixer in api/remediate.py is HTML-only (viewport un-blocking); don't let it bleed into the document story.","Why Human rather than N/A: zoom is mostly the viewer's job (Word/Excel/PowerPoint/Acrobat all zoom), BUT content can still defeat it — text rasterised into images, tiny fixed frames — so a blanket 'not applicable' overclaims.","Adjacent honest coverage: text-in-images, the main content-side resize failure in practice, IS caught — by the 1.4.5 OCR detector."],
    ev:["api/remediate.py (1.4.4 fixer is HTML-only)","api/ocr.py (the adjacent coverage)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None — nothing detected, nothing fixed."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.5",name:"Images of Text",lvl:"AA",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"Q"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"1.4.5",name:"Images of Text",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const mk=(src)=>({
    b:["Real OCR, not markup guessing: tesseract runs over the rasters actually embedded in the file ("+src+"), flagging any image carrying a meaningful amount of text.","Tuned against false positives at the AA bar: ≥10 real words, ≥20k pixels (skips icons/bullets), ≤30 images/file, giant scans downscaled — so logos and one-word badges don't fire.","Why Guided: the rule cannot judge WCAG's 'essential' exception (logotypes, screenshots where exact presentation matters) — findings are 'detected automatically and routed to review — never auto-passed' (module docstring).","Operationally safe: self-gates to zero findings when tesseract is unavailable, and never raises — OCR can't fail a scan."],
    c:["1.4.9 (AAA) runs as a stricter-threshold superset of the same signal — modelled honestly as lower floors, not a copy-paste rule."],
@@ -547,7 +704,7 @@ const ROWS=[
    return {docx:mk("word/media"),xlsx:mk("xl/media"),pptx:mk("ppt/media"),pdf:mk("pikepdf page images")};})(),
  re:(function(){const c={b:["None, on principle: the remedy is re-authoring the image as real text — human/AI-assisted authoring work, so the finding is detected and routed, never auto-passed or auto-fixed."],ev:["api/ocr.py (module docstring states the posture)"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.10",name:"Reflow",lvl:"AA",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"H"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"N"},
+{sc:"1.4.10",name:"Reflow",lvl:"AA",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"A2"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"R1"},
  ae:{
   docx:{b:["Reflow (320-px width / 400% zoom without 2-D scrolling) is a rendering behaviour: flowable OOXML reflows because the EDITOR reflows it; the file's content plays no role.","The obligation sits with the application, so N/A is the defensible verdict — stronger than 'unbuilt'."],ev:["—"]},
   xlsx:{b:["Same reasoning — the grid's reflow behaviour is Excel's, not the file's."],ev:["—"]},
@@ -555,21 +712,21 @@ const ROWS=[
   pdf:{b:["The exception: fixed pages genuinely CAN fail reflow at 400% zoom, and tagged PDFs reflow far better in supporting viewers — another reason pdf.tagged (1.3.1) is the gating investment.","No machine check today → Human. Don't claim; point to the tagging dependency."],ev:["—"]}},
  re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"1.4.12",name:"Text Spacing",lvl:"AA",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"1.4.12",name:"Text Spacing",lvl:"AA",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["The criterion tests whether USER spacing overrides break content — an interactive AT behaviour with no static-file oracle in the current stack.","The HTML fixer (relaxing fixed-pixel line-height) shows the pattern is understood; nothing analogous exists for documents. Unbuilt = Human, stated plainly."],
    ev:["api/remediate.py (1.4.12 fixer is HTML-only)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.1",name:"Use of Color",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"1.4.1",name:"Use of Color",lvl:"A",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["Nothing inspects colour-as-the-only-signal in documents — the sole 1.4.1 implementation is the HTML link check (colour-styled links without underline) and its fixer.","Evidence the space was considered, not overlooked: 1.3.3's design consciously EXCLUDED colour references from its sensory regex as too noisy — a deliberate deferral you can cite."],
    ev:["api/remediate.py:_fix_use_of_color (HTML only)","api/textchecks.py (design note excluding colour)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"Q"},r:{docx:"A",xlsx:"A",pptx:"A",pdf:"N"},
+{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R1"},
  ae:{
   docx:{b:["The .NET rule computes the TRUE WCAG relative-luminance contrast ratio — 4.5:1 normal text, 3:1 large (≥18pt or 14pt bold) — for every run with explicit colour (w:color) against its shading (w:shd). The real formula, not a luma shortcut.","The declared scope is the RIGHT scope: automatic-colour runs are skipped because their rendered colour depends on the viewer theme — outside the document.","Findings are actionable by design: fg/bg hex, measured ratio, required ratio, text excerpt — a designer can act without re-scanning."],
       c:["Effective backgrounds from table-cell or page fills aren't resolved (declared FP mode); theme-driven low contrast passes (declared FN mode)."],
@@ -594,14 +751,14 @@ const ROWS=[
   pdf:{b:["None: rewriting colours inside PDF content streams is high-risk surgery on the page-painting program itself. Report-and-review is the defensible ceiling today."],
       ev:["—"]}}},
 
-{sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["No engine measures UI-component or graphical-object contrast in documents — the text-contrast rules (1.4.3) deliberately don't stretch to cover shapes, chart elements, or form-control borders.","Nothing claimed, nothing to defend; the build here would be a shape-fill vs adjacent-colour analysis — well-defined future work."],
    ev:["—"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"2.4.2",name:"Page / Doc Titled",lvl:"A",flag:false,a:{docx:"C",xlsx:"C",pptx:"C",pdf:"C"},r:{docx:"AP",xlsx:"AP",pptx:"A",pdf:"AP"},
+{sc:"2.4.2",name:"Page / Doc Titled",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  ae:{
   docx:{b:["Deterministic pair: dc:title must be non-empty (DocumentTitleRule — the filename is never accepted as a substitute), plus BookmarksRule for >10-page documents (at least one named, non-hidden bookmark).","AT announces the title on open and in the task switcher — presence is exactly what's machine-checkable."],
       c:["Presence, not quality: 'Document1' passes — declared. The HITL title-draft lane (ai.suggest_fix) is the quality answer when wanted."],
@@ -626,14 +783,14 @@ const ROWS=[
   pdf:{b:["Live: /Title (filename-derived; existing titles preserved through the two-stage save) + /DisplayDocTitle boolean.","The bookmark gap is ONE integration away: PdfBookmarksFixer (pdfplumber heading extraction, page-level fallback) exists and is registered in the vendored worker — remediate_pdf.py just never invokes it. The cheapest capability upgrade on the board."],
       ev:["api/remediate_pdf.py (stages 1–2)","worker-python/remediation/fixers/pdf/bookmarks_fixer.py (built, unwired)","worker-python/remediation/fixer_registry.py"]}}},
 
-{sc:"2.4.3",name:"Focus Order",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"N"},
+{sc:"2.4.3",name:"Focus Order",lvl:"A",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["Focus order is an interaction property; the only implemented check is HTML positive-tabindex (with its reset-to-0 fixer).","For slides, shape tab order — the nearest document analogue — is already detected AND remediated under 1.3.2. Cite the adjacency; don't double-claim it here."],
    ev:["api/remediate.py:_fix_focus_order (HTML only)","see 1.3.2 PPTX for the adjacent coverage"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"2.4.4",name:"Link Purpose (In Context)",lvl:"A",flag:false,a:{docx:"Q",xlsx:"Q",pptx:"Q",pdf:"H"},r:{docx:"AI",xlsx:"AI",pptx:"AI",pdf:"N"},
+{sc:"2.4.4",name:"Link Purpose (In Context)",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A2"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R1"},
  ae:{
   docx:{b:["Deterministic FAILURE detection: every w:hyperlink's display text is tested against a generic-phrase deny-list ('click here', 'read more', 'more', 'link'…) plus a bare-URL pattern.","The harm story is concrete: screen-reader users skim a links list; ten 'click here's are indistinguishable — the destination is only knowable by leaving the list.","Why Guided, not Certified: a PASS can't certify purpose — descriptive-sounding text that lies about its destination passes, because the rule never fetches the target (declared). Semantic criteria cap at Guided."],
       c:["Short-but-clear texts ('map') can false-positive against the deny-list (declared)."],
@@ -651,7 +808,7 @@ const ROWS=[
   pptx:{b:["Same draft → approve → manual-apply lane as docx."],ev:["api/ai.py:suggest_fix"]},
   pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"2.1.1",name:"Keyboard",lvl:"A",flag:true,a:{docx:"H",xlsx:"H",pptx:"Q",pdf:"H"},r:{docx:"N",xlsx:"N",pptx:"M",pdf:"N"},
+{sc:"2.1.1",name:"Keyboard",lvl:"A",flag:true,a:{docx:"A2",xlsx:"A2",pptx:"A3",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R2",pdf:"R1"},
  ae:{
   docx:{b:["Static document content has no keyboard surface of its own — operability lives in the viewer. No check exists, none claimed.","Why Human rather than N/A: embedded ActiveX/macro content could in principle create keyboard issues; Human keeps the door honest."],ev:["—"]},
   xlsx:{b:["Same reasoning as docx; workbook macros/controls are the theoretical surface, unchecked today."],ev:["—"]},
@@ -666,7 +823,7 @@ const ROWS=[
       ev:["RuleMetadataRegistry.cs (PptxRuleIds.AnimationOrder)"]},
   pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"2.1.2",name:"No Keyboard Trap",lvl:"A",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"H"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"N"},
+{sc:"2.1.2",name:"No Keyboard Trap",lvl:"A",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"A2"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"R1"},
  ae:{
   docx:{b:["Static OOXML content cannot capture and hold focus — a trap requires executable interaction, which lives in the viewer. N/A by content model."],ev:["—"]},
   xlsx:{b:["Same — N/A by content model."],ev:["—"]},
@@ -674,7 +831,7 @@ const ROWS=[
   pdf:{b:["The exception that proves the rule: PDF CAN embed JavaScript and form logic that traps focus. Nothing checks it → Human, honestly."],ev:["—"]}},
  re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"H",xlsx:"H",pptx:"H",pdf:"Q"},r:{docx:"N",xlsx:"N",pptx:"N",pdf:"AC"},
+{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R3"},
  ae:{
   docx:{b:["This SC targets UI components; in documents it bites on form controls. What exists nearby: docx content-control fields (checkbox, date, dropdown…) ARE checked for labels — but under 3.3.2, not 4.1.2 (DOCX_FORM_FIELD_NO_LABEL).","Watch the demo-catalog trap: wcagCatalog.js marks 4.1.2 'Shipped (demo)' — that's HTML axe coverage for web pages. Quoting it for documents is exactly the layer-mixing this brief exists to stop."],
       ev:["api/office_structure.py (3.3.2 form-field check — adjacent)","frontend/src/wcagCatalog.js (HTML-only 'Shipped' marker)"]},
@@ -1695,14 +1852,14 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
 const DOC_BUILD="2026.07.28.2009";
 
-const RTIER_HOW={A:"DET",AC:"MA",AP:"DET",AI:"MA",M:"HUM",N:"HUM",NA:"NAx"};
+const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
 // ceiling is MA is at ceiling when ACP ships C or Q — anything stronger than the ceiling counts too,
 // since a rule can't demand less than ACP already does. These were defined identically in four
 // separate places (the ceiling tiles, the two drawer sections, and the roadmap); hoisted to one
 // definition so a change to what "at ceiling" means can't land in three of the four.
-const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]};
-const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
+const AT_CEILING_A={DET:["A4"],MA:["A4","A3"],HUM:["A4","A3","A2"]};
+const AT_CEILING_F={MECH:["R4"],GEN:["R4","R3"],REAUTH:["R4","R3","R2"]};
 const RUBRIC={
 "1.1.1":{plain:"Every image, icon, or chart needs a text description that conveys the same information it visually communicates — without one, a screen-reader user hears nothing where a sighted reader sees a photo, a diagram, or a chart.",
  formats:{
@@ -1845,6 +2002,7 @@ const RUBRIC={
   pdf:{aClass:"DET",aWhy:"AcroForm fields carry /T (name) and /TU (accessible tooltip name) directly in the field dictionary — the exact PDF analogue of the DOCX content-control check, and just as direct a read.",
    fClass:"GEN",fWhy:"Same generate-then-approve ceiling as DOCX — a nearby label can sometimes be copied mechanically, but the general case needs a drafted, approved name."}}}};
 
+const FMT_LABEL_SHORT={docx:"DOCX",xlsx:"XLSX",pptx:"PPTX",pdf:"PDF"};
 const FM=["docx","xlsx","pptx","pdf"];
 // KEY_TECH_BY_FORMAT / KEY_TECH_CROSSCUT = Deva's "KEY TECH" tab (assessment-applicability-matrix-
 // v5.xlsx), her recommended implementation stack — not ACP's own stack, and not verified against
@@ -1916,7 +2074,81 @@ const V5_APPLICABLE={
 "3.1.1":{docx:"yes",pptx:"yes",pdf:"yes"},
 "3.1.2":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "4.1.2":{docx:"cond",pdf:"yes"}};
-for(const row of ROWS){
+// ── Cell progress: where a cell stands against its POTENTIAL ─────────────────────────
+// "Potential" is RUBRIC's rule-inherent ceiling — what ANY tool could achieve given WCAG and
+// the file format. It is deliberately NOT a roadmap: nothing here says ACP intends to build
+// it, and the UI must never imply a commitment nobody has scoped. That distinction is why the
+// toggle reads "Potential" and not "Future" or "Planned".
+//
+// Progress is measured on the ORDINAL scale rather than as a ratio of coverage weights,
+// because a weight ratio breaks exactly where it matters: a cell whose ceiling is
+// human-judgment has a ceiling weight of 0, and 0/0 is not "no progress" — it is "already as
+// far as this rule can go". On the ordinal scale that falls out correctly as 100%.
+// Which capability the table shows. "today" = ROWS (shipped); "potential" = the rule-inherent
+// ceiling from RUBRIC. The donuts are identical in both views — they always measure today
+// against potential, so the ring does not move when the labels do. That is deliberate: the
+// number is the gap, and a gap that changed with the view would be meaningless.
+let VIEW="today";
+
+const A_ORDER=["A2","A3","A4"];              // weakest -> strongest
+const R_ORDER=["R1","R2","R3","R4"];
+const A_CEIL_LEVEL={DET:"A4",MA:"A3",HUM:"A2"};      // RUBRIC aClass -> best reachable level
+const R_CEIL_LEVEL={MECH:"R4",GEN:"R3",REAUTH:"R2"}; // RUBRIC fClass -> best reachable level
+
+function cellProgress(row,f,axis){
+  const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
+  if(!rub)return null;
+  const isA=axis==="a";
+  const cls=isA?rub.aClass:rub.fClass;
+  const order=isA?A_ORDER:R_ORDER;
+  const ceilLevel=(isA?A_CEIL_LEVEL:R_CEIL_LEVEL)[cls];
+  const cur=row[axis][f];
+  if(!ceilLevel||cls==="NAx"||cur==="NA")return null;   // not applicable — no progress to show
+  const ci=order.indexOf(ceilLevel), vi=order.indexOf(cur);
+  if(ci<0||vi<0)return null;
+  // ci===0: the ceiling IS the floor — nothing is achievable beyond where ACP already is, so
+  // this is 100% and not a gap. Capped at 100 because a cell may legitimately exceed the
+  // rubric's expectation (AT_CEILING_A allows it), and >100% would read as a bug.
+  const pct=ci===0?100:Math.max(0,Math.min(100,Math.round((vi/ci)*100)));
+  // Potential can never read LOWER than what is already shipped. A cell may legitimately
+  // exceed the rubric's expectation — AT_CEILING_A allows an MA-ceiling cell to ship at A4,
+  // and 1.1.1 on docx does exactly that, because alt-text PRESENCE is a deterministic fact
+  // even though alt QUALITY is not. Showing "Potential Issue" as the potential for a cell that
+  // is already Fully Assessed would read as a regression rather than as headroom.
+  const shownCeiling=order[Math.max(ci,vi)];
+  return {pct, current:cur, ceiling:shownCeiling, rubricCeiling:ceilLevel, atCeiling:vi>=ci,
+          label:isA?AL:RL};
+}
+
+// A compact donut. Inline SVG rather than a chart library: this renders 160 times on the page,
+// the whole file must stay dependency-free, and the shape is one arc.
+function donut(pct,{size=30,stroke=4,tone="",title=""}={}){
+  const r=(size-stroke)/2, c=2*Math.PI*r;
+  const off=c*(1-Math.max(0,Math.min(100,pct))/100);
+  return `<svg class="donut ${tone}" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img"`
+    +` aria-label="${esc(title||pct+"% of potential")}">`
+    +`<circle class="dtrack" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"/>`
+    +`<circle class="darc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"`
+    +` stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"`
+    +` transform="rotate(-90 ${size/2} ${size/2})" stroke-linecap="round"/>`
+    +`<text class="dnum" x="50%" y="50%" dominant-baseline="central" text-anchor="middle">${pct}</text></svg>`;
+}
+const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
+
+// Legend donut samples, drawn with the same function the cells use so the key cannot drift
+// from the thing it explains — a hand-drawn legend swatch is exactly how a key goes stale.
+(function(){
+  for(const [id,pct] of [["lgDonutHi",100],["lgDonutMid",50],["lgDonutLo",0]]){
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=donut(pct,{size:26,stroke:3.5,tone:progTone(pct),title:pct+"% of potential"});
+  }
+})();
+
+// Wrapped in a function so the view toggle can rebuild the table in place. It was a bare
+// top-level loop, which was fine while the table rendered exactly once.
+function buildTable(){
+  tb.innerHTML="";
+  for(const row of ROWS){
   const tr=document.createElement("tr");
   tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
@@ -1941,13 +2173,40 @@ for(const row of ROWS){
     const v5Cls=v5state?"":" v4-muted";
     const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
     const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
-    h+=`<td class="cell${tdCls}${v5Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria}${v5Aria} Open details.">${SHORT_A[v]}${markHtml}${condHtml}</button></td>`;}
+    const pg=cellProgress(row,f,"a");
+    const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${AL[v]}, potential ${AL[pg.ceiling]}`}):"";
+    h+=`<td class="cell${tdCls}${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${markAria}${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${markHtml}${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
+    const pg=cellProgress(row,f,"r");
+    const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${RL[v]}, potential ${RL[pg.ceiling]}`}):"";
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}</span></button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
+  }
+  // The V5 filter styles rows after they exist, so re-apply it on every rebuild or a rebuild
+  // silently drops the filtering the user had switched on.
+  const cb=document.getElementById("v3only");
+  if(cb)cb.dispatchEvent(new Event("change"));
 }
+buildTable();
+
+// View toggle: Today (shipped) vs Potential (rule-inherent ceiling).
+(function(){
+  const btns=[...document.querySelectorAll(".vtbtn")], hint=document.getElementById("vtHint");
+  const HINT={
+    today:"Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.",
+    potential:"Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it.",
+  };
+  for(const b of btns) b.addEventListener("click",()=>{
+    VIEW=b.dataset.view;
+    for(const o of btns){const on=o===b;o.classList.toggle("active",on);o.setAttribute("aria-pressed",String(on));}
+    if(hint)hint.textContent=HINT[VIEW];
+    buildTable();
+  });
+})();
 
 // "Show only Deva's V5 checklist SCs" toggle — per V3's feedback that the full 20-SC rubric table
 // includes rows outside what her checklist actually checks, refined 2026-07-22 to cell-level using
@@ -1968,6 +2227,60 @@ for(const row of ROWS){
   }
   cb.addEventListener("change",apply);
   apply();
+})();
+
+
+// Capability coverage: one weighted percentage per format per axis, plus an overall.
+//
+// WEIGHTED, not a count of top-level cells. A Potential Issue really does half the work of a
+// full assessment — it finds the candidate and a human adjudicates — and an AI Generated Fix
+// most of an automatic one, since only the approval step remains. Counting only the top level
+// would understate ACP; counting every non-N/A level equally would overstate it.
+//
+// The denominator is APPLICABLE cells only. A criterion that does not apply to a format is not
+// a gap and must not drag the percentage down — otherwise a format is punished for the rules it
+// was never subject to, and the number stops meaning anything comparable across formats.
+(function(){
+  const grid=document.getElementById("covGrid"); if(!grid)return;
+  const AXES=[
+    {key:"a", label:"Assessment", weight:A_WEIGHT, cls:{A4:"A4",A3:"A3",A2:"A2"}},
+    {key:"r", label:"Remediation", weight:R_WEIGHT, cls:{R4:"R4",R3:"R3",R2:"R2",R1:"R1"}},
+  ];
+  const pct=(num,den)=>den?Math.round((num/den)*1000)/10:null;
+
+  function coverage(axis, fmts){
+    let num=0, den=0;
+    for(const row of ROWS) for(const f of fmts){
+      const lvl=row[axis.key][f];
+      if(!lvl||lvl==="NA")continue;            // not applicable — outside the denominator
+      den++; num+=axis.weight[lvl]??0;
+    }
+    return {pct:pct(num,den), den};
+  }
+
+  const bar=(v,tone)=>`<div class="covbar"><i style="width:${v}%;background:var(--${tone})"></i></div>`;
+  grid.innerHTML=AXES.map(axis=>{
+    const rows=FM.map(f=>{
+      const c=coverage(axis,[f]);
+      return {name:FMT_LABEL_SHORT[f]||f.toUpperCase(), ...c, total:false};
+    });
+    const all=coverage(axis,FM);
+    rows.push({name:"Overall", ...all, total:true});
+    return `<div class="covaxis"><h4>${axis.label} coverage</h4>` + rows.map(r=>{
+      const v=r.pct==null?0:r.pct;
+      // One ramp for both axes: the number means the same thing on each — how much of the
+      // applicable work ACP does — so a reader can compare them directly.
+      const tone=v>=80?"green":v>=50?"blue":v>=25?"orange":"red";
+      return `<div class="covrow${r.total?" total":""}">`
+        +`<span class="covfmt">${esc(r.name)}</span>${bar(v,tone)}`
+        +`<span class="covpct">${r.pct==null?"—":r.pct+"%"}</span></div>`;
+    }).join("") + `</div>`;
+  }).join("");
+
+  const f=document.getElementById("covFormula");
+  if(f)f.innerHTML=`Assessment ${Object.entries(A_WEIGHT).map(([k,v])=>`${k}×${v}`).join(" + ")}`
+    +` · Remediation ${Object.entries(R_WEIGHT).map(([k,v])=>`${k}×${v}`).join(" + ")}`
+    +` · ÷ applicable cells`;
 })();
 
 // Ceiling tiles: computed from RUBRIC across all 80 (SC × format) cells — the rule-inherent denominator.
@@ -2115,8 +2428,8 @@ function costAutomation(row,f,rub){
       auto+=fAtCeiling?` <b>Remediation: ~100% today</b> — a mechanical property write with a safe default, no generated content, no approval step needed.`
         :` <b>Remediation: below ceiling today</b> (currently ${RL[rshipped]||rshipped}) though the mechanism is mechanical enough to reach ~100% once shipped at ceiling.`;
     else if(rub.fClass==="GEN")
-      auto+=["AC","AP"].includes(rshipped)
-        ? ` <b>Remediation: partially unattended today.</b> Where a faithful, non-invented source exists (the author's own caption/title/label text), ACP writes it deterministically with no approval step. Genuinely drafted/invented content still always needs human approval before it's written — never auto-write unreviewed content, this project's standing rule. Today's shipped tier (${RL[rshipped]||rshipped}) reflects that split, not a single automation rate for the whole cell.`
+      auto+=rshipped==="R3"
+        ? ` <b>Remediation: partially unattended today.</b> Where a faithful, non-invented source exists (the author's own caption/title/label text), ACP writes it deterministically with no approval step. Genuinely drafted/invented content still always needs human approval before it's written — never auto-write unreviewed content, this project's standing rule. Today's shipped level (${RL[rshipped]||rshipped}) reflects that split, not a single automation rate for the whole cell.`
         : ` <b>Remediation: 0% fully unattended today.</b> Every generated fix needs human approval before it's written — never auto-write unreviewed content, this project's standing rule. (A few sibling cells with a faithful-source shortcut reach partial auto-write; this one hasn't shipped that shortcut.)`;
     else if(rub.fClass==="REAUTH")
       auto+=` <b>Remediation: 0% — no safe default exists.</b> A person makes the actual edit; ACP's role here is routing and evidence, not the fix itself.`;
@@ -2142,10 +2455,16 @@ function manualVsAugmented(row,f,rub){
       const fAtCeiling=(AT_CEILING_F[rub.fClass]||[]).includes(rshipped);
     if(rub.fClass==="MECH")acpMin+=fAtCeiling?0:p*A.minutesPerHumanOnly;
     else if(rub.fClass==="GEN"){
-      if(rshipped==="A"){gateFlag=true;} // auto, no approval gate — $0/0min today, but see the drift warning, not a clean win
-      else if(["AC","AP"].includes(rshipped))acpMin+=p*A.minutesPerFixApprovePartial;
-      else if(rshipped==="AI")acpMin+=p*A.minutesPerFixApprove;
-      else acpMin+=p*A.minutesPerHumanOnly; // nothing shipped (N)
+      // R4 under a generated-content ceiling = applied with no approval gate: $0/0min today,
+      // but see the drift warning — that is a risk flag, not a clean win.
+      if(rshipped==="R4"){gateFlag=true;}
+      // R3 absorbed two old levels: "always needs approval" (AI proposal) and "auto where a
+      // faithful source exists, else approve" (Automatic-conditional). The merge is lossy, so
+      // this charges the FULL approval assumption rather than the partial one — over-stating
+      // human time is the safe direction for a planning estimate, and the page already says
+      // these are assumptions rather than measurements.
+      else if(rshipped==="R3")acpMin+=p*A.minutesPerFixApprove;
+      else acpMin+=p*A.minutesPerHumanOnly; // R2 guided, or R1 nothing shipped
     }else if(rub.fClass==="REAUTH")acpMin+=p*A.minutesPerHumanOnly;
   }
   const manualMin=A.minutesManualPerSC;
