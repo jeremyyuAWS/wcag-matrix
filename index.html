@@ -179,7 +179,13 @@
   .covrow .covfmt{color:var(--muted);font-weight:600}
   .covrow.total .covfmt{color:var(--ink,inherit)}
   .covbar{height:8px;background:#eef0f4;border-radius:5px;overflow:hidden}
+  .covbar{display:flex}
   .covbar i{display:block;height:100%;border-radius:5px}
+  /* Headroom: same hue as the achieved bar, faded, so it reads as "more of the same thing"
+     rather than as a separate measure. */
+  .covbar i.cgap{opacity:.28;border-radius:0 5px 5px 0;margin-left:-5px;padding-left:5px}
+  .covgain{color:var(--muted);font-weight:600;margin-left:5px;font-size:11px}
+  .covkey{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:10.5px;margin-left:5px}
   .covrow .covpct{text-align:right;font-variant-numeric:tabular-nums}
   @media(max-width:700px){.covgrid{grid-template-columns:1fr}}
   .logbuild{font-size:11px;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
@@ -2032,32 +2038,47 @@ buildTable();
   ];
   const pct=(num,den)=>den?Math.round((num/den)*1000)/10:null;
 
+  // Coverage for BOTH views, always shown together. Computing only the active view meant the
+  // headline number never moved when you toggled — 45 of 160 cells change level between Today
+  // and Potential, and the figure sat still through all of it, which made the toggle look
+  // broken. Showing current and potential side by side is also more useful than a number that
+  // swaps: the GAP is the thing worth looking at.
   function coverage(axis, fmts){
-    let num=0, den=0;
+    let num=0, den=0, pnum=0;
     for(const row of ROWS) for(const f of fmts){
       const lvl=row[axis.key][f];
       if(!lvl||lvl==="NA")continue;            // not applicable — outside the denominator
       den++; num+=axis.weight[lvl]??0;
+      // Potential level — already floored at current inside cellProgress, so a cell that
+      // over-delivers against its rubric ceiling never scores below what it actually ships.
+      const pg=cellProgress(row,f,axis.key);
+      pnum += axis.weight[(pg&&pg.ceiling)||lvl] ?? 0;
     }
-    return {pct:pct(num,den), den};
+    return {pct:pct(num,den), ppct:pct(pnum,den), den};
   }
 
-  const bar=(v,tone)=>`<div class="covbar"><i style="width:${v}%;background:var(--${tone})"></i></div>`;
+  // One track, two fills: solid is today, pale is the headroom. A single bar so the gap reads
+  // as distance rather than as a second, competing statistic.
+  const bar2=(cur,pot,tone)=>{
+    const gap=Math.max(0,(pot??0)-(cur??0));
+    return `<div class="covbar"><i style="width:${cur||0}%;background:var(--${tone})"></i>`
+      +`<i class="cgap" style="width:${gap}%;background:var(--${tone})"></i></div>`;
+  };
+
   grid.innerHTML=AXES.map(axis=>{
-    const rows=FM.map(f=>{
-      const c=coverage(axis,[f]);
-      return {name:FMT_LABEL_SHORT[f]||f.toUpperCase(), ...c, total:false};
-    });
-    const all=coverage(axis,FM);
-    rows.push({name:"Overall", ...all, total:true});
-    return `<div class="covaxis"><h4>${axis.label} coverage</h4>` + rows.map(r=>{
-      const v=r.pct==null?0:r.pct;
+    const rows=FM.map(f=>({name:FMT_LABEL_SHORT[f]||f.toUpperCase(), ...coverage(axis,[f]), total:false}));
+    rows.push({name:"Overall", ...coverage(axis,FM), total:true});
+    return `<div class="covaxis"><h4>${axis.label} coverage <span class="covkey">today → potential</span></h4>` + rows.map(r=>{
+      const v=r.pct==null?0:r.pct, pv=r.ppct==null?0:r.ppct;
       // One ramp for both axes: the number means the same thing on each — how much of the
       // applicable work ACP does — so a reader can compare them directly.
       const tone=v>=80?"green":v>=50?"blue":v>=25?"orange":"red";
+      const gain=Math.round((pv-v)*10)/10;
       return `<div class="covrow${r.total?" total":""}">`
-        +`<span class="covfmt">${esc(r.name)}</span>${bar(v,tone)}`
-        +`<span class="covpct">${r.pct==null?"—":r.pct+"%"}</span></div>`;
+        +`<span class="covfmt">${esc(r.name)}</span>${bar2(v,pv,tone)}`
+        +`<span class="covpct">${r.pct==null?"—":v+"%"}`
+        +(gain>0?`<span class="covgain" title="potential — the rule-inherent ceiling for this rule and format">→ ${pv}%</span>`:"")
+        +`</span></div>`;
     }).join("") + `</div>`;
   }).join("");
 
