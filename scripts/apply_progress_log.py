@@ -61,7 +61,10 @@ def render(e: dict) -> str:
             + f'text:{_js_str(p["text"])}}}'
             for p in e["points"])
         points = f',\n points:[\n{rendered}]'
-    return (f'{{date:{_js_str(e["date"])},hash:{_js_str(e["hash"])},pr:{pr}{repo},\n'
+    # `time` is optional: the entries written before timestamps existed have none, and render
+    # without one rather than being back-filled with a fabricated hour.
+    when = f',time:{_js_str(e["time"])}' if e.get("time") else ""
+    return (f'{{date:{_js_str(e["date"])}{when},hash:{_js_str(e["hash"])},pr:{pr}{repo},\n'
             f' title:{_js_str(e["title"])},\n'
             f' scs:[{scs}],formats:[{fmts}],\n'
             f' summary:{_js_str(e["summary"])}{points}}},')

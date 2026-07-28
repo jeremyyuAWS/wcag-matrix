@@ -90,6 +90,11 @@
   .rmchip.fix{background:#eef1f8;color:var(--navy);border-color:#d3dcef}
   .rmnone{color:var(--muted);padding:10px 0}
   .logshipped{margin:0 0 4px;font-size:15px}
+  /* The time sits beside the date at the same size but lighter: two commits on one day need
+     ordering, and that is all the time is for — it should not compete with the date. UTC is
+     stated, not implied: commits come from contributors and CI runners in different zones, and
+     an unlabelled hour is unorderable by eye. */
+  .logentry .logtime{color:var(--muted);font-weight:400;letter-spacing:.02em}
   .logbuild{font-size:11px;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
   /* Detection maturity. The five levels are an ORDERED scale, so they get a single-hue ramp
      (stronger = more saturated) rather than five unrelated colours — the ordering is the
@@ -2325,7 +2330,7 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
-{date:"2026-07-28",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
+{date:"2026-07-28",time:"19:24",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
  title:"fix(rules): resync generated index + re-file the matrix note dropped at squash (#13)",
  scs:["4.1.2","2.4.3","1.4.11","3.1.1"],formats:["docx","xlsx","pptx","pdf"],
  summary:"acp now declares, per criterion and format, how much of the criterion its detector actually reaches — and assessment respects the conformance level the scan was run for.",
@@ -2534,7 +2539,7 @@ const PROGRESS_LOG=[
     const ref=e.pr?`<a href="https://github.com/${repo}/pull/${e.pr}" target="_blank" rel="noopener">${esc(e.title)}</a>`
                   :`<a href="https://github.com/${repo}/commit/${e.hash}" target="_blank" rel="noopener">${esc(e.title)}</a>`;
     return `<div class="logentry">
-      <div class="logdate">${e.date} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
+      <div class="logdate">${e.date}${e.time?` <span class="logtime">${esc(e.time)} UTC</span>`:""} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
       <div class="logtitle">${ref}</div>
       <div class="logbadges">${scBadges}${fmtBadges}</div>
       <details class="logdetails"><summary>What changed</summary><div class="logsummary${pts?" haspoints":""}">${esc(e.summary)}</div>${pts}</details>
