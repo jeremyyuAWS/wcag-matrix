@@ -173,6 +173,38 @@
   .covexplain{flex:1 1 100%;margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--muted)}
   /* Deva's checklist quoted the way the WCAG excerpt is — it is a primary source for this
      matrix, and the reader should be able to check any line against her workbook. */
+  /* Score panel — the "why is it this number" answer at the top of the drawer. */
+  #panel .scorepanel{margin:0 0 14px;padding:12px 14px;background:#f7f9fc;border:1px solid var(--line);border-radius:10px}
+  #panel .scorepanel h5{margin:0 0 6px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  #panel .spgrid{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  #panel .spdonut{flex:none;text-align:center;min-width:96px}
+  #panel .spdlabel{font-weight:700;font-size:12.5px;color:var(--navy);margin-top:4px}
+  #panel .spdsub{font-size:10.5px;color:var(--muted)}
+  #panel .spwhy{flex:1 1 260px}
+  #panel .spwhy ul{margin:0;padding-left:16px}
+  #panel .spwhy li{margin:4px 0;font-size:12.5px;line-height:1.45;color:var(--navy)}
+  #panel .spsrc{display:inline-block;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--muted);background:#eef1f6;border-radius:4px;padding:1px 5px;margin-left:4px;vertical-align:1px}
+  #panel .spnone{margin:0;font-size:12.5px;color:var(--muted)}
+  #panel .spscales{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+  #panel .spscale{list-style:none;margin:0;padding:0}
+  /* The whole four-level scale is shown with today's level lit, so the reader sees where the
+     cell sits AND what the other rungs are — the scale is the context for the score. */
+  #panel .spscale li{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);
+    margin:3px 0;opacity:.45}
+  #panel .spscale li.on{opacity:1;color:var(--navy);font-weight:700}
+  #panel .sptoday{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}
+  #panel .sptime{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+  #panel .sptotal{font-size:18px;font-weight:800;color:var(--navy)}
+  #panel .sptotal span{font-size:11px;font-weight:400;color:var(--muted)}
+  #panel .sptime ul{margin:6px 0 0;padding-left:16px}
+  #panel .sptime li{font-size:12px;color:var(--navy);margin:2px 0}
+  #panel .spnote{margin:8px 0 0;font-size:11px;color:var(--muted);line-height:1.45}
+  #panel .spconf{font-weight:700;text-transform:uppercase;font-size:9.5px;padding:1px 6px;border-radius:999px;letter-spacing:.04em}
+  #panel .spconf.high{background:#d8efdc;color:#14532d}
+  #panel .spconf.medium{background:#fdf1e3;color:#8a4b12}
+  #panel .spconf.low{background:#fbe6e6;color:#8a1c1c}
+  @media(max-width:640px){#panel .spscales{grid-template-columns:1fr}}
   #panel .devaquote{margin:10px 0;padding:10px 12px;background:#f7f9fc;border:1px solid var(--line);border-radius:8px}
   #panel .devasrc{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
   #panel .devasrc code{text-transform:none;letter-spacing:0;font-size:11px}
@@ -2358,6 +2390,48 @@ function renderDrawer(sc,f,trigger){
   if(!row.a[f]&&!row.r[f]){f="docx";} // cross-link landed on a format this SC has no columns for — fall back
   const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
+  // ── Score panel: why this cell scores what it does ───────────────────────────────────
+  // Every bullet is LIFTED from existing per-cell metadata, never written for the panel and
+  // never invented. Sources, in the order they are drawn on:
+  //   1. ae/re[f].c  — the cell's own recorded concessions. Literally "why this isn't 100".
+  //   2. registry     — acp's declared coverage reason, where the pair has been migrated.
+  //   3. RUBRIC aWhy/fWhy — why the rule-inherent ceiling sits where it does.
+  //   4. UPGRADE      — the cheapest concrete build that would close the gap.
+  // A cell with none of these shows nothing rather than filler. Capped at five: past that it
+  // stops being a summary.
+  function whyBullets(row,f,rub){
+    const out=[];
+    const push=(txt,src)=>{ if(txt&&out.length<5) out.push({txt:String(txt),src}); };
+    for(const c of (row.ae&&row.ae[f]&&row.ae[f].c)||[]) push(c,"assessment limit");
+    for(const c of (row.re&&row.re[f]&&row.re[f].c)||[]) push(c,"remediation limit");
+    const mat=(typeof MATURITY!=="undefined"&&MATURITY[row.sc]&&MATURITY[row.sc][f])||null;
+    if(mat&&mat.why) push(mat.why,`acp coverage: ${mat.c}`);
+    if(rub&&rub.aWhy&&out.length<5) push(rub.aWhy,"why the assess ceiling is there");
+    if(rub&&rub.fWhy&&out.length<5) push(rub.fWhy,"why the fix ceiling is there");
+    if(UPGRADE[row.sc]&&out.length<5) push(UPGRADE[row.sc],"what would close the gap");
+    return out;
+  }
+
+  // Remaining human effort, from the page's own COST_ASSUMPTIONS — the same model the cost
+  // section uses. These are ASSUMPTIONS, not measurements: ACP does not track actual minutes
+  // per finding, and the panel says so rather than implying a measured number.
+  function humanTime(row,f,rub){
+    const A=COST_ASSUMPTIONS, a=row.a[f], r=row.r[f];
+    if(a==="NA"&&r==="NA")return null;
+    const parts=[];
+    if(a==="A2") parts.push({m:A.minutesPerHumanOnly, t:"assess by hand — no machine verdict exists here"});
+    else if(a==="A3") parts.push({m:A.minutesPerAssessConfirm, t:"confirm or reject what ACP flagged"});
+    if(r==="R1"&&a!=="NA") parts.push({m:A.minutesPerHumanOnly, t:"make the fix by hand"});
+    else if(r==="R2") parts.push({m:A.minutesPerHumanOnly, t:"apply the guided fix yourself"});
+    else if(r==="R3") parts.push({m:A.minutesPerFixApprove, t:"approve the drafted fix before it is written"});
+    if(!parts.length)return {mins:0, parts:[], conf:"high"};
+    const mins=parts.reduce((n,p)=>n+p.m,0);
+    // Confidence tracks how much of the estimate rests on a fully-human step, which is the
+    // widest-variance assumption in the model.
+    const humanHeavy=parts.some(p=>p.m===A.minutesPerHumanOnly);
+    return {mins, parts, conf: humanHeavy?"low":(a==="A3"?"medium":"high")};
+  }
+
   // Both capability codes for this cell, right under the title — the two things the drawer is
   // about, stated before any prose. Shows the level for whichever view is active, so the codes
   // always agree with the cell that was clicked.
@@ -2368,6 +2442,48 @@ function renderDrawer(sc,f,trigger){
       <span class="dcode"><b class="ccode ${aShown==="NA"?"NAx":aShown}">${aShown==="NA"?"N/A":aShown}</b> ${esc(AL[aShown]||aShown)}</span>
       <span class="dcode"><b class="ccode ${rShown==="NA"?"NAx":rShown}">${rShown==="NA"?"N/A":rShown}</b> ${esc(RL[rShown]||rShown)}</span>
     </div>`;
+
+  // Score panel — the "why is it this number" answer, directly under the codes.
+  {
+    const rubF=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
+    const pgA=cellProgress(row,f,"a"), pgR=cellProgress(row,f,"r");
+    const why=whyBullets(row,f,rubF);
+    const ht=humanTime(row,f,rubF);
+    const scale=(order,cur,labels)=>order.map(l=>
+      `<li class="${l===cur?"on":""}"><b class="ccode ${l}">${l}</b> ${esc(labels[l])}</li>`).join("");
+
+    html+=`<div class="scorepanel">
+      <div class="spgrid">
+        <div class="spdonut">
+          ${pgA?donut(pgA.pct,{size:84,stroke:9,tone:progTone(pgA.pct),title:`${pgA.pct}% of potential`}):""}
+          <div class="spdlabel">${esc(AL[row.a[f]]||row.a[f])}</div>
+          <div class="spdsub">assessment${pgA&&pgA.pct<100?` · ${100-pgA.pct}% headroom`:""}</div>
+        </div>
+        <div class="spwhy">
+          <h5>Why this score</h5>
+          ${why.length?`<ul>${why.map(b=>
+            `<li>${esc(b.txt)} <span class="spsrc">${esc(b.src)}</span></li>`).join("")}</ul>`
+            :`<p class="spnone">No limitation is recorded for this cell — it sits at its ceiling.</p>`}
+        </div>
+      </div>
+
+      <div class="spscales">
+        <div><h5>Ability to assess <span class="sptoday">today</span></h5>
+          <ul class="spscale">${scale(["A4","A3","A2"],row.a[f],AL)}${row.a[f]==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(AL.NA)}</li>`:""}</ul></div>
+        <div><h5>Ability to remediate <span class="sptoday">today</span></h5>
+          <ul class="spscale">${scale(["R4","R3","R2","R1"],row.r[f],RL)}${row.r[f]==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(RL.NA)}</li>`:""}</ul></div>
+      </div>
+
+      ${ht?`<div class="sptime">
+        <h5>Human time to close the gap <span class="spconf ${ht.conf}">${ht.conf} confidence</span></h5>
+        <div class="sptotal">≈ ${ht.mins} min <span>per finding</span></div>
+        ${ht.parts.length?`<ul>${ht.parts.map(p=>`<li>${p.m} min — ${esc(p.t)}</li>`).join("")}</ul>`
+          :`<p class="spnone">Nothing left for a person to do on this cell.</p>`}
+        <p class="spnote">An <b>assumption</b>, not a measurement — ACP does not track real minutes
+          per finding. Multiply by your own findings-per-document to estimate a document.</p>
+      </div>`:""}
+    </div>`;
+  }
   if(PRINCIPLE[row.sc])html+=`<div class="crumb">${esc(PRINCIPLE[row.sc])} → ${row.sc}</div>`;
   if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a> · <a href="https://www.w3.org/WAI/WCAG22/quickref/#${slug}" target="_blank" rel="noopener">Techniques</a></div>`;
   if(QUOTE[row.sc])html+=`<div class="quote">${QUOTE[row.sc]}<cite>— excerpt, WCAG 2.2 Success Criterion ${row.sc} (full text via the canonical link above)</cite></div>`;
