@@ -151,7 +151,7 @@
   .ccode.R2{background:var(--amber,#8a6d00);color:#fff}
   .ccode.R1{background:var(--red,#b3261e);color:#fff}
   .ccode.NAx{background:var(--gray);color:#fff}
-  .viewtoggle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0 0}
+  .viewtoggle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px}
   .vtlabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .vtbtn{all:unset;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;
     border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#fff}
@@ -369,17 +369,6 @@
        Potential Issue genuinely does half the work of a full assessment, and an AI Generated
        Fix most of an automatic one, so counting only the top level would understate ACP and
        counting every non-N/A level would overstate it. -->
-  <!-- Today vs Potential. "Potential" is RUBRIC's rule-inherent ceiling — what any tool could
-       achieve for this rule and format. It is NOT a roadmap, and the label says so: calling it
-       "Future" or "Planned" would imply a commitment to build things nobody has scoped, and the
-       first question that invites is "by when?". -->
-  <div class="viewtoggle" role="group" aria-label="Matrix view">
-    <span class="vtlabel">View</span>
-    <button type="button" class="vtbtn active" data-view="today" aria-pressed="true">Today</button>
-    <button type="button" class="vtbtn" data-view="potential" aria-pressed="false">Potential</button>
-    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
-  </div>
-
   <div class="covcard">
     <div class="covhead">
       <h3>Capability coverage <span class="covsub">weighted, over applicable cells only</span></h3>
@@ -425,6 +414,17 @@
   <div class="filterbar">
     <label><input type="checkbox" id="v3only" checked> Show only the SCs in Deva's V5 checklist (<span id="v3count"></span>)</label>
     <span class="filterbar-note">On (default) = just what V5's applicability matrix actually checks — cells outside it get a hatched background rather than disappearing, so real ACP status is never hidden or dimmed. Grey text means one thing only: Not Applicable. ▲ marks a row corrected against the July-14 infographic. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
+  </div>
+
+  <!-- Today vs Potential, placed directly above the table it controls. "Potential" is RUBRIC's
+       rule-inherent ceiling — what any tool could achieve for this rule and format. It is NOT a
+       roadmap, and the label says so: "Future" or "Planned" would imply a commitment to build
+       things nobody has scoped, and the first question that invites is "by when?". -->
+  <div class="viewtoggle" role="group" aria-label="Matrix view">
+    <span class="vtlabel">View</span>
+    <button type="button" class="vtbtn active" data-view="today" aria-pressed="true">Today</button>
+    <button type="button" class="vtbtn" data-view="potential" aria-pressed="false">Potential</button>
+    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
   </div>
 
   <table id="tbl">
