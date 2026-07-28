@@ -1,0 +1,168 @@
+# Keep the GRID honest against acp's shipped code.
+#
+# Sibling to progress-log.yml, deliberately separate because the two write different things
+# under different rules:
+#
+#   progress-log.yml  -> PROGRESS_LOG, append-only changelog facts, pushed straight to main.
+#   grid-drift.yml    -> ROWS.a / ROWS.r tier cells, which are capability CLAIMS. Ground rule 1
+#                        requires a human to verify a tier against shipped code, so this never
+#                        pushes to main: it opens a pull request and waits.
+#
+# What it does: clones acp, runs ITS scripts/gen_matrix_coverage.py (the generator lives in one
+# place, next to the code it reads), and compares every cell against the derived ceiling. Cells
+# claiming MORE than the code supports are rewritten to the ceiling and proposed in a PR with
+# per-cell evidence. Cells claiming LESS are left alone — ground rule 3 makes a deliberate
+# downgrade an editorial act, not drift.
+#
+# TRIGGERS — three, for different failure modes:
+#   * acp-capability-change  — acp pushed a commit touching rule code. The responsive path.
+#   * acp-progress-log       — the existing Matrix-Note dispatch. A capability change is usually
+#                              also worth a log entry, so this catches annotated commits too.
+#   * schedule (Mondays)     — the self-healing net. A dropped dispatch, a change through a path
+#                              not in acp's RULE_PATHS, or a token outage all get corrected here
+#                              rather than leaving the grid quietly stale.
+# workflow_dispatch re-runs it from scratch at any time; the check is idempotent.
+#
+# One PR at a time: a fixed branch means a second run force-updates the open PR rather than
+# stacking near-duplicates.
+
+name: Grid drift vs acp
+
+on:
+  repository_dispatch:
+    types: [acp-capability-change, acp-progress-log]
+  schedule:
+    - cron: "17 6 * * 1"          # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: grid-drift
+  cancel-in-progress: false
+
+env:
+  BRANCH: automation/grid-drift
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # need main's history to branch from it
+
+      - name: Clone acp
+        run: git clone --quiet https://github.com/jeremyyuAWS/acp.git /tmp/acp
+
+      - name: Derive the capability ceiling from acp's code
+        working-directory: /tmp/acp
+        run: |
+          set -euo pipefail
+          # --check first: every loader fails loudly if a source it reads has changed shape.
+          # Better a red build here than a confident comparison against a misparsed table.
+          python3 scripts/gen_matrix_coverage.py --check
+          python3 scripts/gen_matrix_coverage.py > /tmp/coverage.json
+
+      - name: Compare against the grid
+        id: check
+        run: |
+          set -uo pipefail
+          python3 scripts/check_grid_drift.py /tmp/coverage.json --markdown > /tmp/body.md
+          rc=$?
+          set -e
+          if [ "$rc" -gt 1 ]; then
+            echo "check_grid_drift.py failed (exit $rc)"; cat /tmp/body.md; exit "$rc"
+          fi
+          echo "drift=$([ "$rc" -eq 1 ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+          python3 scripts/check_grid_drift.py /tmp/coverage.json || true
+
+      - name: Rewrite the drifted cells
+        if: steps.check.outputs.drift == 'yes'
+        run: python3 scripts/check_grid_drift.py /tmp/coverage.json --apply || true
+
+      - name: Verify the grid still parses
+        if: steps.check.outputs.drift == 'yes'
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs=require("fs"); const h=fs.readFileSync("index.html","utf8");
+            const s=h.indexOf("const ROWS=[");
+            if(s<0){console.error("ROWS not found");process.exit(1)}
+            let i=h.indexOf("[",s),d=0,j=i,q=null;
+            for(;j<h.length;j++){const c=h[j];
+              if(q){if(c==="\\\\"){j++;continue}if(c===q)q=null;continue}
+              if(c==="\"" || c==="\x27" || c==="`"){q=c;continue}
+              if(c==="[")d++;else if(c==="]"){d--;if(d===0)break}}
+            const R=eval(h.slice(i,j+1));
+            const F=["docx","xlsx","pptx","pdf"];
+            const A=["NA","H","Q","C"], RR=["NA","N","M","AI","AP","AC","A"];
+            const bad=R.filter(r=>!r.sc||!r.a||!r.r||
+              F.some(f=>!A.includes(r.a[f])||!RR.includes(r.r[f])));
+            if(bad.length){console.error("malformed rows:",bad.map(b=>b.sc).join(", "));process.exit(1)}
+            console.log("ROWS parses —",R.length,"rows, all tiers in vocabulary");
+          '
+
+      - name: Open or update the proposal PR
+        if: steps.check.outputs.drift == 'yes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- index.html; then
+            echo "ceiling changed but no cell edit resulted — nothing to propose"
+            exit 0
+          fi
+
+          acp_sha=$(git -C /tmp/acp rev-parse --short HEAD)
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Fixed branch, rebuilt from main each run: the PR always shows drift-vs-today, never
+          # an accumulation of stale proposals from earlier runs.
+          git checkout -B "$BRANCH"
+          git add index.html
+          git commit -m "chore: propose grid tiers at acp's code-derived ceiling
+
+          Cells claiming more than acp@${acp_sha} supports, lowered to the ceiling derived by
+          acp/scripts/gen_matrix_coverage.py. Proposal only — ground rules 1-3 make the tier a
+          human judgment; see the PR body for per-cell evidence.
+
+          Generated by .github/workflows/grid-drift.yml."
+          git push --force-with-lease origin "$BRANCH"
+
+          {
+            echo
+            echo "---"
+            echo "Derived from [acp@${acp_sha}](https://github.com/jeremyyuAWS/acp/commit/${acp_sha})"
+            echo "by \`.github/workflows/grid-drift.yml\` (trigger: \`${{ github.event_name }}\`)."
+          } >> /tmp/body.md
+
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --body-file /tmp/body.md
+            echo "updated PR #$existing"
+          else
+            gh pr create --head "$BRANCH" --base main \
+              --title "Grid drift: cells claiming more than acp's code supports" \
+              --body-file /tmp/body.md
+          fi
+
+      - name: Close the PR when the grid is clean
+        if: steps.check.outputs.drift == 'no'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # The drift was fixed by hand (or acp's code caught up). Leaving a stale PR open would
+          # be a standing false alarm, so retire it and delete the branch.
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh pr close "$existing" --delete-branch \
+              --comment "No drift remains — every cell is at or below acp's code-derived ceiling. Closed automatically."
+            echo "closed PR #$existing"
+          else
+            echo "no drift, no open PR — nothing to do"
+          fi
