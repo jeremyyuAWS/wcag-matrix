@@ -62,7 +62,14 @@ jobs:
             const L=eval(h.slice(i,j+1));
             const bad=L.filter(e=>!e.date||!e.hash||!e.title||!e.scs||!e.formats||!e.summary);
             if(bad.length){console.error("malformed entries:",bad.length);process.exit(1)}
-            console.log("PROGRESS_LOG parses —",L.length,"entries");
+            // `points` is optional, but an entry that has it must not carry an empty bullet —
+            // that renders as a stray list marker with nothing beside it.
+            const badPts=L.filter(e=>e.points&&e.points.some(p=>!p||!(p.text||"").trim()));
+            if(badPts.length){
+              console.error("entries with an empty bullet:",badPts.map(e=>e.hash).join(", "));
+              process.exit(1)}
+            const withPts=L.filter(e=>e.points).length;
+            console.log("PROGRESS_LOG parses —",L.length,"entries,",withPts,"with bullets");
           '
 
       - name: Commit if changed

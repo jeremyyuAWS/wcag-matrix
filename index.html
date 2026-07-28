@@ -48,6 +48,63 @@
   .logentry details.logdetails summary:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:3px}
   .logentry details.logdetails[open] summary{margin-bottom:2px}
   .logentry details.logdetails .logsummary{padding:4px 0 4px}
+  /* A capability change is usually several independent changes. The lead sentence says what
+     landed; `points` carries one bullet per change, so a reader can find the format or SC they
+     care about by scanning rather than by reading a 1,000-character paragraph to its end.
+     Entries with no `points` render as the lead alone — exactly as before this existed. */
+  .logentry details.logdetails .logsummary.haspoints{padding-bottom:2px}
+  .logentry details.logdetails .logpoints{margin:0 0 6px;padding:0 0 0 18px}
+  .logentry details.logdetails .logpoints li{margin:5px 0;padding-left:2px}
+  .logentry details.logdetails .logpoints li::marker{color:var(--muted)}
+  /* The leading "DOCX 4.1.2 —" style label each bullet opens with. Set in the data, not parsed
+     out of the prose, so a bullet without one simply has no label. */
+  .logentry details.logdetails .logpoints b{font-weight:650}
+  /* Roadmap table — sits above the shipped timeline in the log tab. */
+  .roadmap{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px 14px;margin-bottom:22px}
+  .roadmap h3{margin:0;font-size:15px}
+  .roadmaphead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+  .rmcount{font-weight:400;color:var(--muted);font-size:13px;margin-left:4px}
+  .rmlegend{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .rmlegend .rmchip{margin-left:6px}
+  /* The page-wide `th,td` rule centres text and paints `th` navy+sticky for the main matrix grid.
+     This is a prose table inside a card, so it opts out of all of that explicitly rather than
+     relying on specificity accidents. table-layout:fixed keeps the prose column from being
+     squeezed to nothing by the chips column. */
+  .rmtable{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;
+    background:transparent;border:0;border-radius:0}
+  .rmtable th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);background:transparent;position:static;font-weight:700;
+    padding:0 10px 5px 0;border-bottom:1px solid var(--line)}
+  .rmtable td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;
+    text-align:left;font-size:13px}
+  .rmtable tr:last-child td{border-bottom:0}
+  .rmtable th:nth-child(1),.rmtable td:nth-child(1){width:23%;font-weight:650}
+  .rmtable th:nth-child(2),.rmtable td:nth-child(2){width:29%}
+  .rmtable td:first-child .rmsc{color:var(--muted);font-weight:400;font-size:11.5px;display:block}
+  .rmtable td:last-child{color:var(--muted);line-height:1.45}
+  /* Assess vs fix are different KINDS of gap, not degrees of one — a criterion ACP can't judge is a
+     different problem from one it can judge but can't repair. Two hues rather than a severity ramp. */
+  .rmchip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:9px;
+    border:1px solid var(--line);margin:1px 3px 1px 0;white-space:nowrap}
+  .rmchip.assess{background:#fdf1e3;color:#8a4b12;border-color:#f0d6b8}
+  .rmchip.fix{background:#eef1f8;color:var(--navy);border-color:#d3dcef}
+  .rmnone{color:var(--muted);padding:10px 0}
+  .logshipped{margin:0 0 4px;font-size:15px}
+  @media(max-width:700px){
+    /* The three columns stop being a table on a phone: each row becomes a stacked block so the
+       prose column isn't squeezed to two words wide. */
+    .rmtable,.rmtable tbody,.rmtable tr,.rmtable td{display:block;width:auto}
+    .rmtable{table-layout:auto}
+    .rmtable thead{display:none}
+    .rmtable tr{border-bottom:1px solid var(--line);padding:8px 0}
+    .rmtable tr:last-child{border-bottom:0}
+    .rmtable td{border-bottom:0;padding:2px 0}
+    /* The percentage widths above are more specific than `.rmtable td`, so they have to be
+       unset by an equally specific selector or the name column stays 23% wide when stacked. */
+    .rmtable td:nth-child(1),.rmtable td:nth-child(2){width:auto}
+    .rmtable td:first-child .rmsc{display:inline;margin-left:6px}
+    .rmtable td:last-child{padding-top:4px}
+  }
   tr.v3-hidden{display:none}
   /* v4-muted cells stay full-strength unless the toggle is on (table.v4-mute-on) — never mute by
      default, only when the viewer has actively asked to see just Deva's V5-covered cells (class
@@ -244,6 +301,29 @@
   </div>
 
   <div id="tab-log" class="tabpanel" style="display:none">
+
+    <!-- Roadmap: what has NOT shipped, above the timeline of what has. Every row is DERIVED —
+         a cell counts as open when ACP's shipped tier (ROWS.a/ROWS.r) has not reached that
+         cell's rule-inherent ceiling (RUBRIC aClass/fClass), using the same AT_CEILING_A/F
+         definition the ceiling tiles use. The "what would close it" prose is UPGRADE, which is
+         authored and code-grounded per SC. Nothing here is a wishlist or a schedule: this is
+         the arithmetic gap between today and the ceiling, so it cannot promise work nobody
+         has scoped, and it re-derives itself as ROWS changes. -->
+    <div class="roadmap">
+      <div class="roadmaphead">
+        <h3>What's left to build <span id="roadmapCount" class="rmcount"></span></h3>
+        <div class="rmlegend">
+          <span class="rmchip assess">assess</span> can't yet judge it
+          <span class="rmchip fix">fix</span> can't yet repair it
+        </div>
+      </div>
+      <p class="sub" style="margin:0 0 10px">The distance between what <b>acp</b> ships today and what the rule itself would allow at best — not a schedule, and not a wishlist. A cell is open when the shipped tier hasn't reached that cell's <b>rule-inherent ceiling</b>; criteria already at ceiling in every format don't appear at all. Closest to done first, so the cheapest wins read from the top.</p>
+      <table class="rmtable"><thead><tr>
+        <th scope="col">Criterion</th><th scope="col">Open cells</th><th scope="col">What would close it</th>
+      </tr></thead><tbody id="roadmapBody"></tbody></table>
+    </div>
+
+    <h3 class="logshipped">Shipped so far</h3>
     <div class="sub" style="margin-bottom:14px">A curated, dated timeline of real <b>acp</b> repo commits that changed detection or remediation capability for a specific WCAG SC + format — sourced from actual git history (hash, author date, commit body), not this matrix's own edits. Deliberately NOT exhaustive: the repo also has a large volume of HITL/review-workflow commits (evidence cards, trust surfaces, reviewer UX) that are real and shipped but don't target one specific SC the way this matrix tracks — they're omitted here, not silently folded in. Newest first.</div>
     <div id="logList"></div>
   </div>
@@ -1566,6 +1646,13 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // AI-assisted; AP (1.3.2 xlsx / 2.4.2's partial-mechanical auto-fixes) is rules-based — verified against
 // the actual re[] mechanism text for every SC that uses AC/AP before assuming the mapping.
 const RTIER_HOW={A:"DET",AC:"MA",AP:"DET",AI:"MA",M:"HUM",N:"HUM",NA:"NAx"};
+// Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
+// ceiling is MA is at ceiling when ACP ships C or Q — anything stronger than the ceiling counts too,
+// since a rule can't demand less than ACP already does. These were defined identically in four
+// separate places (the ceiling tiles, the two drawer sections, and the roadmap); hoisted to one
+// definition so a change to what "at ceiling" means can't land in three of the four.
+const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]};
+const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
 const RUBRIC={
 "1.1.1":{plain:"Every image, icon, or chart needs a text description that conveys the same information it visually communicates — without one, a screen-reader user hears nothing where a sighted reader sees a photo, a diagram, or a chart.",
  formats:{
@@ -1837,8 +1924,6 @@ for(const row of ROWS){
 (function(){
   const aCounts={DET:0,MA:0,HUM:0,NAx:0}, fCounts={MECH:0,GEN:0,REAUTH:0,NAx:0};
   let acpAtCeilingAssess=0, acpAtCeilingFix=0, ceilingAssessTotal=0, ceilingFixTotal=0;
-  const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]}; // tiers that count as "reached the assess ceiling"
-  const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
   for(const row of ROWS){
     for(const f of FM){
       const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f]; if(!rub)continue;
@@ -1958,7 +2043,6 @@ function money(mins){const h=mins/60; return "$"+(h*COST_ASSUMPTIONS.humanRatePe
 function costAutomation(row,f,rub){
   const A=COST_ASSUMPTIONS;
   const shipped=row.a[f], rshipped=row.r[f];
-  const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]};
   const atCeiling=(AT_CEILING_A[rub.aClass]||[]).includes(shipped);
   let auto,cost;
   if(rub.aClass==="DET"){
@@ -1975,7 +2059,6 @@ function costAutomation(row,f,rub){
     auto=`<b>0% — no machine verdict exists for this rule and format.</b> Every file needs a human assessor; there's no deterministic or model-assisted sub-signal to lean on for this specific cell.`;
     cost=`Fully human-priced: ${A.minutesPerHumanOnly} min/finding assumption → ~${money(A.minutesPerHumanOnly)}/finding. No model cost applies — nothing machine-readable is being checked here.`;
   }
-  const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
   if(rub.fClass&&rub.fClass!=="NAx"){
     const fAtCeiling=(AT_CEILING_F[rub.fClass]||[]).includes(rshipped);
     if(rub.fClass==="MECH")
@@ -2000,15 +2083,13 @@ function costAutomation(row,f,rub){
 function manualVsAugmented(row,f,rub){
   const A=COST_ASSUMPTIONS, p=A.findingRateTypical;
   const shipped=row.a[f], rshipped=row.r[f];
-  const AT_CEILING_A={DET:["C"],MA:["C","Q"],HUM:["C","Q","H"]};
   const atCeiling=(AT_CEILING_A[rub.aClass]||[]).includes(shipped);
   let acpMin=0, gateFlag=false;
   if(rub.aClass==="DET")acpMin+=atCeiling?0:A.minutesPerHumanOnly;
   else if(rub.aClass==="MA")acpMin+=p*A.minutesPerAssessConfirm;
   else if(rub.aClass==="HUM")acpMin+=A.minutesPerHumanOnly;
   if(rub.fClass&&rub.fClass!=="NAx"){
-    const AT_CEILING_F={MECH:["A","AC","AP"],GEN:["A","AC","AP","AI"],REAUTH:["A","AC","AP","AI","M"]};
-    const fAtCeiling=(AT_CEILING_F[rub.fClass]||[]).includes(rshipped);
+      const fAtCeiling=(AT_CEILING_F[rub.fClass]||[]).includes(rshipped);
     if(rub.fClass==="MECH")acpMin+=fAtCeiling?0:p*A.minutesPerHumanOnly;
     else if(rub.fClass==="GEN"){
       if(rshipped==="A"){gateFlag=true;} // auto, no approval gate — $0/0min today, but see the drift warning, not a clean win
@@ -2177,15 +2258,31 @@ const PROGRESS_LOG=[
 {date:"2026-07-24",hash:"062642f",pr:6,repo:"jeremyyuAWS/acp",
  title:"feat(engine): Tier-1 WCAG matrix gaps — DOCX 4.1.2, XLSX/PPTX uniqueness, PDF 1.4.5, 2.4.4 write-back",
  scs:["4.1.2","2.4.2","2.4.6","1.4.5","2.4.4"],formats:["docx","xlsx","pptx","pdf"],
- summary:"DOCX form-field detector now also reads w:tag (programmatic identifier), filed under its own SC_4_1_2, alongside the pre-existing 3.3.2-filed w:alias (label) check. New XLSX TableNameRule flags a formal table left at Excel's auto-generated DisplayName (SC_2_4_2 — the table-scoped 'has a title' analogue). New SheetNameUniquenessRule (XLSX, SC_2_4_6) and SlideTitleUniquenessRule (PPTX, SC_2_4_2) flag a sheet/slide whose name or title duplicates another one in the same file — distinct from the existing default-name-pattern and non-empty checks. pdf_scanned_page_checks adds a deterministic pre-OCR heuristic (near-zero extractable text + one image covering most of the page) that surfaces likely-scanned PDFs even when the OCR stack is unavailable. apply_link_text.py closes the 2.4.4/2.4.9 write-back gap: an approved AI-drafted link-text proposal now actually gets written into the docx/xlsx/pptx hyperlink, mirroring apply_alt.py's write→verify→credit architecture — approving used to record the value and stop there."},
+ summary:"Five Tier-1 gaps closed across all four formats — four new or widened detectors, plus the 2.4.4 write-back that had been recording reviewer approvals without ever applying them.",
+ points:[
+  {label:"DOCX 4.1.2",text:"The form-field detector now also reads w:tag (programmatic identifier), filed under its own SC_4_1_2, alongside the pre-existing 3.3.2-filed w:alias (label) check."},
+  {label:"XLSX 2.4.2",text:"New TableNameRule flags a formal table left at Excel's auto-generated DisplayName — the table-scoped analogue of \"has a title\"."},
+  {label:"XLSX 2.4.6 · PPTX 2.4.2",text:"New SheetNameUniquenessRule and SlideTitleUniquenessRule flag a sheet or slide whose name or title duplicates another in the same file — distinct from the existing default-name-pattern and non-empty checks."},
+  {label:"PDF 1.4.5",text:"pdf_scanned_page_checks adds a deterministic pre-OCR heuristic (near-zero extractable text plus one image covering most of the page) that surfaces likely-scanned PDFs even when the OCR stack is unavailable."},
+  {label:"2.4.4 write-back",text:"apply_link_text.py closes the gap: an approved AI-drafted link-text proposal now actually gets written into the docx/xlsx/pptx hyperlink, mirroring apply_alt.py's write→verify→credit architecture. Approving used to record the value and stop there."}]},
 {date:"2026-07-23",hash:"390731c",pr:null,
  title:"fix(engine): PDF 4.1.2/2.4.3 checks, XLSX 1.4.11/2.4.6, stale test fix",
  scs:["4.1.2","2.4.3","1.4.11","2.4.6","1.3.3"],formats:["pdf","xlsx"],
- summary:"pdf_form_field_checks now validates /FT (recognized field type) and /V-or-/DV for required fields, not just /TU. New pdf_focus_order_checks flags AcroForm-widget pages missing /Tabs=/S (existence check only — field-order-matches-reading-order needs /StructTreeRoot walking, a separate, larger, still-open gap). Ported the docx/pptx/pdf outline-vs-fill shape-contrast detector to XLSX's xl/drawings/ parts. SheetNameRule.cs remapped from the wrong SC (2.4.2→2.4.6, plus a wcag_level A→AA catalog fix). 1.3.3 turned out to be a stale test-stub bug, not a real gap — the AI-draft rewrite lane was already fully built."},
+ summary:"PDF form and focus-order checking deepened, the shape-contrast detector ported to XLSX, and one apparent gap that turned out to be a stale test rather than missing code.",
+ points:[
+  {label:"PDF 4.1.2",text:"pdf_form_field_checks now validates /FT (recognized field type) and /V-or-/DV for required fields, not just /TU."},
+  {label:"PDF 2.4.3",text:"New pdf_focus_order_checks flags AcroForm-widget pages missing /Tabs=/S. An existence check only — proving field order matches reading order needs /StructTreeRoot walking, which is a separate, larger, still-open gap."},
+  {label:"XLSX 1.4.11",text:"Ported the docx/pptx/pdf outline-vs-fill shape-contrast detector to XLSX's xl/drawings/ parts."},
+  {label:"XLSX 2.4.6",text:"SheetNameRule.cs remapped from the wrong SC (2.4.2 → 2.4.6), plus a wcag_level A → AA catalog fix."},
+  {label:"1.3.3",text:"Not a real gap after all — a stale test stub was producing false failures. The AI-draft rewrite lane was already fully built."}]},
 {date:"2026-07-23",hash:"86ad045",pr:null,
  title:"fix(engine): XLSX true contrast ratio, DOCX/PPTX raw-URL link text, DOCX 3.1.2 SC key",
  scs:["1.4.3","2.4.4","3.1.2"],formats:["xlsx","docx","pptx"],
- summary:"xlsx_contrast_checks swaps a luma-difference proxy for the true WCAG relative-luminance ratio (surfaced real AAA violations the old heuristic silently missed). LinkPurposeRule.cs (docx+pptx) now also flags a bare URL used as its own link text. LanguageOfPartsRule gets its own SC_3_1_2 instead of sharing SC_3_1_1 with DocumentLanguageRule — needed a real WcagCriterion enum addition, not the config-only change originally assumed."},
+ summary:"Three corrections: real contrast math replacing a proxy, wider link-text detection, and an SC key that two rules had been sharing.",
+ points:[
+  {label:"XLSX 1.4.3",text:"xlsx_contrast_checks swaps a luma-difference proxy for the true WCAG relative-luminance ratio, surfacing real AAA violations the old heuristic silently missed."},
+  {label:"DOCX · PPTX 2.4.4",text:"LinkPurposeRule.cs now also flags a bare URL used as its own link text."},
+  {label:"DOCX 3.1.2",text:"LanguageOfPartsRule gets its own SC_3_1_2 instead of sharing SC_3_1_1 with DocumentLanguageRule. This needed a real WcagCriterion enum addition, not the config-only change originally assumed."}]},
 {date:"2026-07-21",hash:"fafd722",pr:51,
  title:"fix(engine): PPTX DocumentLanguageRule reads altLang, not just lang",
  scs:["3.1.2"],formats:["pptx"],
@@ -2197,7 +2294,10 @@ const PROGRESS_LOG=[
 {date:"2026-07-21",hash:"e1c8a81",pr:48,
  title:"feat(engine): XLSX blank-worksheet and hyperlink-text detectors",
  scs:["1.3.2","2.4.4"],formats:["xlsx"],
- summary:"XLSX-BLANK-001 (1.3.2): flags visible sheets with no cell content/chart/image, reading actual cell values rather than the stale cached “used range” record. XLSX-LINK-001 (2.4.4): flags empty/generic/raw-URL hyperlinks in both real cell hyperlinks AND =HYPERLINK() formula cells — the formula case is the real gap this closed, since those never appear in the worksheet's own &lt;hyperlinks&gt; element."},
+ summary:"Two new XLSX detectors, both reading what the file actually contains rather than what its cached metadata claims.",
+ points:[
+  {label:"XLSX-BLANK-001 (1.3.2)",text:"Flags visible sheets with no cell content, chart, or image — reading actual cell values rather than the stale cached “used range” record."},
+  {label:"XLSX-LINK-001 (2.4.4)",text:"Flags empty, generic, and raw-URL hyperlinks in both real cell hyperlinks and =HYPERLINK() formula cells. The formula case is the real gap this closed, since those never appear in the worksheet's own <hyperlinks> element."}]},
 {date:"2026-07-21",hash:"33eae34",pr:46,
  title:"fix(engine): resolve theme colours for DOCX/XLSX contrast checks",
  scs:["1.4.3"],formats:["docx","xlsx"],
@@ -2225,11 +2325,61 @@ const PROGRESS_LOG=[
 {date:"2026-07-10",hash:"86edc65",pr:null,
  title:"fix(engine): detect hidden inline-string content + one-cell-anchored image alt (xlsx)",
  scs:["1.3.2","1.1.1"],formats:["xlsx"],
- summary:"HiddenContentRule now reads inline-string cells (t=“inlineStr” — openpyxl's default), previously read as empty so a hidden inline-string row/column was never flagged (1.3.2). AltTextRule now walks every Picture/GraphicFrame regardless of anchor kind, not just TwoCellAnchor — a one-cell-anchored image (also openpyxl's default) was previously never alt-checked (1.1.1)."},
+ summary:"Two XLSX false-negative classes, both from reading only the shapes openpyxl does not produce by default.",
+ points:[
+  {label:"XLSX 1.3.2",text:"HiddenContentRule now reads inline-string cells (t=“inlineStr”, openpyxl's default). These were previously read as empty, so a hidden inline-string row or column was never flagged."},
+  {label:"XLSX 1.1.1",text:"AltTextRule now walks every Picture and GraphicFrame regardless of anchor kind, not just TwoCellAnchor. A one-cell-anchored image — also openpyxl's default — was previously never alt-checked."}]},
 ];
 // <<<PROGRESS_LOG:END>>>
 (function(){
   const FMT_LABEL={docx:"DOCX",xlsx:"XLSX",pptx:"PPTX",pdf:"PDF"};
+
+  // ── Roadmap: the open half of the same picture the timeline shows the closed half of ──
+  // Derived, never authored: a cell is open when the shipped tier hasn't reached that cell's
+  // rule-inherent ceiling, using the SAME AT_CEILING_A/F definition as the ceiling tiles. So this
+  // table cannot claim work that isn't backed by the ceiling data, and it re-derives itself the
+  // moment a tier moves — including when the grid-drift PR lowers an over-claiming cell, which
+  // correctly makes new headroom appear here rather than silently changing nothing.
+  (function(){
+    const body=document.getElementById("roadmapBody"); if(!body)return;
+    const rows=[];
+    let open=0, cells=0;
+    for(const row of ROWS){
+      const rub=RUBRIC[row.sc]; if(!rub)continue;
+      const gaps=[];
+      for(const f of FM){
+        const rf=rub.formats[f]; if(!rf)continue;
+        // NAx = the rule doesn't apply to this format at all. Not a gap, and not a denominator.
+        if(rf.aClass!=="NAx"){cells++; if(!(AT_CEILING_A[rf.aClass]||[]).includes(row.a[f]))gaps.push({f,axis:"assess"});}
+        if(rf.fClass!=="NAx"){cells++; if(!(AT_CEILING_F[rf.fClass]||[]).includes(row.r[f]))gaps.push({f,axis:"fix"});}
+      }
+      if(gaps.length){open+=gaps.length; rows.push({row,gaps});}
+    }
+    // Fewest gaps first: a criterion one cell from its ceiling is the cheapest thing on the list,
+    // and UPGRADE's own prose ("porting that one function is the cheapest win") reads that way too.
+    rows.sort((a,b)=>a.gaps.length-b.gaps.length||a.row.sc.localeCompare(b.row.sc,undefined,{numeric:true}));
+
+    const countEl=document.getElementById("roadmapCount");
+    // Each of the 80 grid cells is scored on TWO axes, so the denominator here is assess+fix
+    // pairs, not cells — spelled out because "of 116" against a 20x4 grid otherwise reads wrong.
+    if(countEl)countEl.textContent=rows.length
+      ? `— ${open} of ${cells} assess/fix cells open, across ${rows.length} of ${ROWS.length} criteria`
+      : "— nothing open";
+    if(!rows.length){
+      body.innerHTML=`<tr><td colspan="3" class="rmnone">Every applicable cell is at its rule-inherent ceiling.</td></tr>`;
+      return;
+    }
+    body.innerHTML=rows.map(({row,gaps})=>{
+      const chips=gaps.map(g=>`<span class="rmchip ${g.axis}">${FMT_LABEL[g.f]} ${g.axis}</span>`).join("");
+      const next=UPGRADE[row.sc]||"";
+      return `<tr>
+        <td>${esc(row.name)}<span class="rmsc">${esc(row.sc)} · Level ${esc(row.lvl)}</span></td>
+        <td>${chips}</td>
+        <td>${next?esc(next):"<i>No upgrade note on file for this criterion yet.</i>"}</td>
+      </tr>`;
+    }).join("");
+  })();
+
   const list=document.getElementById("logList");
   const countEl=document.getElementById("logCount");
   if(!list)return;
@@ -2238,13 +2388,23 @@ const PROGRESS_LOG=[
     const scBadges=e.scs.map(sc=>`<span class="logbadge">${esc(sc)}</span>`).join("");
     const fmtBadges=e.formats.map(f=>`<span class="logbadge fmt">${FMT_LABEL[f]||f.toUpperCase()}</span>`).join("");
     const repo=e.repo||"mova-io/acp";
+    // `points` is optional and additive: an entry without it renders exactly as it did before
+    // the field existed, so the older hand-written entries need no migration. `label` is set in
+    // the data rather than parsed out of the text — a bullet with no natural "DOCX 4.1.2 —"
+    // prefix simply omits it instead of having one invented by a regex.
+    const pts=(e.points&&e.points.length)
+      ? `<ul class="logpoints">${e.points.map(p=>{
+          const t=typeof p==="string"?{text:p}:p;
+          return `<li>${t.label?`<b>${esc(t.label)}</b> — `:""}${esc(t.text)}</li>`;
+        }).join("")}</ul>`
+      : "";
     const ref=e.pr?`<a href="https://github.com/${repo}/pull/${e.pr}" target="_blank" rel="noopener">${esc(e.title)}</a>`
                   :`<a href="https://github.com/${repo}/commit/${e.hash}" target="_blank" rel="noopener">${esc(e.title)}</a>`;
     return `<div class="logentry">
       <div class="logdate">${e.date} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
       <div class="logtitle">${ref}</div>
       <div class="logbadges">${scBadges}${fmtBadges}</div>
-      <details class="logdetails"><summary>What changed</summary><div class="logsummary">${esc(e.summary)}</div></details>
+      <details class="logdetails"><summary>What changed</summary><div class="logsummary${pts?" haspoints":""}">${esc(e.summary)}</div>${pts}</details>
     </div>`;
   }).join("");
 })();
