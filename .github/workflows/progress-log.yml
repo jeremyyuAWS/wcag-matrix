@@ -44,8 +44,21 @@ jobs:
         working-directory: /tmp/acp     # the generator shells out to `git log`
         run: python3 scripts/gen_progress_log.py > /tmp/entries.json
 
+      - name: Derive detection maturity
+        working-directory: /tmp/acp
+        run: |
+          set -euo pipefail
+          # Coverage is declared in acp's capability registry beside each detector, so it is a
+          # derived FACT like the log — not a capability claim needing sign-off. That is why it
+          # syncs here (pushed to main) rather than through grid-drift.yml (which opens a PR):
+          # this job carries what acp says about itself, that job carries what the matrix claims.
+          python3 scripts/gen_matrix_coverage.py > /tmp/coverage.json
+
       - name: Splice into index.html
-        run: python3 scripts/apply_progress_log.py /tmp/entries.json
+        run: |
+          set -euo pipefail
+          python3 scripts/apply_progress_log.py /tmp/entries.json
+          python3 scripts/apply_maturity.py /tmp/coverage.json
 
       - name: Verify the result still parses
         run: |
@@ -70,6 +83,24 @@ jobs:
               process.exit(1)}
             const withPts=L.filter(e=>e.points).length;
             console.log("PROGRESS_LOG parses —",L.length,"entries,",withPts,"with bullets");
+            // MATURITY is spliced by the same job; a malformed literal here would break the
+            // whole log tab, so it is parsed in the same guard rather than trusted.
+            const ms=h.indexOf("const MATURITY=");
+            if(ms<0){console.error("MATURITY not found");process.exit(1)}
+            // Brace-match rather than search for "};" — a coverage `why` string is free prose
+            // and may legitimately contain that sequence, which would truncate the slice.
+            let mi=h.indexOf("{",ms),md=0,mj=mi,mq=null;
+            for(;mj<h.length;mj++){const c=h[mj];
+              if(mq){if(c==="\\"){mj++;continue}if(c===mq)mq=null;continue}
+              if(c==="\"" || c==="\x27" || c==="`"){mq=c;continue}
+              if(c==="{")md++;else if(c==="}"){md--;if(md===0)break}}
+            const M=eval("("+h.slice(mi,mj+1)+")");
+            const LV=["unsupported","declared","heuristic","partial","full"];
+            for(const [sc,fmts] of Object.entries(M))
+              for(const [f,cell] of Object.entries(fmts))
+                if(!LV.includes(cell.c)){
+                  console.error(`MATURITY ${sc}/${f}: unknown coverage ${cell.c}`);process.exit(1)}
+            console.log("MATURITY parses —",Object.keys(M).length,"criteria");
           '
 
       - name: Commit if changed
@@ -82,7 +113,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "chore: sync Progress Log from acp
+          git commit -m "chore: sync Progress Log + detection maturity from acp
 
           Spliced by .github/workflows/progress-log.yml from acp's Matrix-Note: commit
           trailers. Generated — see scripts/apply_progress_log.py.
