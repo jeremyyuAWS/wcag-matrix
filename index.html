@@ -197,6 +197,8 @@
   #panel .sptime{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
   #panel .sptotal{font-size:18px;font-weight:800;color:var(--navy)}
   #panel .sptotal span{font-size:11px;font-weight:400;color:var(--muted)}
+  #panel .spsaved{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;
+    background:#d8efdc;color:#14532d;font-size:11px;font-weight:700}
   #panel .sptime ul{margin:6px 0 0;padding-left:16px}
   #panel .sptime li{font-size:12px;color:var(--navy);margin:2px 0}
   #panel .spnote{margin:8px 0 0;font-size:11px;color:var(--muted);line-height:1.45}
@@ -2399,24 +2401,36 @@ function renderDrawer(sc,f,trigger){
   //   4. UPGRADE      — the cheapest concrete build that would close the gap.
   // A cell with none of these shows nothing rather than filler. Capped at five: past that it
   // stops being a summary.
-  function whyBullets(row,f,rub){
+  // The two views ask different questions of the same cell, so they get different bullets in a
+  // different order — not the same list under a different heading.
+  //   Today     → "why isn't this 100 yet?"  Lead with what ACP concedes it cannot do.
+  //   Potential → "what would it take to get there?"  Lead with the work that closes the gap
+  //               and the reasoning that fixes the ceiling where it is.
+  function whyBullets(row,f,rub,view){
     const out=[];
-    const push=(txt,src)=>{ if(txt&&out.length<5) out.push({txt:String(txt),src}); };
-    for(const c of (row.ae&&row.ae[f]&&row.ae[f].c)||[]) push(c,"assessment limit");
-    for(const c of (row.re&&row.re[f]&&row.re[f].c)||[]) push(c,"remediation limit");
+    const push=(txt,src)=>{ if(txt&&out.length<5&&!out.some(o=>o.txt===String(txt))) out.push({txt:String(txt),src}); };
     const mat=(typeof MATURITY!=="undefined"&&MATURITY[row.sc]&&MATURITY[row.sc][f])||null;
-    if(mat&&mat.why) push(mat.why,`acp coverage: ${mat.c}`);
-    if(rub&&rub.aWhy&&out.length<5) push(rub.aWhy,"why the assess ceiling is there");
-    if(rub&&rub.fWhy&&out.length<5) push(rub.fWhy,"why the fix ceiling is there");
-    if(UPGRADE[row.sc]&&out.length<5) push(UPGRADE[row.sc],"what would close the gap");
+    if(view==="potential"){
+      if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
+      if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling stops here");
+      if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling stops here");
+      if(mat&&mat.why) push(mat.why,`acp coverage today: ${mat.c}`);
+    }else{
+      for(const c of (row.ae&&row.ae[f]&&row.ae[f].c)||[]) push(c,"assessment limit");
+      for(const c of (row.re&&row.re[f]&&row.re[f].c)||[]) push(c,"remediation limit");
+      if(mat&&mat.why) push(mat.why,`acp coverage: ${mat.c}`);
+      if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling is there");
+      if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling is there");
+      if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
+    }
     return out;
   }
 
   // Remaining human effort, from the page's own COST_ASSUMPTIONS — the same model the cost
   // section uses. These are ASSUMPTIONS, not measurements: ACP does not track actual minutes
   // per finding, and the panel says so rather than implying a measured number.
-  function humanTime(row,f,rub){
-    const A=COST_ASSUMPTIONS, a=row.a[f], r=row.r[f];
+  function humanTime(a,r){
+    const A=COST_ASSUMPTIONS;
     if(a==="NA"&&r==="NA")return null;
     const parts=[];
     if(a==="A2") parts.push({m:A.minutesPerHumanOnly, t:"assess by hand — no machine verdict exists here"});
@@ -2447,36 +2461,47 @@ function renderDrawer(sc,f,trigger){
   {
     const rubF=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
     const pgA=cellProgress(row,f,"a"), pgR=cellProgress(row,f,"r");
-    const why=whyBullets(row,f,rubF);
-    const ht=humanTime(row,f,rubF);
+    const isPot=VIEW==="potential";
+    const why=whyBullets(row,f,rubF,VIEW);
+    // Price the effort at the level being SHOWN: today's remaining work in Today, the work that
+    // would still remain at the ceiling in Potential. That difference is the point of the view.
+    const ht=humanTime(aShown,rShown);
+    const htToday=humanTime(row.a[f],row.r[f]);
+    const saved=(htToday&&ht)?htToday.mins-ht.mins:0;
     const scale=(order,cur,labels)=>order.map(l=>
       `<li class="${l===cur?"on":""}"><b class="ccode ${l}">${l}</b> ${esc(labels[l])}</li>`).join("");
 
     html+=`<div class="scorepanel">
       <div class="spgrid">
         <div class="spdonut">
-          ${pgA?donut(pgA.pct,{size:84,stroke:9,tone:progTone(pgA.pct),title:`${pgA.pct}% of potential`}):""}
-          <div class="spdlabel">${esc(AL[row.a[f]]||row.a[f])}</div>
-          <div class="spdsub">assessment${pgA&&pgA.pct<100?` · ${100-pgA.pct}% headroom`:""}</div>
+          ${(()=>{const v=isPot?100:(pgA?pgA.pct:null);
+             return v==null?"":donut(v,{size:84,stroke:9,tone:progTone(v),
+               title:isPot?"at the ceiling":`${v}% of potential`});})()}
+          <div class="spdlabel">${esc(AL[aShown]||aShown)}</div>
+          <div class="spdsub">assessment · ${isPot?"at the ceiling"
+            :(pgA&&pgA.pct<100?`${100-pgA.pct}% headroom`:"at the ceiling")}</div>
         </div>
         <div class="spwhy">
-          <h5>Why this score</h5>
+          <h5>${isPot?"What it would take to get here":"Why this score"}</h5>
           ${why.length?`<ul>${why.map(b=>
             `<li>${esc(b.txt)} <span class="spsrc">${esc(b.src)}</span></li>`).join("")}</ul>`
-            :`<p class="spnone">No limitation is recorded for this cell — it sits at its ceiling.</p>`}
+            :`<p class="spnone">${isPot?"Nothing recorded about closing this gap — the cell already sits at its ceiling."
+              :"No limitation is recorded for this cell — it sits at its ceiling."}</p>`}
         </div>
       </div>
 
       <div class="spscales">
-        <div><h5>Ability to assess <span class="sptoday">today</span></h5>
-          <ul class="spscale">${scale(["A4","A3","A2"],row.a[f],AL)}${row.a[f]==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(AL.NA)}</li>`:""}</ul></div>
-        <div><h5>Ability to remediate <span class="sptoday">today</span></h5>
-          <ul class="spscale">${scale(["R4","R3","R2","R1"],row.r[f],RL)}${row.r[f]==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(RL.NA)}</li>`:""}</ul></div>
+        <div><h5>Ability to assess <span class="sptoday">${isPot?"at the ceiling":"today"}</span></h5>
+          <ul class="spscale">${scale(["A4","A3","A2"],aShown,AL)}${aShown==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(AL.NA)}</li>`:""}</ul></div>
+        <div><h5>Ability to remediate <span class="sptoday">${isPot?"at the ceiling":"today"}</span></h5>
+          <ul class="spscale">${scale(["R4","R3","R2","R1"],rShown,RL)}${rShown==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(RL.NA)}</li>`:""}</ul></div>
       </div>
 
       ${ht?`<div class="sptime">
-        <h5>Human time to close the gap <span class="spconf ${ht.conf}">${ht.conf} confidence</span></h5>
-        <div class="sptotal">≈ ${ht.mins} min <span>per finding</span></div>
+        <h5>${isPot?"Human time remaining at the ceiling":"Human time to close the gap"}
+          <span class="spconf ${ht.conf}">${ht.conf} confidence</span></h5>
+        <div class="sptotal">≈ ${ht.mins} min <span>per finding</span>${
+          isPot&&saved>0?`<span class="spsaved">${saved} min less than today</span>`:""}</div>
         ${ht.parts.length?`<ul>${ht.parts.map(p=>`<li>${p.m} min — ${esc(p.t)}</li>`).join("")}</ul>`
           :`<p class="spnone">Nothing left for a person to do on this cell.</p>`}
         <p class="spnote">An <b>assumption</b>, not a measurement — ACP does not track real minutes
