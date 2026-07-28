@@ -283,6 +283,34 @@
     .rmtable td:last-child{padding-top:4px}
   }
   tr.v3-hidden{display:none}
+  /* Per-row coverage column and the per-format footer. Both weighted the same way as the
+     headline card, and both scoped by the V5 filter, so every number on the page counts one
+     population — a reader can add them up and get the same answer. */
+  /* The summary column made the grid wider than the page. Scroll the TABLE, never the page —
+     a horizontally scrolling document breaks every other section too. */
+  .tblscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  th.rowsumh{font-size:9.5px;letter-spacing:.03em}
+  /* Tighten the widest cells so the extra column mostly fits without scrolling at all. */
+  td.cell{min-width:74px}
+  td.name{min-width:150px}
+  td.rowsum{padding:5px 8px;border-left:2px solid var(--line);white-space:nowrap;min-width:112px}
+  .rsline{font-size:11px;color:var(--navy);line-height:1.5;text-align:left}
+  .rsline b{display:inline-block;width:12px;color:var(--muted);font-weight:800}
+  .rsarrow{color:var(--muted);margin:0 3px}
+  .rsgain{display:inline-block;margin-left:5px;padding:0 5px;border-radius:999px;background:#d8efdc;
+    color:#14532d;font-size:9.5px;font-weight:800}
+  .rsline.rsna{color:var(--gray)}
+  tfoot .ftrow td{border-top:2px solid var(--line);background:#f7f9fc;padding:8px 6px;vertical-align:top}
+  td.ftlabel{text-align:left;font-size:11px;font-weight:700;color:var(--navy);white-space:nowrap}
+  td.ftlabel span{color:var(--muted)}
+  td.ftcell{font-size:12px;color:var(--navy);line-height:1.35}
+  td.ftcell b{font-size:13.5px}
+  .ftarrow{color:var(--muted);margin:0 3px}
+  .ftpot{color:var(--muted);font-weight:700}
+  .ftn{display:block;font-size:9.5px;color:var(--muted);font-weight:400}
+  .ftsplit{margin-top:4px;padding-top:4px;border-top:1px solid var(--line)}
+  td.ftcell.fttot{border-left:2px solid var(--line)}
+  td.ftcell.ftna{color:var(--gray)}
   /* v4-muted cells stay full-strength unless the toggle is on (table.v4-mute-on) — never mute by
      default, only when the viewer has actively asked to see just Deva's V5-covered cells (class
      name kept as "v4-*" internally — an implementation detail, not a citation; see V5_APPLICABLE's
@@ -527,14 +555,17 @@
     <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
   </div>
 
+  <div class="tblscroll">
   <table id="tbl">
     <thead>
-      <tr><th class="grp" colspan="2">WCAG 2.1 AA</th><th class="grp" colspan="4">ASSESS — can ACP decide pass/fail?</th><th class="grp" colspan="4">REMEDIATE — how does ACP fix it?</th></tr>
-      <tr><th>SC</th><th style="text-align:left">Criterion</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th></tr>
+      <tr><th class="grp" colspan="2">WCAG 2.1 AA</th><th class="grp" colspan="4">ASSESS — can ACP decide pass/fail?</th><th class="grp" colspan="4">REMEDIATE — how does ACP fix it?</th><th class="grp rowsumh">COVERAGE</th></tr>
+      <tr><th>SC</th><th style="text-align:left">Criterion</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th class="rowsumh">today &rarr; potential</th></tr>
       <tr class="techrow" id="techrow"></tr>
     </thead>
     <tbody></tbody>
+    <tfoot id="tblfoot"></tfoot>
   </table>
+  </div>
   <div class="filterbar-note" style="margin:6px 0 14px">Column-header badges are Deva's recommended stack per format, from V5's "KEY TECH" tab (quoted, not ACP's actual stack, not verified against ACP's code) — hover a badge for its full role. Applies to every format identically, cited once rather than repeated per column: <span class="tech-badge" title="AI/OCR service — Python + FastAPI (Deva's sheet also notes &quot;Lama&quot; alongside this row)">Python + FastAPI</span> <span class="tech-badge tentative" title="OCR — Deva's own annotation: &quot;We may not need this.&quot;">Tesseract</span> <span class="tech-badge tentative" title="Vision — Deva's own annotation: &quot;We may not need this.&quot;">OpenCV</span> — the dashed badges are the two she flagged herself as possibly unnecessary.</div>
 
   <div class="corr">
@@ -2053,6 +2084,12 @@ function codeChip(level){
 // would "change" from undefined and the whole grid would flash on load.
 let PREV_LEVELS=null;
 
+// Same V5 scope the coverage card uses, so every number on the page counts one population.
+function inScopeRow(sc,f){
+  const onlyV5=!!(document.getElementById("v3only")||{}).checked;
+  return !onlyV5 || !!(V5_APPLICABLE[sc]&&V5_APPLICABLE[sc][f]);
+}
+
 function buildTable(){
   const prev=PREV_LEVELS, next={};
   tb.innerHTML="";
@@ -2087,6 +2124,26 @@ function buildTable(){
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${RL[v]}, potential ${RL[pg.ceiling]}`}):"";
     h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
+  // Per-row coverage: how much of what this criterion allows ACP delivers, across the formats
+  // in scope. Both axes shown rather than one blended figure — the whole page turns on assess
+  // and remediate being different questions, and averaging them here would undo that.
+  {
+    const sum=(ax)=>{
+      let n=0,d=0,p=0;
+      for(const f of FM){
+        if(!inScopeRow(row.sc,f))continue;
+        const lvl=row[ax][f]; if(!lvl||lvl==="NA")continue;
+        const W=ax==="a"?A_WEIGHT:R_WEIGHT;
+        const pg=cellProgress(row,f,ax);
+        d++; n+=W[lvl]??0; p+=W[(pg&&pg.ceiling)||lvl]??0;
+      }
+      return d?{t:Math.round(n/d*100),p:Math.round(p/d*100)}:null;
+    };
+    const a=sum("a"), r=sum("r");
+    const line=(lbl,v)=>v?`<div class="rsline"><b>${lbl}</b> ${v.t}%<span class="rsarrow">→</span>${v.p}%`
+      +(v.p>v.t?`<span class="rsgain">+${v.p-v.t}</span>`:"")+`</div>`:`<div class="rsline rsna"><b>${lbl}</b> —</div>`;
+    h+=`<td class="rowsum">${line("A",a)}${line("R",r)}</td>`;
+  }
   tr.innerHTML=h;tb.appendChild(tr);
   }
   // The V5 filter styles rows after they exist, so re-apply it on every rebuild or a rebuild
@@ -2094,6 +2151,41 @@ function buildTable(){
   const cb=document.getElementById("v3only");
   if(cb)cb.dispatchEvent(new Event("change"));
   PREV_LEVELS=next;
+  buildFoot();
+}
+
+// Per-format totals under the columns they summarise. The coverage card at the top says the
+// same thing, but a reader who has scrolled to row 20 should not have to scroll back to answer
+// "so how does PDF do overall?" — the number belongs at the foot of its own column too.
+function buildFoot(){
+  const foot=document.getElementById("tblfoot"); if(!foot)return;
+  const col=(ax,f)=>{
+    let n=0,d=0,p=0;
+    for(const row of ROWS){
+      if(!inScopeRow(row.sc,f))continue;
+      const lvl=row[ax][f]; if(!lvl||lvl==="NA")continue;
+      const W=ax==="a"?A_WEIGHT:R_WEIGHT, pg=cellProgress(row,f,ax);
+      d++; n+=W[lvl]??0; p+=W[(pg&&pg.ceiling)||lvl]??0;
+    }
+    return d?{t:Math.round(n/d*100),p:Math.round(p/d*100),d}:null;
+  };
+  const cell=(v)=>v?`<td class="ftcell"><b>${v.t}%</b><span class="ftarrow">→</span><span class="ftpot">${v.p}%</span>`
+    +`<span class="ftn">${v.d} cell${v.d>1?"s":""}</span></td>`:`<td class="ftcell ftna">—</td>`;
+  const all=(ax)=>{let n=0,d=0,p=0;
+    for(const row of ROWS)for(const f of FM){
+      if(!inScopeRow(row.sc,f))continue;
+      const lvl=row[ax][f]; if(!lvl||lvl==="NA")continue;
+      const W=ax==="a"?A_WEIGHT:R_WEIGHT, pg=cellProgress(row,f,ax);
+      d++; n+=W[lvl]??0; p+=W[(pg&&pg.ceiling)||lvl]??0;}
+    return d?{t:Math.round(n/d*100),p:Math.round(p/d*100)}:null;};
+  const a=all("a"), r=all("r");
+  foot.innerHTML=`<tr class="ftrow">
+    <td class="ftlabel" colspan="2">Coverage — today <span>→</span> potential</td>
+    ${FM.map(f=>cell(col("a",f))).join("")}
+    ${FM.map(f=>cell(col("r",f))).join("")}
+    <td class="ftcell fttot">${a?`<b>${a.t}%</b><span class="ftarrow">→</span><span class="ftpot">${a.p}%</span><span class="ftn">assess</span>`:"—"}
+      ${r?`<div class="ftsplit"><b>${r.t}%</b><span class="ftarrow">→</span><span class="ftpot">${r.p}%</span><span class="ftn">remediate</span></div>`:""}</td>
+  </tr>`;
 }
 buildTable();
 
