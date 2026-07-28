@@ -95,8 +95,8 @@
      (stronger = more saturated) rather than five unrelated colours — the ordering is the
      information. `unsupported` steps outside the ramp to grey: it isn't a weaker degree of
      coverage, it's a statement that the format can't express the criterion at all. */
-  .mattable td:nth-child(n+2){width:19%;white-space:nowrap}
-  .mattable td:nth-child(1),.mattable th:nth-child(1){width:24%}
+  .mattable td:nth-child(n+2){width:15%;white-space:nowrap}
+  .mattable td:nth-child(1),.mattable th:nth-child(1){width:25%}
   .matchip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;
     border:1px solid transparent;white-space:nowrap;cursor:help}
   .matchip.full{background:#d8efdc;color:#14532d;border-color:#a9d9b5}
@@ -356,8 +356,8 @@
       </div>
       <p class="sub" style="margin:0 0 10px">How much of a criterion <b>acp</b>'s detector actually reaches for each format — declared in code next to the detector, not judged here. Only <b>full</b> coverage can certify a pass, so a <b>partial</b> or <b>heuristic</b> cell reports for review even when it finds nothing. A blank cell means that pair hasn't been migrated to the registry yet, which is <i>not</i> the same as unsupported.</p>
       <table class="rmtable mattable"><thead><tr>
-        <th scope="col">Criterion</th><th scope="col">DOCX</th><th scope="col">XLSX</th>
-        <th scope="col">PPTX</th><th scope="col">PDF</th>
+        <th scope="col">Criterion</th><th scope="col">HTML</th><th scope="col">DOCX</th>
+        <th scope="col">XLSX</th><th scope="col">PPTX</th><th scope="col">PDF</th>
       </tr></thead><tbody id="maturityBody"></tbody></table>
     </div>
 
@@ -2312,7 +2312,9 @@ document.addEventListener("keydown",(e)=>{
 // gen_matrix_coverage.py. Unlike PROGRESS_LOG this is a CURRENT-STATE snapshot, not a history:
 // hand-edits here are overwritten on the next sync. Change coverage in acp, beside the detector.>>>
 const MATURITY={
+ "1.4.11":{xlsx:{c:"partial",conf:"medium",why:"solid outline-on-fill DrawingML shapes are measured with the true WCAG contrast ratio; theme-coloured shapes, gradients, images and control affordances are not examined, and whether a shape conveys meaning is left to a human"}},
  "2.4.3":{pdf:{c:"heuristic",conf:"medium",why:"pages with form widgets are checked for /Tabs = /S, a proxy for tab order following reading order; actually comparing the widget order to the structure order needs a /StructTreeRoot walk that is not built"}},
+ "3.1.1":{html:{c:"full",conf:"high",why:"a valid lang attribute on the root element is exactly what 3.1.1 asks for, so this covers the criterion completely; whether the declared language is the CORRECT one is a content question 3.1.1 does not ask"}},
  "4.1.2":{pdf:{c:"partial",conf:"high",why:"interactive AcroForm fields are checked exactly (/TU name, /FT role, /V value); components expressed through the tagged-structure tree are not examined, which needs a /StructTreeRoot walker this codebase does not have yet"}}};
 // <<<MATURITY:END>>>
 
@@ -2471,6 +2473,9 @@ const PROGRESS_LOG=[
     if(legend)legend.innerHTML=LEVELS
       .map(l=>`<span class="matchip ${l}" title="${esc(BLURB[l])}">${l}</span>`).join("");
 
+    // acp scans HTML as well as the four document formats the grid scores, so this table has
+    // a fifth column the grid does not. Same reason the count below can exceed the grid's cells.
+    const MAT_FM=["html","docx","xlsx","pptx","pdf"];
     const byName={}; for(const r of ROWS) byName[r.sc]=r.name;
     const order=sc=>sc.split(".").map(Number);
     scs.sort((a,b)=>{const x=order(a),y=order(b);
@@ -2479,7 +2484,7 @@ const PROGRESS_LOG=[
     let pairs=0;
     body.innerHTML=scs.map(sc=>{
       const row=MATURITY[sc];
-      const cells=FM.map(f=>{
+      const cells=MAT_FM.map(f=>{
         const cell=row[f];
         // Absent = not migrated. Deliberately a dash, not "unsupported": claiming a format
         // can't do something we simply haven't got to yet would be a false statement.

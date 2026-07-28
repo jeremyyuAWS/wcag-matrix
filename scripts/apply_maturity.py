@@ -30,7 +30,10 @@ BEGIN = "// <<<MATURITY:BEGIN"
 END = "// <<<MATURITY:END>>>"
 
 LEVELS = ("unsupported", "declared", "heuristic", "partial", "full")
-FORMATS = ("docx", "xlsx", "pptx", "pdf")
+# HTML is included here but NOT in the matrix's 20-SC document grid, which has four columns.
+# That is deliberate: this table is about what acp's ENGINES can assess, and acp scans HTML too.
+# Dropping it would hide real coverage on the format acp covers best.
+FORMATS = ("html", "docx", "xlsx", "pptx", "pdf")
 
 
 def _js(s: str) -> str:
