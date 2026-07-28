@@ -4,7 +4,11 @@
 Interactive WCAG 2.1 AA assessment & remediation matrix for document formats (DOCX/XLSX/PPTX/PDF), built for the ACP (Accessibility Compliance Platform) GTM conversation with Deva. Single self-contained `index.html` (no build step) + methodology docs in `docs/`. Live at https://fabulous-crisp-14e424.netlify.app/ (Netlify Drop; redeploy by drag or `netlify deploy --prod --dir .`).
 
 ## Deva's checklist — current artifact
-`~/Downloads/assessment-applicability-matrix-v5-28JUL.xlsx` (received 2026-07-28) is the version the page cites. **Content-identical to `assessment-applicability-matrix-v5.xlsx`** — diffed all seven sheets cell by cell, zero differing rows; only the filename and Excel's re-save metadata changed. So it is a relabel, not a revision, and **no per-cell verdict needed re-deriving**. This is the second time a re-save has arrived looking like a new version (the same happened 2026-07-21 with v3) — diff before re-reading, it takes seconds and has twice saved a full re-derivation.
+Referred to as **v5-28JUL**. The file on disk is `~/Downloads/assessment-applicability-matrix-v5-29JUL.xlsx` — the label and the filename disagree because the file was renamed 28JUL → 29JUL (identical bytes, identical mtime, and the stale `~$...-28JUL.xlsx` Excel lock confirms it). Cite the **label** in prose and the **real filename** wherever a reader has to find the file, or the citation points at something that does not exist.
+
+**Content-identical to `assessment-applicability-matrix-v5.xlsx`** — diffed all seven sheets cell by cell, zero differing rows. A relabel, not a revision, so **no per-cell verdict needed re-deriving**.
+
+This is now the **third** re-save/rename to arrive looking like a new version (v3 on 2026-07-21, v5-28JUL and v5-29JUL both on 2026-07-28). **Diff before re-reading** — it takes seconds and has three times saved a full re-derivation. A changed filename, size or mtime is not evidence of changed content.
 
 ## Capability vocabulary (standardized 2026-07-28)
 Two INDEPENDENT axes, each answering one question about what ACP can *do* — not how it does it. The old labels (Certified/Guided/Human · Auto/Manual/AI proposal) mixed confidence, automation, human effort and mechanism into one word, which is why "Guided" meant different things on each axis.

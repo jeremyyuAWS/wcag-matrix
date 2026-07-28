@@ -19,6 +19,32 @@
   .tile b{display:block;font-size:22px}
   .tile span{color:var(--muted);font-size:12px}
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 14px;font-size:12px;color:var(--muted)}
+  /* Legend card. Boxed so it reads as a key rather than as more body copy — it sits directly
+     above a dense 8-column table and was previously a flat grey run-on that scanned as prose. */
+  .legendcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px 12px;margin:8px 0 14px}
+  .legendhead{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+  .legendgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:12px 22px}
+  .legendcol h4{margin:0 0 5px;font-size:11px;color:var(--navy);font-weight:700}
+  .lgitem{display:flex;align-items:baseline;gap:6px;font-size:12px;color:var(--muted);margin:3px 0;line-height:1.4}
+  .lgitem b:not(.lgchip):not(.lgflag):not(.lgcond){color:var(--navy);font-weight:700}
+  /* The chip is the level code in its own cell colour — legend and table match on colour AND
+     code, so neither has to be memorised against the other. */
+  .lgchip{flex:none;display:inline-block;min-width:26px;text-align:center;padding:1px 6px;border-radius:999px;
+    font-size:10.5px;font-weight:800;color:#fff;letter-spacing:.02em}
+  /* colour:#fff must be restated per-chip: the bare .A4/.R3/... rules further down set the
+     level colour as TEXT colour for cell labels, and being later in the sheet they would win
+     over .lgchip alone — rendering green text on a green pill. The two-class selector outranks
+     them, which is the whole reason these are written as .lgchip.A4 rather than grouped. */
+  .lgchip.A4,.lgchip.R4{background:var(--green);color:#fff}
+  .lgchip.A3,.lgchip.R3{background:var(--blue);color:#fff}
+  .lgchip.A2{background:var(--orange);color:#fff}
+  .lgchip.R2{background:var(--amber,#8a6d00);color:#fff}
+  .lgchip.R1{background:var(--red,#b3261e);color:#fff}
+  .lgchip.NAx{background:var(--gray);color:#fff}
+  .lgflag{color:var(--red);font-weight:800;flex:none}
+  .lgcond{color:#6a3fb5;font-weight:800;flex:none}
+  .lgdonut .donut{flex:none;margin:0}
+  .lgnote{display:block;color:var(--muted);font-size:11.5px;margin-top:5px;line-height:1.45}
   .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
   .filterbar label{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--navy);cursor:pointer}
   .filterbar input[type=checkbox]{width:15px;height:15px;cursor:pointer}
@@ -300,7 +326,7 @@
 <body>
 <div class="wrap">
   <h1>WCAG 2.1 AA — 20 Document Core Rules · Ceiling &amp; Coverage</h1>
-  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's checklist: <code>assessment-applicability-matrix-v5-28JUL.xlsx</code> · 2026-07-28.</div>
+  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's checklist: <b>v5-28JUL</b> (<code>assessment-applicability-matrix-v5-29JUL.xlsx</code>) · 2026-07-28.</div>
 
   <div class="tabbar">
     <button type="button" class="tabbtn active" id="tabbtn-matrix" data-tab="matrix">Matrix</button>
@@ -334,14 +360,46 @@
     </div>
     <div class="covgrid" id="covGrid"></div>
   </div>
-  <div class="legend">
-    <span><span class="dot" style="background:var(--green)"></span>Deterministic / Mechanical (ceiling)</span>
-    <span><span class="dot" style="background:var(--blue)"></span>Machine-assisted / Generated+approval (ceiling)</span>
-    <span><span class="dot" style="background:var(--orange)"></span>Human judgment / Re-authoring (ceiling)</span>
-    <span><span class="dot" style="background:var(--gray)"></span>N/A (rule can't be broken in this format)</span>
-    <span style="color:var(--red);font-weight:700">▲ row corrected vs the July-14 infographic</span>
-    <span><span class="swatch deva-augment">Guided <b class="devamark augment">◆</b></span> our conclusion augments Deva's V3 checklist (agree, with nuance)</span>
-    <span><span class="swatch deva-disagree">Guided <b class="devamark disagree">⊗</b></span> our conclusion disagrees with Deva's V3 checklist (documents vs. web, or a real correction)</span>
+  <!-- Legend. Boxed and grouped by AXIS, because the two axes use different level sets and the
+       flat list did not say which colour belonged to which. The chips are the literal level
+       codes in their cell colour, so a reader matches the legend to the table by colour AND by
+       code rather than having to remember an ordering. -->
+  <div class="legendcard">
+    <div class="legendhead">Legend</div>
+
+    <div class="legendgrid">
+      <div class="legendcol">
+        <h4>Assessment — can ACP decide pass/fail?</h4>
+        <span class="lgitem"><b class="lgchip A4">A4</b> <b>Fully Assessed</b> — deterministic pass/fail with evidence</span>
+        <span class="lgitem"><b class="lgchip A3">A3</b> <b>Potential Issue</b> — likely violation, human confirms</span>
+        <span class="lgitem"><b class="lgchip A2">A2</b> <b>Human Assessment Required</b> — not reliably automatable</span>
+        <span class="lgitem"><b class="lgchip NAx">N/A</b> <b>Not Applicable</b> — rule can't be broken in this format</span>
+      </div>
+
+      <div class="legendcol">
+        <h4>Remediation — can ACP fix it?</h4>
+        <span class="lgitem"><b class="lgchip R4">R4</b> <b>Automatically Fixed</b> — ACP edits the document itself</span>
+        <span class="lgitem"><b class="lgchip R3">R3</b> <b>AI Generated Fix</b> — drafted, human approves before write</span>
+        <span class="lgitem"><b class="lgchip R2">R2</b> <b>Guided Remediation</b> — ACP explains, the user edits</span>
+        <span class="lgitem"><b class="lgchip R1">R1</b> <b>No Remediation</b> — no meaningful fix ACP can offer</span>
+      </div>
+
+      <div class="legendcol">
+        <h4>The donut in each cell</h4>
+        <span class="lgitem lgdonut"><span id="lgDonutHi"></span> <b>At potential</b> — nothing more this rule allows</span>
+        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <b>Partway</b> — headroom remains for this cell</span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>At the floor</b> — the rule allows much more than ships</span>
+        <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format. <b>Not a roadmap.</b></span>
+      </div>
+
+      <div class="legendcol">
+        <h4>Markers</h4>
+        <span class="lgitem"><b class="lgflag">▲</b> row corrected vs the July-14 infographic</span>
+        <span class="lgitem"><span class="swatch deva-augment">A3 <b class="devamark augment">◆</b></span> augments Deva's checklist (agree, with nuance)</span>
+        <span class="lgitem"><span class="swatch deva-disagree">A3 <b class="devamark disagree">⊗</b></span> disagrees with Deva's checklist (documents vs. web, or a correction)</span>
+        <span class="lgitem"><b class="lgcond">†</b> applies only if the feature is present</span>
+      </div>
+    </div>
   </div>
 
   <div class="filterbar">
@@ -2076,6 +2134,15 @@ function donut(pct,{size=30,stroke=4,tone="",title=""}={}){
     +`<text class="dnum" x="50%" y="50%" dominant-baseline="central" text-anchor="middle">${pct}</text></svg>`;
 }
 const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
+
+// Legend donut samples, drawn with the same function the cells use so the key cannot drift
+// from the thing it explains — a hand-drawn legend swatch is exactly how a key goes stale.
+(function(){
+  for(const [id,pct] of [["lgDonutHi",100],["lgDonutMid",50],["lgDonutLo",0]]){
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=donut(pct,{size:26,stroke:3.5,tone:progTone(pct),title:pct+"% of potential"});
+  }
+})();
 
 // Wrapped in a function so the view toggle can rebuild the table in place. It was a bare
 // top-level loop, which was fine while the table rendered exactly once.
