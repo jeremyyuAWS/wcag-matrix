@@ -139,7 +139,6 @@
   .dcodes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 12px;padding:8px 10px;
     background:#f6f8fc;border:1px solid var(--line);border-radius:8px}
   .dcode{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--navy)}
-  #panel.potential .dcodes{background:#e8f0fe;border-color:#c3d8f7}
   .ccode{display:inline-block;min-width:26px;text-align:center;padding:1px 7px;border-radius:999px;
     font-size:10.5px;font-weight:800;letter-spacing:.03em;color:#fff}
   /* colour:#fff restated per-chip for the same reason as .lgchip: the bare .A4/.R3/... rules
@@ -163,7 +162,6 @@
      reading. The toggle sits at the top of the page and the drawer covers it, so without this
      an open drawer gives no clue which view produced it. Deliberately faint — it must read as
      a mode indicator, not as a status colour competing with the level chips inside. */
-  #panel.potential{background:#f4f8ff}
   #panel.potential .potential-flag{display:block}
   .potential-flag{display:none;margin:0 0 10px;padding:5px 10px;border-radius:6px;
     background:#e3edfd;border:1px solid #c3d8f7;color:#1e3a8a;font-size:11.5px;font-weight:700}
@@ -172,6 +170,48 @@
   .covhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
   .covsub{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
   .covformula{font-size:11px;color:var(--muted)}
+  .covexplain{flex:1 1 100%;margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--muted)}
+  /* Deva's checklist quoted the way the WCAG excerpt is — it is a primary source for this
+     matrix, and the reader should be able to check any line against her workbook. */
+  /* Score panel — the "why is it this number" answer at the top of the drawer. */
+  #panel .scorepanel{margin:0 0 14px;padding:12px 14px;background:#f7f9fc;border:1px solid var(--line);border-radius:10px}
+  #panel .scorepanel h5{margin:0 0 6px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  #panel .spgrid{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  #panel .spdonut{flex:none;text-align:center;min-width:96px}
+  #panel .spdlabel{font-weight:700;font-size:12.5px;color:var(--navy);margin-top:4px}
+  #panel .spdsub{font-size:10.5px;color:var(--muted)}
+  #panel .spwhy{flex:1 1 260px}
+  #panel .spwhy ul{margin:0;padding-left:16px}
+  #panel .spwhy li{margin:4px 0;font-size:12.5px;line-height:1.45;color:var(--navy)}
+  #panel .spsrc{display:inline-block;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--muted);background:#eef1f6;border-radius:4px;padding:1px 5px;margin-left:4px;vertical-align:1px}
+  #panel .spnone{margin:0;font-size:12.5px;color:var(--muted)}
+  #panel .spscales{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+  #panel .spscale{list-style:none;margin:0;padding:0}
+  /* The whole four-level scale is shown with today's level lit, so the reader sees where the
+     cell sits AND what the other rungs are — the scale is the context for the score. */
+  #panel .spscale li{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);
+    margin:3px 0;opacity:.45}
+  #panel .spscale li.on{opacity:1;color:var(--navy);font-weight:700}
+  #panel .sptoday{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}
+  #panel .sptime{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+  #panel .sptotal{font-size:18px;font-weight:800;color:var(--navy)}
+  #panel .sptotal span{font-size:11px;font-weight:400;color:var(--muted)}
+  #panel .sptime ul{margin:6px 0 0;padding-left:16px}
+  #panel .sptime li{font-size:12px;color:var(--navy);margin:2px 0}
+  #panel .spnote{margin:8px 0 0;font-size:11px;color:var(--muted);line-height:1.45}
+  #panel .spconf{font-weight:700;text-transform:uppercase;font-size:9.5px;padding:1px 6px;border-radius:999px;letter-spacing:.04em}
+  #panel .spconf.high{background:#d8efdc;color:#14532d}
+  #panel .spconf.medium{background:#fdf1e3;color:#8a4b12}
+  #panel .spconf.low{background:#fbe6e6;color:#8a1c1c}
+  @media(max-width:640px){#panel .spscales{grid-template-columns:1fr}}
+  #panel .devaquote{margin:10px 0;padding:10px 12px;background:#f7f9fc;border:1px solid var(--line);border-radius:8px}
+  #panel .devasrc{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+  #panel .devasrc code{text-transform:none;letter-spacing:0;font-size:11px}
+  #panel blockquote.dq{margin:8px 0 4px;padding:6px 0 6px 12px;border-left:3px solid var(--blue);
+    font-style:italic;color:var(--navy);font-size:13px;line-height:1.5}
+  #panel blockquote.dq cite{display:block;margin-top:4px;font-style:normal;font-size:10.5px;color:var(--muted)}
+  #panel .dqmeta{font-size:12px;color:var(--muted);margin:2px 0 6px;line-height:1.45}
   .covgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   .covaxis h4{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   .covrow{display:grid;grid-template-columns:52px 1fr 44px;align-items:center;gap:8px;margin:3px 0;font-size:12.5px}
@@ -179,7 +219,13 @@
   .covrow .covfmt{color:var(--muted);font-weight:600}
   .covrow.total .covfmt{color:var(--ink,inherit)}
   .covbar{height:8px;background:#eef0f4;border-radius:5px;overflow:hidden}
+  .covbar{display:flex}
   .covbar i{display:block;height:100%;border-radius:5px}
+  /* Headroom: same hue as the achieved bar, faded, so it reads as "more of the same thing"
+     rather than as a separate measure. */
+  .covbar i.cgap{opacity:.28;border-radius:0 5px 5px 0;margin-left:-5px;padding-left:5px}
+  .covgain{color:var(--muted);font-weight:600;margin-left:5px;font-size:11px}
+  .covkey{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:10.5px;margin-left:5px}
   .covrow .covpct{text-align:right;font-variant-numeric:tabular-nums}
   @media(max-width:700px){.covgrid{grid-template-columns:1fr}}
   .logbuild{font-size:11px;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
@@ -241,12 +287,35 @@
   .tech-badge.tentative{color:var(--muted);background:#f4f4f4;border-style:dashed}
   td.sc{font-weight:700;text-align:left;white-space:nowrap}
   td.name{text-align:left;min-width:170px}
-  tr.flagged td.name{color:var(--red);font-weight:700}
+  /* Corrected rows are no longer red. Red across a whole criterion name reads as "this rule is
+     failing", which is not what the flag means — it means the row was corrected against an old
+     infographic, a provenance note about OUR history, not a status about the document. The ▲
+     still marks it and the drawer still explains it; it just no longer shouts. */
+  tr.flagged td.name{font-weight:700}
+  tr.flagged td.name .flagmark{color:var(--muted);font-weight:400}
   td.cell{padding:0;font-weight:700;position:relative}
-  /* Corner badge, not a full border+tint — same info, far less visual weight across ~40% of assess
-    position:absolute;top:1px;right:2px;font-size:8px;line-height:1;font-weight:900;pointer-events:none}
   .swatch{display:inline-block;position:relative;padding:3px 7px;border-radius:4px;font-weight:700;font-size:12px;color:var(--blue);margin-right:2px;vertical-align:middle;background:#f6f7fa;border:1px solid var(--line)}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
+  /* Toggle animation. Only cells whose LEVEL actually changed animate — 45 of 160 do, and
+     flashing all 160 would say nothing about which ones moved. A brief lift plus a colour wash
+     in the cell's own hue: enough to draw the eye across a dense grid, short enough not to
+     stand between the reader and the number. Honours reduced-motion. */
+  @keyframes cellmoved{
+    0%{transform:scale(.86);opacity:.35}
+    45%{transform:scale(1.06);opacity:1}
+    100%{transform:scale(1);opacity:1}
+  }
+  @keyframes cellwash{
+    0%,100%{background:transparent}
+    40%{background:color-mix(in srgb, currentColor 14%, transparent)}
+  }
+  .cellbtn.justchanged{animation:cellmoved .42s cubic-bezier(.2,.9,.25,1) both,cellwash .7s ease-out both}
+  .cellbtn.justchanged .donut{animation:cellmoved .5s .05s cubic-bezier(.2,.9,.25,1) both}
+  @media(prefers-reduced-motion:reduce){
+    .cellbtn.justchanged,.cellbtn.justchanged .donut{animation:none}
+    /* Still mark what moved, just without motion. */
+    .cellbtn.justchanged{outline:2px solid currentColor;outline-offset:-3px}
+  }
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
   .cellbtn:focus-visible{outline:3px solid #0b57d0;outline-offset:-2px;background:#eaf1fd}
   tr:nth-child(even) td{background:#fafbfd}
@@ -371,8 +440,15 @@
        counting every non-N/A level would overstate it. -->
   <div class="covcard">
     <div class="covhead">
-      <h3>Capability coverage <span class="covsub">weighted, over applicable cells only</span></h3>
+      <h3>Capability coverage <span class="covsub">today <b>&rarr;</b> potential, over Deva's V5 checklist</span></h3>
       <div class="covformula" id="covFormula"></div>
+      <p class="covexplain">Each cell scores what ACP delivers there: a full assessment counts 1, a
+        <b>Potential Issue</b> counts &frac12; (ACP finds it, a person confirms it), and a criterion
+        needing human judgement counts 0. Remediation the same way — an automatic fix counts 1, an
+        AI-drafted fix &frac34;, guided instructions 0.4, nothing 0. The <b>first number is today</b>;
+        the <b>second is the ceiling</b> — the most any tool could do for that rule and format.
+        Cells the rule cannot apply to are excluded entirely, so no format is penalised for rules it
+        was never subject to.</p>
     </div>
     <div class="covgrid" id="covGrid"></div>
   </div>
@@ -404,8 +480,8 @@
         <h4>The donut in each cell</h4>
         <span class="lgitem lgdonut"><span id="lgDonutHi"></span> <b>At potential</b> — nothing more this rule allows</span>
         <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <b>Partway</b> — headroom remains for this cell</span>
-        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>At the floor</b> — the rule allows much more than ships</span>
-        <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format. <b>Not a roadmap.</b></span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>0 — nothing yet</b> — the rule allows a fix (or an automated assessment) and ACP does not provide one today</span>
+        <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format, not what ACP has committed to build. A <b>0 does not mean impossible</b>: it means possible in principle, absent in ACP today.</span>
       </div>
 
     </div>
@@ -1936,13 +2012,19 @@ function codeChip(level){
 
 // Wrapped in a function so the view toggle can rebuild the table in place. It was a bare
 // top-level loop, which was fine while the table rendered exactly once.
+// Level shown per cell on the LAST render, so a rebuild can tell which cells actually moved.
+// Only populated after the first paint — the initial render animates nothing, since everything
+// would "change" from undefined and the whole grid would flash on load.
+let PREV_LEVELS=null;
+
 function buildTable(){
+  const prev=PREV_LEVELS, next={};
   tb.innerHTML="";
   for(const row of ROWS){
   const tr=document.createElement("tr");
   tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
-  let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
+  let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?` <span class="flagmark" title="Row corrected against the July-14 infographic">▲</span>`:""}</td>`;
   const v5row=V5_APPLICABLE[row.sc];
   for(const f of FM){const v=row.a[f];
     // v5state: "yes"/"cond" render normally; undefined (no checklist item per V5) mutes the cell
@@ -1956,21 +2038,26 @@ function buildTable(){
     const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
     const pg=cellProgress(row,f,"a");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const key=`${row.sc}|${f}|a`; next[key]=shown;
+    const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${AL[v]}, potential ${AL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${condHtml}</button></td>`;}
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
     const pg=cellProgress(row,f,"r");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const key=`${row.sc}|${f}|r`; next[key]=shown;
+    const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${RL[v]}, potential ${RL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}</span></button></td>`;}
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}</span></button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
   }
   // The V5 filter styles rows after they exist, so re-apply it on every rebuild or a rebuild
   // silently drops the filtering the user had switched on.
   const cb=document.getElementById("v3only");
   if(cb)cb.dispatchEvent(new Event("change"));
+  PREV_LEVELS=next;
 }
 buildTable();
 
@@ -2021,48 +2108,75 @@ buildTable();
 // The denominator is APPLICABLE cells only. A criterion that does not apply to a format is not
 // a gap and must not drag the percentage down — otherwise a format is punished for the rules it
 // was never subject to, and the number stops meaning anything comparable across formats.
-(function(){
+function renderCoverage(){
   const grid=document.getElementById("covGrid"); if(!grid)return;
+  // SCOPE: Deva's V5 checklist only, when the filter above the table is on (its default).
+  // Coverage previously counted all 80 cells regardless, so the headline described a rubric
+  // wider than the checklist anyone is measured against — and it did not move when the filter
+  // did. Following the checkbox keeps the number and the table describing one population.
+  const onlyV5=!!(document.getElementById("v3only")||{}).checked;
+  const inScope=(sc,f)=>!onlyV5 || !!(V5_APPLICABLE[sc]&&V5_APPLICABLE[sc][f]);
   const AXES=[
     {key:"a", label:"Assessment", weight:A_WEIGHT, cls:{A4:"A4",A3:"A3",A2:"A2"}},
     {key:"r", label:"Remediation", weight:R_WEIGHT, cls:{R4:"R4",R3:"R3",R2:"R2",R1:"R1"}},
   ];
   const pct=(num,den)=>den?Math.round((num/den)*1000)/10:null;
 
+  // Coverage for BOTH views, always shown together. Computing only the active view meant the
+  // headline number never moved when you toggled — 45 of 160 cells change level between Today
+  // and Potential, and the figure sat still through all of it, which made the toggle look
+  // broken. Showing current and potential side by side is also more useful than a number that
+  // swaps: the GAP is the thing worth looking at.
   function coverage(axis, fmts){
-    let num=0, den=0;
+    let num=0, den=0, pnum=0;
     for(const row of ROWS) for(const f of fmts){
+      if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
+      if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
       const lvl=row[axis.key][f];
       if(!lvl||lvl==="NA")continue;            // not applicable — outside the denominator
       den++; num+=axis.weight[lvl]??0;
+      // Potential level — already floored at current inside cellProgress, so a cell that
+      // over-delivers against its rubric ceiling never scores below what it actually ships.
+      const pg=cellProgress(row,f,axis.key);
+      pnum += axis.weight[(pg&&pg.ceiling)||lvl] ?? 0;
     }
-    return {pct:pct(num,den), den};
+    return {pct:pct(num,den), ppct:pct(pnum,den), den};
   }
 
-  const bar=(v,tone)=>`<div class="covbar"><i style="width:${v}%;background:var(--${tone})"></i></div>`;
+  // One track, two fills: solid is today, pale is the headroom. A single bar so the gap reads
+  // as distance rather than as a second, competing statistic.
+  const bar2=(cur,pot,tone)=>{
+    const gap=Math.max(0,(pot??0)-(cur??0));
+    return `<div class="covbar"><i style="width:${cur||0}%;background:var(--${tone})"></i>`
+      +`<i class="cgap" style="width:${gap}%;background:var(--${tone})"></i></div>`;
+  };
+
   grid.innerHTML=AXES.map(axis=>{
-    const rows=FM.map(f=>{
-      const c=coverage(axis,[f]);
-      return {name:FMT_LABEL_SHORT[f]||f.toUpperCase(), ...c, total:false};
-    });
-    const all=coverage(axis,FM);
-    rows.push({name:"Overall", ...all, total:true});
-    return `<div class="covaxis"><h4>${axis.label} coverage</h4>` + rows.map(r=>{
-      const v=r.pct==null?0:r.pct;
+    const rows=FM.map(f=>({name:FMT_LABEL_SHORT[f]||f.toUpperCase(), ...coverage(axis,[f]), total:false}));
+    rows.push({name:"Overall", ...coverage(axis,FM), total:true});
+    return `<div class="covaxis"><h4>${axis.label} coverage <span class="covkey">today → potential</span></h4>` + rows.map(r=>{
+      const v=r.pct==null?0:r.pct, pv=r.ppct==null?0:r.ppct;
       // One ramp for both axes: the number means the same thing on each — how much of the
       // applicable work ACP does — so a reader can compare them directly.
       const tone=v>=80?"green":v>=50?"blue":v>=25?"orange":"red";
+      const gain=Math.round((pv-v)*10)/10;
       return `<div class="covrow${r.total?" total":""}">`
-        +`<span class="covfmt">${esc(r.name)}</span>${bar(v,tone)}`
-        +`<span class="covpct">${r.pct==null?"—":r.pct+"%"}</span></div>`;
+        +`<span class="covfmt">${esc(r.name)}</span>${bar2(v,pv,tone)}`
+        +`<span class="covpct">${r.pct==null?"—":v+"%"}`
+        +(gain>0?`<span class="covgain" title="potential — the rule-inherent ceiling for this rule and format">→ ${pv}%</span>`:"")
+        +`</span></div>`;
     }).join("") + `</div>`;
   }).join("");
 
   const f=document.getElementById("covFormula");
   if(f)f.innerHTML=`Assessment ${Object.entries(A_WEIGHT).map(([k,v])=>`${k}×${v}`).join(" + ")}`
     +` · Remediation ${Object.entries(R_WEIGHT).map(([k,v])=>`${k}×${v}`).join(" + ")}`
-    +` · ÷ applicable cells`;
-})();
+    +` · ÷ applicable cells${(document.getElementById("v3only")||{}).checked?" in Deva's V5 checklist":""}`;
+}
+renderCoverage();
+// Recompute when the V5 filter flips, so the score always describes the cells on screen.
+(function(){const cb=document.getElementById("v3only");
+  if(cb)cb.addEventListener("change",renderCoverage);})();
 
 // Ceiling tiles: computed from RUBRIC across all 80 (SC × format) cells — the rule-inherent denominator.
 (function(){
@@ -2276,6 +2390,48 @@ function renderDrawer(sc,f,trigger){
   if(!row.a[f]&&!row.r[f]){f="docx";} // cross-link landed on a format this SC has no columns for — fall back
   const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
+  // ── Score panel: why this cell scores what it does ───────────────────────────────────
+  // Every bullet is LIFTED from existing per-cell metadata, never written for the panel and
+  // never invented. Sources, in the order they are drawn on:
+  //   1. ae/re[f].c  — the cell's own recorded concessions. Literally "why this isn't 100".
+  //   2. registry     — acp's declared coverage reason, where the pair has been migrated.
+  //   3. RUBRIC aWhy/fWhy — why the rule-inherent ceiling sits where it does.
+  //   4. UPGRADE      — the cheapest concrete build that would close the gap.
+  // A cell with none of these shows nothing rather than filler. Capped at five: past that it
+  // stops being a summary.
+  function whyBullets(row,f,rub){
+    const out=[];
+    const push=(txt,src)=>{ if(txt&&out.length<5) out.push({txt:String(txt),src}); };
+    for(const c of (row.ae&&row.ae[f]&&row.ae[f].c)||[]) push(c,"assessment limit");
+    for(const c of (row.re&&row.re[f]&&row.re[f].c)||[]) push(c,"remediation limit");
+    const mat=(typeof MATURITY!=="undefined"&&MATURITY[row.sc]&&MATURITY[row.sc][f])||null;
+    if(mat&&mat.why) push(mat.why,`acp coverage: ${mat.c}`);
+    if(rub&&rub.aWhy&&out.length<5) push(rub.aWhy,"why the assess ceiling is there");
+    if(rub&&rub.fWhy&&out.length<5) push(rub.fWhy,"why the fix ceiling is there");
+    if(UPGRADE[row.sc]&&out.length<5) push(UPGRADE[row.sc],"what would close the gap");
+    return out;
+  }
+
+  // Remaining human effort, from the page's own COST_ASSUMPTIONS — the same model the cost
+  // section uses. These are ASSUMPTIONS, not measurements: ACP does not track actual minutes
+  // per finding, and the panel says so rather than implying a measured number.
+  function humanTime(row,f,rub){
+    const A=COST_ASSUMPTIONS, a=row.a[f], r=row.r[f];
+    if(a==="NA"&&r==="NA")return null;
+    const parts=[];
+    if(a==="A2") parts.push({m:A.minutesPerHumanOnly, t:"assess by hand — no machine verdict exists here"});
+    else if(a==="A3") parts.push({m:A.minutesPerAssessConfirm, t:"confirm or reject what ACP flagged"});
+    if(r==="R1"&&a!=="NA") parts.push({m:A.minutesPerHumanOnly, t:"make the fix by hand"});
+    else if(r==="R2") parts.push({m:A.minutesPerHumanOnly, t:"apply the guided fix yourself"});
+    else if(r==="R3") parts.push({m:A.minutesPerFixApprove, t:"approve the drafted fix before it is written"});
+    if(!parts.length)return {mins:0, parts:[], conf:"high"};
+    const mins=parts.reduce((n,p)=>n+p.m,0);
+    // Confidence tracks how much of the estimate rests on a fully-human step, which is the
+    // widest-variance assumption in the model.
+    const humanHeavy=parts.some(p=>p.m===A.minutesPerHumanOnly);
+    return {mins, parts, conf: humanHeavy?"low":(a==="A3"?"medium":"high")};
+  }
+
   // Both capability codes for this cell, right under the title — the two things the drawer is
   // about, stated before any prose. Shows the level for whichever view is active, so the codes
   // always agree with the cell that was clicked.
@@ -2286,6 +2442,48 @@ function renderDrawer(sc,f,trigger){
       <span class="dcode"><b class="ccode ${aShown==="NA"?"NAx":aShown}">${aShown==="NA"?"N/A":aShown}</b> ${esc(AL[aShown]||aShown)}</span>
       <span class="dcode"><b class="ccode ${rShown==="NA"?"NAx":rShown}">${rShown==="NA"?"N/A":rShown}</b> ${esc(RL[rShown]||rShown)}</span>
     </div>`;
+
+  // Score panel — the "why is it this number" answer, directly under the codes.
+  {
+    const rubF=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
+    const pgA=cellProgress(row,f,"a"), pgR=cellProgress(row,f,"r");
+    const why=whyBullets(row,f,rubF);
+    const ht=humanTime(row,f,rubF);
+    const scale=(order,cur,labels)=>order.map(l=>
+      `<li class="${l===cur?"on":""}"><b class="ccode ${l}">${l}</b> ${esc(labels[l])}</li>`).join("");
+
+    html+=`<div class="scorepanel">
+      <div class="spgrid">
+        <div class="spdonut">
+          ${pgA?donut(pgA.pct,{size:84,stroke:9,tone:progTone(pgA.pct),title:`${pgA.pct}% of potential`}):""}
+          <div class="spdlabel">${esc(AL[row.a[f]]||row.a[f])}</div>
+          <div class="spdsub">assessment${pgA&&pgA.pct<100?` · ${100-pgA.pct}% headroom`:""}</div>
+        </div>
+        <div class="spwhy">
+          <h5>Why this score</h5>
+          ${why.length?`<ul>${why.map(b=>
+            `<li>${esc(b.txt)} <span class="spsrc">${esc(b.src)}</span></li>`).join("")}</ul>`
+            :`<p class="spnone">No limitation is recorded for this cell — it sits at its ceiling.</p>`}
+        </div>
+      </div>
+
+      <div class="spscales">
+        <div><h5>Ability to assess <span class="sptoday">today</span></h5>
+          <ul class="spscale">${scale(["A4","A3","A2"],row.a[f],AL)}${row.a[f]==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(AL.NA)}</li>`:""}</ul></div>
+        <div><h5>Ability to remediate <span class="sptoday">today</span></h5>
+          <ul class="spscale">${scale(["R4","R3","R2","R1"],row.r[f],RL)}${row.r[f]==="NA"?`<li class="on"><b class="ccode NAx">N/A</b> ${esc(RL.NA)}</li>`:""}</ul></div>
+      </div>
+
+      ${ht?`<div class="sptime">
+        <h5>Human time to close the gap <span class="spconf ${ht.conf}">${ht.conf} confidence</span></h5>
+        <div class="sptotal">≈ ${ht.mins} min <span>per finding</span></div>
+        ${ht.parts.length?`<ul>${ht.parts.map(p=>`<li>${p.m} min — ${esc(p.t)}</li>`).join("")}</ul>`
+          :`<p class="spnone">Nothing left for a person to do on this cell.</p>`}
+        <p class="spnote">An <b>assumption</b>, not a measurement — ACP does not track real minutes
+          per finding. Multiply by your own findings-per-document to estimate a document.</p>
+      </div>`:""}
+    </div>`;
+  }
   if(PRINCIPLE[row.sc])html+=`<div class="crumb">${esc(PRINCIPLE[row.sc])} → ${row.sc}</div>`;
   if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a> · <a href="https://www.w3.org/WAI/WCAG22/quickref/#${slug}" target="_blank" rel="noopener">Techniques</a></div>`;
   if(QUOTE[row.sc])html+=`<div class="quote">${QUOTE[row.sc]}<cite>— excerpt, WCAG 2.2 Success Criterion ${row.sc} (full text via the canonical link above)</cite></div>`;
@@ -2305,10 +2503,18 @@ function renderDrawer(sc,f,trigger){
   {
     const v5items=(V5_DETAIL[row.sc]&&V5_DETAIL[row.sc][f])||[];
     if(v5items.length){
-      html+=`<div class="aspec"><div class="aspec-title">Deva's V5 validation assertion${v5items.length>1?"s":""} — ${f.toUpperCase()}</div>${v5items.map(x=>
-        `<div class="aspec-item"><div class="s">&ldquo;${esc(x.a)}&rdquo;</div>
-          <div class="aspec-note"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
-          <div class="aspec-note"><b>Her stated automation level:</b> ${esc(x.auto)}</div></div>`).join("")}</div>`;
+      // Cited the same way the WCAG excerpt above is: a source line naming the exact file and
+      // tab, then the words verbatim in quotes, then a <cite>. Deva's checklist is a primary
+      // source for this matrix, and a paraphrase of it is not checkable against the workbook.
+      html+=`<div class="devaquote">`
+        +`<div class="devasrc">Source: <code>assessment-applicability-matrix-v5-28JUL.xlsx</code>`
+        +` &middot; <b>${f.toUpperCase()}</b> tab &middot; ${v5items.length} assertion${v5items.length>1?"s":""} for ${row.sc}</div>`
+        + v5items.map(x=>
+        `<blockquote class="dq">${esc(x.a)}
+          <cite>— Deva's V5 checklist, ${f.toUpperCase()} tab, &ldquo;Validation assertion&rdquo;</cite></blockquote>
+         <div class="dqmeta"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
+         <div class="dqmeta"><b>Her stated automation level:</b> ${esc(x.auto)}</div>`).join("")
+        +`</div>`;
     }
   }
 
