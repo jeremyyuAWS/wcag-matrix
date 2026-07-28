@@ -134,6 +134,9 @@
   .donut.t4{color:var(--green)} .donut.t3{color:var(--blue)}
   .donut.t2{color:var(--orange)} .donut.t1{color:var(--red)}
   .cellbtn .clab{display:block;font-size:11px;line-height:1.25}
+  /* Delta mode: today's level, then the gain. Muted and lighter so the eye still lands on
+     today first — the arrow is the roadmap, not the status. */
+  .cellbtn .cdelta{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-top:1px}
   /* Capability codes at the top of the drawer — the two things it is about, stated before any
      prose. Same colours as the legend chips so the drawer, the legend and the cell all agree. */
   .dcodes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 12px;padding:8px 10px;
@@ -174,6 +177,24 @@
   /* Deva's checklist quoted the way the WCAG excerpt is — it is a primary source for this
      matrix, and the reader should be able to check any line against her workbook. */
   /* Score panel — the "why is it this number" answer at the top of the drawer. */
+  /* In-drawer Today/Potential switch — same control as above the table, within reach of the
+     thing it changes, so a reader comparing one cell does not have to close the drawer. */
+  #panel .dviewtoggle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+  #panel .dvbtn{all:unset;cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:700;
+    padding:3px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#fff}
+  #panel .dvbtn:hover{color:var(--navy)}
+  #panel .dvbtn:focus-visible{outline:2px solid #0b57d0;outline-offset:2px}
+  #panel .dvbtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  #panel .dvhint{font-size:10.5px;color:var(--muted)}
+  #panel .sprungs{margin-top:4px;font-size:10.5px;color:var(--orange);font-weight:700}
+  /* Animate the regions that actually differ between the two views, so the switch reads as a
+     change rather than a repaint. Same reduced-motion posture as the grid. */
+  @keyframes dswap{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+  #panel.swapped .scorepanel{animation:dswap .34s cubic-bezier(.2,.9,.25,1) both}
+  #panel.swapped .dcodes{animation:dswap .34s .04s cubic-bezier(.2,.9,.25,1) both}
+  @media(prefers-reduced-motion:reduce){
+    #panel.swapped .scorepanel,#panel.swapped .dcodes{animation:none}
+  }
   #panel .scorepanel{margin:0 0 14px;padding:12px 14px;background:#f7f9fc;border:1px solid var(--line);border-radius:10px}
   #panel .scorepanel h5{margin:0 0 6px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
   #panel .spgrid{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
@@ -501,6 +522,7 @@
   <div class="viewtoggle" role="group" aria-label="Matrix view">
     <span class="vtlabel">View</span>
     <button type="button" class="vtbtn active" data-view="today" aria-pressed="true">Today</button>
+    <button type="button" class="vtbtn" data-view="delta" aria-pressed="false">Today &rarr; Potential</button>
     <button type="button" class="vtbtn" data-view="potential" aria-pressed="false">Potential</button>
     <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
   </div>
@@ -1969,15 +1991,27 @@ function cellProgress(row,f,axis){
   // ci===0: the ceiling IS the floor — nothing is achievable beyond where ACP already is, so
   // this is 100% and not a gap. Capped at 100 because a cell may legitimately exceed the
   // rubric's expectation (AT_CEILING_A allows it), and >100% would read as a bug.
-  const pct=ci===0?100:Math.max(0,Math.min(100,Math.round((vi/ci)*100)));
+  // WEIGHTED, not positional. The donut used raw rung position (vi/ci) while the headline
+  // coverage figure weights by value delivered (A4=1 A3=.5 A2=0 · R4=1 R3=.75 R2=.4 R1=0) — so
+  // the same cell read 33 in its donut and contributed 40 to the total. Two scales, one page,
+  // no way for a reader to reconcile them. Now both speak the same currency: "% of the
+  // achievable value ACP delivers here".
+  const W=isA?A_WEIGHT:R_WEIGHT;
+  const wCur=W[cur]??0, wCeil=W[ceilLevel]??0;
+  // wCeil===0 means the ceiling itself scores nothing (a human-judgment ceiling) — there is no
+  // value to be gained, so the cell is at its ceiling by definition rather than 0/0.
+  const pct=wCeil===0?100:Math.max(0,Math.min(100,Math.round((wCur/wCeil)*100)));
+  // Rungs still matter and the percentage hides them: A2->A3 and R1->R3 both score 0, but one
+  // is a single step and the other is two. Carried separately for the drawer to state.
+  const rungs=Math.max(0,ci-vi);
   // Potential can never read LOWER than what is already shipped. A cell may legitimately
   // exceed the rubric's expectation — AT_CEILING_A allows an MA-ceiling cell to ship at A4,
   // and 1.1.1 on docx does exactly that, because alt-text PRESENCE is a deterministic fact
   // even though alt QUALITY is not. Showing "Potential Issue" as the potential for a cell that
   // is already Fully Assessed would read as a regression rather than as headroom.
   const shownCeiling=order[Math.max(ci,vi)];
-  return {pct, current:cur, ceiling:shownCeiling, rubricCeiling:ceilLevel, atCeiling:vi>=ci,
-          label:isA?AL:RL};
+  return {pct, rungs, steps:ci, current:cur, ceiling:shownCeiling, rubricCeiling:ceilLevel,
+          atCeiling:vi>=ci, label:isA?AL:RL};
 }
 
 // A compact donut. Inline SVG rather than a chart library: this renders 160 times on the page,
@@ -2039,20 +2073,20 @@ function buildTable(){
     const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
     const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
     const pg=cellProgress(row,f,"a");
-    const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|a`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${AL[v]}, potential ${AL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${condHtml}</button></td>`;}
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
     const pg=cellProgress(row,f,"r");
-    const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|r`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${RL[v]}, potential ${RL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}</span></button></td>`;}
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
   }
   // The V5 filter styles rows after they exist, so re-apply it on every rebuild or a rebuild
@@ -2068,6 +2102,7 @@ buildTable();
   const btns=[...document.querySelectorAll(".vtbtn")], hint=document.getElementById("vtHint");
   const HINT={
     today:"Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.",
+    delta:"Cells show today and the gain available — the rule-inherent ceiling in grey beside it. Cells already at their ceiling show one value.",
     potential:"Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it.",
   };
   for(const b of btns) b.addEventListener("click",()=>{
@@ -2387,9 +2422,14 @@ function linkify(escapedText,currentSc,f){
   });
 }
 let lastTrigger=null;
+// Which cell the drawer is currently showing — the in-drawer view switch re-renders the SAME
+// cell, so it needs to know which one without re-reading it out of the DOM.
+let CURRENT_CELL={sc:null,f:null};
+
 function renderDrawer(sc,f,trigger){
   const row=ROWS.find(r=>r.sc===sc);if(!row)return;
-  if(!row.a[f]&&!row.r[f]){f="docx";} // cross-link landed on a format this SC has no columns for — fall back
+  if(!row.a[f]&&!row.r[f]){f="docx";}
+  CURRENT_CELL={sc,f}; // cross-link landed on a format this SC has no columns for — fall back
   const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
   // ── Score panel: why this cell scores what it does ───────────────────────────────────
@@ -2452,6 +2492,11 @@ function renderDrawer(sc,f,trigger){
   const aShown=(()=>{const pg=cellProgress(row,f,"a");return VIEW==="potential"&&pg?pg.ceiling:row.a[f];})();
   const rShown=(()=>{const pg=cellProgress(row,f,"r");return VIEW==="potential"&&pg?pg.ceiling:row.r[f];})();
   let html=`<h2 id="panel-title">${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>
+    <div class="dviewtoggle" role="group" aria-label="Drawer view">
+      <button type="button" class="dvbtn${VIEW==="today"?" active":""}" data-dview="today" aria-pressed="${VIEW==="today"}">Today</button>
+      <button type="button" class="dvbtn${VIEW==="potential"?" active":""}" data-dview="potential" aria-pressed="${VIEW==="potential"}">Potential</button>
+      <span class="dvhint">${VIEW==="potential"?"the rule-inherent ceiling — not a roadmap":"what ACP ships today"}</span>
+    </div>
     <div class="dcodes">
       <span class="dcode"><b class="ccode ${aShown==="NA"?"NAx":aShown}">${aShown==="NA"?"N/A":aShown}</b> ${esc(AL[aShown]||aShown)}</span>
       <span class="dcode"><b class="ccode ${rShown==="NA"?"NAx":rShown}">${rShown==="NA"?"N/A":rShown}</b> ${esc(RL[rShown]||rShown)}</span>
@@ -2480,6 +2525,15 @@ function renderDrawer(sc,f,trigger){
           <div class="spdlabel">${esc(AL[aShown]||aShown)}</div>
           <div class="spdsub">assessment · ${isPot?"at the ceiling"
             :(pgA&&pgA.pct<100?`${100-pgA.pct}% headroom`:"at the ceiling")}</div>
+          ${(()=>{
+            // The percentage hides distance: A2->A3 and A2->A4 can both read 0. State the steps.
+            // Nothing to climb in the Potential view — that view IS the top of the ladder.
+            if(isPot)return "";
+            const steps=[];
+            if(pgA&&pgA.rungs>0)steps.push(`assess ${pgA.rungs} level${pgA.rungs>1?"s":""}`);
+            if(pgR&&pgR.rungs>0)steps.push(`fix ${pgR.rungs} level${pgR.rungs>1?"s":""}`);
+            return steps.length?`<div class="sprungs" title="how many capability levels below the ceiling this cell sits">${esc(steps.join(" · "))} to climb</div>`:"";
+          })()}
         </div>
         <div class="spwhy">
           <h5>${isPot?"What it would take to get here":"Why this score"}</h5>
@@ -2590,6 +2644,29 @@ tb.addEventListener("click",(e)=>{
 
 const panelBody=document.getElementById("panel-body");
 panelBody.addEventListener("click",(e)=>{
+  // In-drawer Today/Potential switch. Flips the SAME global the table toggle uses, so the two
+  // never disagree — switching here rebuilds the grid behind the drawer too, and switching
+  // there is reflected when the drawer next renders.
+  const dv=e.target.closest(".dvbtn");
+  if(dv){
+    if(dv.dataset.dview!==VIEW){
+      VIEW=dv.dataset.dview;
+      for(const b of document.querySelectorAll(".vtbtn")){
+        const on=b.dataset.view===VIEW;
+        b.classList.toggle("active",on); b.setAttribute("aria-pressed",String(on));
+      }
+      const hint=document.getElementById("vtHint");
+      if(hint)hint.textContent=VIEW==="potential"
+        ? "Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it."
+        : "Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.";
+      buildTable();
+      renderDrawer(CURRENT_CELL.sc, CURRENT_CELL.f, lastTrigger);
+      // Mark the panel so the changed regions animate in.
+      const p=document.getElementById("panel");
+      p.classList.remove("swapped"); void p.offsetWidth; p.classList.add("swapped");
+    }
+    return;
+  }
   const xl=e.target.closest(".xlink");if(!xl)return;
   renderDrawer(xl.dataset.sc,xl.dataset.f,lastTrigger);
 });
