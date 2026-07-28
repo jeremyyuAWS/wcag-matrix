@@ -43,6 +43,8 @@
   .lgchip.NAx{background:var(--gray);color:#fff}
   .lgflag{color:var(--red);font-weight:800;flex:none}
   .lgcond{color:#6a3fb5;font-weight:800;flex:none}
+  .lghatch{flex:none;display:inline-block;width:26px;height:14px;border:1px solid var(--line);border-radius:3px;
+    background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.18) 0 5px,transparent 5px 10px)}
   .lgdonut .donut{flex:none;margin:0}
   .lgnote{display:block;color:var(--muted);font-size:11.5px;margin-top:5px;line-height:1.45}
   .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
@@ -132,6 +134,23 @@
   .donut.t4{color:var(--green)} .donut.t3{color:var(--blue)}
   .donut.t2{color:var(--orange)} .donut.t1{color:var(--red)}
   .cellbtn .clab{display:block;font-size:11px;line-height:1.25}
+  /* Capability codes at the top of the drawer — the two things it is about, stated before any
+     prose. Same colours as the legend chips so the drawer, the legend and the cell all agree. */
+  .dcodes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 12px;padding:8px 10px;
+    background:#f6f8fc;border:1px solid var(--line);border-radius:8px}
+  .dcode{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--navy)}
+  #panel.potential .dcodes{background:#e8f0fe;border-color:#c3d8f7}
+  .ccode{display:inline-block;min-width:26px;text-align:center;padding:1px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:800;letter-spacing:.03em;color:#fff}
+  /* colour:#fff restated per-chip for the same reason as .lgchip: the bare .A4/.R3/... rules
+     further down set the level colour as TEXT colour for the cell label, and being later they
+     would win over .ccode alone — rendering the code invisible on its own background. */
+  .ccode.A4,.ccode.R4{background:var(--green);color:#fff}
+  .ccode.A3,.ccode.R3{background:var(--blue);color:#fff}
+  .ccode.A2{background:var(--orange);color:#fff}
+  .ccode.R2{background:var(--amber,#8a6d00);color:#fff}
+  .ccode.R1{background:var(--red,#b3261e);color:#fff}
+  .ccode.NAx{background:var(--gray);color:#fff}
   .viewtoggle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0 0}
   .vtlabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .vtbtn{all:unset;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;
@@ -203,8 +222,14 @@
   /* Dim, but do NOT desaturate. grayscale() turned a muted 'Human Required' the same grey
      as a genuine N/A, so the filter's meaning (outside Deva's checklist) was
      indistinguishable from the data's meaning (rule can't apply here). */
-  table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:.42}
-  table.v4-mute-on td.cell.v4-muted .cellbtn:hover,table.v4-mute-on td.cell.v4-muted .cellbtn:focus-visible{opacity:.7;filter:none}
+  /* "Outside Deva's V5 checklist" is marked by a HATCHED CELL BACKGROUND, never by dimming the
+     content. Dimming was the bug: a faded cell reads as inactive, so a muted "Human Required"
+     was indistinguishable from a genuine N/A — the FILTER's meaning collided with the DATA's.
+     Grey now means exactly one thing on this table: Not Applicable. Everything else keeps full
+     colour and its donut, whether or not it is on her checklist. */
+  table.v4-mute-on td.cell.v4-muted{
+    background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.09) 0 5px,transparent 5px 10px)}
+  table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:1}
   .v4cond{color:var(--gray);font-weight:800;margin-left:2px;cursor:help}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
   table{border-collapse:collapse;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -394,17 +419,12 @@
         <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format. <b>Not a roadmap.</b></span>
       </div>
 
-      <div class="legendcol">
-        <h4>Markers</h4>
-        <span class="lgitem"><b class="lgflag">▲</b> row corrected vs the July-14 infographic</span>
-        <span class="lgitem"><b class="lgcond">†</b> applies only if the feature is present</span>
-      </div>
     </div>
   </div>
 
   <div class="filterbar">
     <label><input type="checkbox" id="v3only" checked> Show only the SCs in Deva's V5 checklist (<span id="v3count"></span>)</label>
-    <span class="filterbar-note">On (default) = just what V5's applicability matrix actually checks — cells outside it dim rather than disappear, so real ACP status is never hidden, only de-emphasized. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
+    <span class="filterbar-note">On (default) = just what V5's applicability matrix actually checks — cells outside it get a hatched background rather than disappearing, so real ACP status is never hidden or dimmed. Grey text means one thing only: Not Applicable. ▲ marks a row corrected against the July-14 infographic. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
   </div>
 
   <table id="tbl">
@@ -1897,6 +1917,14 @@ function donut(pct,{size=30,stroke=4,tone="",title=""}={}){
 }
 const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
 
+// The level code as a small chip at the top of a cell. Same colours as the legend chips, so the
+// two match on code AND colour — a reader scanning for "everything at R1" can do it by shape
+// without reading a single label.
+function codeChip(level){
+  const cls = level==="NA" ? "NAx" : level;
+  return `<b class="ccode ${cls}">${level==="NA"?"N/A":level}</b>`;
+}
+
 // Legend donut samples, drawn with the same function the cells use so the key cannot drift
 // from the thing it explains — a hand-drawn legend swatch is exactly how a key goes stale.
 (function(){
@@ -2248,7 +2276,16 @@ function renderDrawer(sc,f,trigger){
   if(!row.a[f]&&!row.r[f]){f="docx";} // cross-link landed on a format this SC has no columns for — fall back
   const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
-  let html=`<h2 id="panel-title">${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>`;
+  // Both capability codes for this cell, right under the title — the two things the drawer is
+  // about, stated before any prose. Shows the level for whichever view is active, so the codes
+  // always agree with the cell that was clicked.
+  const aShown=(()=>{const pg=cellProgress(row,f,"a");return VIEW==="potential"&&pg?pg.ceiling:row.a[f];})();
+  const rShown=(()=>{const pg=cellProgress(row,f,"r");return VIEW==="potential"&&pg?pg.ceiling:row.r[f];})();
+  let html=`<h2 id="panel-title">${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>
+    <div class="dcodes">
+      <span class="dcode"><b class="ccode ${aShown==="NA"?"NAx":aShown}">${aShown==="NA"?"N/A":aShown}</b> ${esc(AL[aShown]||aShown)}</span>
+      <span class="dcode"><b class="ccode ${rShown==="NA"?"NAx":rShown}">${rShown==="NA"?"N/A":rShown}</b> ${esc(RL[rShown]||rShown)}</span>
+    </div>`;
   if(PRINCIPLE[row.sc])html+=`<div class="crumb">${esc(PRINCIPLE[row.sc])} → ${row.sc}</div>`;
   if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a> · <a href="https://www.w3.org/WAI/WCAG22/quickref/#${slug}" target="_blank" rel="noopener">Techniques</a></div>`;
   if(QUOTE[row.sc])html+=`<div class="quote">${QUOTE[row.sc]}<cite>— excerpt, WCAG 2.2 Success Criterion ${row.sc} (full text via the canonical link above)</cite></div>`;
