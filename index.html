@@ -175,7 +175,7 @@
   .covformula{font-size:11px;color:var(--muted)}
   .covexplain{flex:1 1 100%;margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--muted)}
   /* Deva's checklist quoted the way the WCAG excerpt is — it is a primary source for this
-     matrix, and the reader should be able to check any line against her workbook. */
+     matrix, and the reader should be able to check any line against his workbook. */
   /* Score panel — the "why is it this number" answer at the top of the drawer. */
   /* In-drawer Today/Potential switch — same control as above the table, within reach of the
      thing it changes, so a reader comparing one cell does not have to close the drawer. */
@@ -323,7 +323,7 @@
      content. Dimming was the bug: a faded cell reads as inactive, so a muted "Human Required"
      was indistinguishable from a genuine N/A — the FILTER's meaning collided with the DATA's.
      Grey now means exactly one thing on this table: Not Applicable. Everything else keeps full
-     colour and its donut, whether or not it is on her checklist. */
+     colour and its donut, whether or not it is on his checklist. */
   table.v4-mute-on td.cell.v4-muted{
     background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.09) 0 5px,transparent 5px 10px)}
   table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:1}
@@ -566,7 +566,7 @@
     <tfoot id="tblfoot"></tfoot>
   </table>
   </div>
-  <div class="filterbar-note" style="margin:6px 0 14px">Column-header badges are Deva's recommended stack per format, from V5's "KEY TECH" tab (quoted, not ACP's actual stack, not verified against ACP's code) — hover a badge for its full role. Applies to every format identically, cited once rather than repeated per column: <span class="tech-badge" title="AI/OCR service — Python + FastAPI (Deva's sheet also notes &quot;Lama&quot; alongside this row)">Python + FastAPI</span> <span class="tech-badge tentative" title="OCR — Deva's own annotation: &quot;We may not need this.&quot;">Tesseract</span> <span class="tech-badge tentative" title="Vision — Deva's own annotation: &quot;We may not need this.&quot;">OpenCV</span> — the dashed badges are the two she flagged herself as possibly unnecessary.</div>
+  <div class="filterbar-note" style="margin:6px 0 14px">Column-header badges are Deva's recommended stack per format, from V5's "KEY TECH" tab (quoted, not ACP's actual stack, not verified against ACP's code) — hover a badge for its full role. Applies to every format identically, cited once rather than repeated per column: <span class="tech-badge" title="AI/OCR service — Python + FastAPI (Deva's sheet also notes &quot;Lama&quot; alongside this row)">Python + FastAPI</span> <span class="tech-badge tentative" title="OCR — Deva's own annotation: &quot;We may not need this.&quot;">Tesseract</span> <span class="tech-badge tentative" title="Vision — Deva's own annotation: &quot;We may not need this.&quot;">OpenCV</span> — the dashed badges are the two he flagged himself as possibly unnecessary.</div>
 
   <div class="corr">
     <h3>How to read this version</h3>
@@ -1060,15 +1060,15 @@ const OPENQ={
 // V5_DETAIL = Deva's checklist artifact (assessment-applicability-matrix-v5-28JUL.xlsx) — the
 // ONLY checklist version this page cites. Full per-format
 // "Validation assertion / WCAG mapping / Recommended technical approach / Automation level" detail
-// across all four format tabs (DOCX, PDF, PPTX, XLS in her workbook — xlsx here, matching this
+// across all four format tabs (DOCX, PDF, PPTX, XLS in his workbook — xlsx here, matching this
 // matrix's FM key). Content is quoted verbatim from the workbook, not paraphrased: a=assertion,
-// appr=her recommended technical approach, auto=her stated automation level. The Applicability
+// appr=his recommended technical approach, auto=his stated automation level. The Applicability
 // What's genuinely new in V5: (1) the technical-approach
 // and automation-level columns, for every format, not just DOCX; (2) explicit per-format coverage
 // for 1.4.4/1.4.10/1.4.11/1.4.12 — all four appear here with real assertions despite the
 // Applicability Matrix tab still listing them as having "no checklist item," a direct contradiction
 // between Deva's own two artifacts (flagged in each SC's drawer note below, not silently resolved
-// either direction); (3) five WCAG criteria entirely new to any version of her checklist — 1.2.1
+// either direction); (3) five WCAG criteria entirely new to any version of his checklist — 1.2.1
 // (Audio-only/Video-only), 1.2.5 (Audio Description), 2.2.2 (Pause/Stop/Hide), 2.3.1 (Three
 // Flashes), and 3.3.2 (Labels/Instructions) — all outside this matrix's 20-SC scope, so quoted here
 // for completeness but not added as new rows (adding a RUBRIC ceiling and ACP-today status for a
@@ -1931,7 +1931,7 @@ const RUBRIC={
 const FMT_LABEL_SHORT={docx:"DOCX",xlsx:"XLSX",pptx:"PPTX",pdf:"PDF"};
 const FM=["docx","xlsx","pptx","pdf"];
 // KEY_TECH_BY_FORMAT / KEY_TECH_CROSSCUT = Deva's "KEY TECH" tab (assessment-applicability-matrix-
-// v5.xlsx), her recommended implementation stack — not ACP's own stack, and not verified against
+// v5.xlsx), his recommended implementation stack — not ACP's own stack, and not verified against
 // ACP's actual code the way RUBRIC is. Quoted, not endorsed. Two per-format tools
 // (parser/validator + renderer) badge each format's header; three cross-cutting tools apply to every
 // format identically and are captioned once below the table instead of repeated 4x. Tesseract and
@@ -1971,7 +1971,7 @@ const tb=document.querySelector("#tbl tbody");
 //     Applicability Matrix tab marks DOCX blank for 1.3.2.
 // Also: 1.4.4/1.4.10/1.4.11/1.4.12 are "correctly absent" per the Applicability Matrix tab and
 // so are dropped below, yet V5_DETAIL carries real per-format assertions for all four across
-// PDF/PPTX/XLSX. Surfaced, not resolved in either direction — it is her file to reconcile.
+// PDF/PPTX/XLSX. Surfaced, not resolved in either direction — it is his file to reconcile.
 const V5_APPLICABLE={
 "1.1.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "1.3.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
@@ -2108,7 +2108,7 @@ function buildTable(){
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
     const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
-    const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
+    const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside his checklist's scope.";
     const pg=cellProgress(row,f,"a");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|a`; next[key]=shown;
@@ -2206,12 +2206,12 @@ buildTable();
 })();
 
 // "Show only Deva's V5 checklist SCs" toggle — per Deva's feedback that the full 20-SC rubric table
-// includes rows outside what her checklist actually checks, refined 2026-07-22 to cell-level using
+// includes rows outside what his checklist actually checks, refined 2026-07-22 to cell-level using
 // V5's applicability matrix (see V5_APPLICABLE's own comment). A row is shown if
 // V5_APPLICABLE has ANY entry for that SC; within a shown row, individual cells (both assess and
 // remediate) mute to a quiet "—" when V5 has no item for that specific format — real ACP status
 // stays in the DOM and stays clickable, just visually de-emphasized, so this never becomes "hide
-// real data," only "de-emphasize what's outside her checklist's scope." Doesn't touch the ceiling
+// real data," only "de-emphasize what's outside his checklist's scope." Doesn't touch the ceiling
 // tiles, which describe ACP's own rubric-wide ceiling independent of any one checklist's scope.
 (function(){
   const cb=document.getElementById("v3only"), countEl=document.getElementById("v3count");
@@ -2683,8 +2683,8 @@ function renderDrawer(sc,f,trigger){
         + v5items.map(x=>
         `<blockquote class="dq">${esc(x.a)}
           <cite>— Deva's V5 checklist, ${f.toUpperCase()} tab, &ldquo;Validation assertion&rdquo;</cite></blockquote>
-         <div class="dqmeta"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
-         <div class="dqmeta"><b>Her stated automation level:</b> ${esc(x.auto)}</div>`).join("")
+         <div class="dqmeta"><b>His recommended technical approach:</b> ${esc(x.appr)}</div>
+         <div class="dqmeta"><b>His stated automation level:</b> ${esc(x.auto)}</div>`).join("")
         +`</div>`;
     }
   }
