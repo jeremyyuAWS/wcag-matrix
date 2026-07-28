@@ -1,0 +1,51 @@
+# Guards on the page itself, run on every change to it.
+#
+# The other two workflows are sync jobs — they pull capability data out of acp and splice it in.
+# Neither one ever opens index.html and asks "does this still work?", which is how three separate
+# temporal-dead-zone bugs reached main. Each blanked the whole table at load, and each was found
+# by a human opening the page and noticing the grid was gone.
+name: page checks
+
+on:
+  push:
+    paths: ["index.html", "scripts/**", ".github/workflows/page-checks.yml"]
+  pull_request:
+    paths: ["index.html", "scripts/**", ".github/workflows/page-checks.yml"]
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Catches unbalanced braces and unterminated literals. Necessary but nowhere near
+      # sufficient — every TDZ bug this repo has shipped passed this step cleanly.
+      - name: JavaScript parses
+        run: |
+          node -e '
+            const fs = require("fs");
+            const m = fs.readFileSync("index.html", "utf8").match(/<script>([\s\S]*?)<\/script>/);
+            if (!m) { console.error("no <script> block in index.html"); process.exit(1); }
+            fs.writeFileSync("/tmp/page.js", m[1]);
+          '
+          node --check /tmp/page.js
+
+      # An unterminated /* */ once silently killed the whole stylesheet: `.cellbtn{all:unset}`
+      # never applied, so all 160 cells rendered with default button chrome. CSS does not throw,
+      # so nothing failed — the page just looked wrong, and only to someone who knew it shouldn't.
+      - name: CSS comments and braces balance
+        run: |
+          python3 - <<'PY'
+          import re, sys
+          css = "\n".join(re.findall(r"<style>([\s\S]*?)</style>", open("index.html").read()))
+          if css.count("/*") != css.count("*/"):
+              sys.exit(f"unbalanced CSS comments: {css.count('/*')} open, {css.count('*/')} close")
+          stripped = re.sub(r"/\*[\s\S]*?\*/", "", css)
+          if stripped.count("{") != stripped.count("}"):
+              sys.exit(f"unbalanced CSS braces: {stripped.count('{')} open, {stripped.count('}')} close")
+          print(f"CSS OK — {len(css)} chars, braces and comments balanced")
+          PY
+
+      - name: No boot-time temporal dead zone
+        run: python3 scripts/check_boot_order.py
