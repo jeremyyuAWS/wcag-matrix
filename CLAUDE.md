@@ -4,11 +4,11 @@
 Interactive WCAG 2.1 AA assessment & remediation matrix for document formats (DOCX/XLSX/PPTX/PDF), built for the ACP (Accessibility Compliance Platform) GTM conversation with Deva. Single self-contained `index.html` (no build step) + methodology docs in `docs/`. Live at https://fabulous-crisp-14e424.netlify.app/ (Netlify Drop; redeploy by drag or `netlify deploy --prod --dir .`).
 
 ## Deva's checklist — current artifact
-Referred to as **v5-28JUL**. The file on disk is `~/Downloads/assessment-applicability-matrix-v5-29JUL.xlsx` — the label and the filename disagree because the file was renamed 28JUL → 29JUL (identical bytes, identical mtime, and the stale `~$...-28JUL.xlsx` Excel lock confirms it). Cite the **label** in prose and the **real filename** wherever a reader has to find the file, or the citation points at something that does not exist.
+`~/Downloads/assessment-applicability-matrix-v5-28JUL.xlsx` — the canonical name. It briefly existed as `...-v5-29JUL.xlsx`; renamed back so the filename and the version label agree, because a citation whose filename does not exist is not a citation.
 
-**Content-identical to `assessment-applicability-matrix-v5.xlsx`** — diffed all seven sheets cell by cell, zero differing rows. A relabel, not a revision, so **no per-cell verdict needed re-deriving**.
+**Content-identical to `assessment-applicability-matrix-v5.xlsx`** — all seven sheets diffed cell by cell, zero differing rows. A relabel, not a revision, so **no per-cell verdict needed re-deriving**.
 
-This is now the **third** re-save/rename to arrive looking like a new version (v3 on 2026-07-21, v5-28JUL and v5-29JUL both on 2026-07-28). **Diff before re-reading** — it takes seconds and has three times saved a full re-derivation. A changed filename, size or mtime is not evidence of changed content.
+Third such arrival in a row (v3 on 2026-07-21, then two on 2026-07-28). **Diff before re-reading** — it takes seconds and has three times saved a full re-derivation. A changed filename, size or mtime is not evidence of changed content.
 
 ## Capability vocabulary (standardized 2026-07-28)
 Two INDEPENDENT axes, each answering one question about what ACP can *do* — not how it does it. The old labels (Certified/Guided/Human · Auto/Manual/AI proposal) mixed confidence, automation, human effort and mechanism into one word, which is why "Guided" meant different things on each axis.
