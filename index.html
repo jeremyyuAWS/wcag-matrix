@@ -43,6 +43,8 @@
   .lgchip.NAx{background:var(--gray);color:#fff}
   .lgflag{color:var(--red);font-weight:800;flex:none}
   .lgcond{color:#6a3fb5;font-weight:800;flex:none}
+  .lghatch{flex:none;display:inline-block;width:26px;height:14px;border:1px solid var(--line);border-radius:3px;
+    background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.18) 0 5px,transparent 5px 10px)}
   .lgdonut .donut{flex:none;margin:0}
   .lgnote{display:block;color:var(--muted);font-size:11.5px;margin-top:5px;line-height:1.45}
   .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
@@ -132,6 +134,23 @@
   .donut.t4{color:var(--green)} .donut.t3{color:var(--blue)}
   .donut.t2{color:var(--orange)} .donut.t1{color:var(--red)}
   .cellbtn .clab{display:block;font-size:11px;line-height:1.25}
+  /* Capability codes at the top of the drawer — the two things it is about, stated before any
+     prose. Same colours as the legend chips so the drawer, the legend and the cell all agree. */
+  .dcodes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 12px;padding:8px 10px;
+    background:#f6f8fc;border:1px solid var(--line);border-radius:8px}
+  .dcode{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--navy)}
+  #panel.potential .dcodes{background:#e8f0fe;border-color:#c3d8f7}
+  .ccode{display:inline-block;min-width:26px;text-align:center;padding:1px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:800;letter-spacing:.03em;color:#fff}
+  /* colour:#fff restated per-chip for the same reason as .lgchip: the bare .A4/.R3/... rules
+     further down set the level colour as TEXT colour for the cell label, and being later they
+     would win over .ccode alone — rendering the code invisible on its own background. */
+  .ccode.A4,.ccode.R4{background:var(--green);color:#fff}
+  .ccode.A3,.ccode.R3{background:var(--blue);color:#fff}
+  .ccode.A2{background:var(--orange);color:#fff}
+  .ccode.R2{background:var(--amber,#8a6d00);color:#fff}
+  .ccode.R1{background:var(--red,#b3261e);color:#fff}
+  .ccode.NAx{background:var(--gray);color:#fff}
   .viewtoggle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0 0}
   .vtlabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .vtbtn{all:unset;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;
@@ -140,6 +159,14 @@
   .vtbtn:focus-visible{outline:2px solid #0b57d0;outline-offset:2px}
   .vtbtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
   .vthint{font-size:11.5px;color:var(--muted);flex:1 1 260px}
+  /* Potential view: tint the drawer so it is obvious at a glance which capability you are
+     reading. The toggle sits at the top of the page and the drawer covers it, so without this
+     an open drawer gives no clue which view produced it. Deliberately faint — it must read as
+     a mode indicator, not as a status colour competing with the level chips inside. */
+  #panel.potential{background:#f4f8ff}
+  #panel.potential .potential-flag{display:block}
+  .potential-flag{display:none;margin:0 0 10px;padding:5px 10px;border-radius:6px;
+    background:#e3edfd;border:1px solid #c3d8f7;color:#1e3a8a;font-size:11.5px;font-weight:700}
   .covcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px 14px;margin:14px 0 0}
   .covcard h3{margin:0;font-size:15px}
   .covhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
@@ -190,10 +217,19 @@
   /* v4-muted cells stay full-strength unless the toggle is on (table.v4-mute-on) — never mute by
      default, only when the viewer has actively asked to see just Deva's V5-covered cells (class
      name kept as "v4-*" internally — an implementation detail, not a citation; see V5_APPLICABLE's
-     comment for why the visible "V4"→"V5" rename didn't touch these CSS hooks). Muting
+     comment: the CSS hooks keep their old names as internal styling ids, not citations). Muting
      de-emphasizes, it never hides: the button stays clickable and keeps its real status text. */
-  table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:.32;filter:grayscale(55%)}
-  table.v4-mute-on td.cell.v4-muted .cellbtn:hover,table.v4-mute-on td.cell.v4-muted .cellbtn:focus-visible{opacity:.7;filter:none}
+  /* Dim, but do NOT desaturate. grayscale() turned a muted 'Human Required' the same grey
+     as a genuine N/A, so the filter's meaning (outside Deva's checklist) was
+     indistinguishable from the data's meaning (rule can't apply here). */
+  /* "Outside Deva's V5 checklist" is marked by a HATCHED CELL BACKGROUND, never by dimming the
+     content. Dimming was the bug: a faded cell reads as inactive, so a muted "Human Required"
+     was indistinguishable from a genuine N/A — the FILTER's meaning collided with the DATA's.
+     Grey now means exactly one thing on this table: Not Applicable. Everything else keeps full
+     colour and its donut, whether or not it is on her checklist. */
+  table.v4-mute-on td.cell.v4-muted{
+    background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.09) 0 5px,transparent 5px 10px)}
+  table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:1}
   .v4cond{color:var(--gray);font-weight:800;margin-left:2px;cursor:help}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
   table{border-collapse:collapse;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -206,18 +242,9 @@
   td.sc{font-weight:700;text-align:left;white-space:nowrap}
   td.name{text-align:left;min-width:170px}
   tr.flagged td.name{color:var(--red);font-weight:700}
-  .devamark{font-weight:800;margin-left:3px;font-size:.95em}
-  .devamark.augment{color:#6a3fb5}
-  .devamark.disagree{color:#b3261e}
-  .legend .devamark{margin-left:0;margin-right:2px}
   td.cell{padding:0;font-weight:700;position:relative}
   /* Corner badge, not a full border+tint — same info, far less visual weight across ~40% of assess
-     cells. Uses the SAME glyph as the inline devamark (▲ augment / ⊗ disagree) rather than a plain
-     color-only triangle — meaning never rests on color alone, in a WCAG-compliance tool of all places. */
-  td.cell.deva-disagree::after,td.cell.deva-augment::after,.swatch.deva-disagree::after,.swatch.deva-augment::after{
     position:absolute;top:1px;right:2px;font-size:8px;line-height:1;font-weight:900;pointer-events:none}
-  td.cell.deva-augment::after,.swatch.deva-augment::after{content:"◆";color:#6a3fb5}
-  td.cell.deva-disagree::after,.swatch.deva-disagree::after{content:"⊗";color:#b3261e}
   .swatch{display:inline-block;position:relative;padding:3px 7px;border-radius:4px;font-weight:700;font-size:12px;color:var(--blue);margin-right:2px;vertical-align:middle;background:#f6f7fa;border:1px solid var(--line)}
   .cellbtn{all:unset;display:block;box-sizing:border-box;width:100%;padding:7px 9px;cursor:pointer;font-weight:700;font-size:13px;text-align:center;font-family:inherit}
   .cellbtn:hover{outline:2px solid var(--navy);outline-offset:-2px}
@@ -392,19 +419,12 @@
         <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format. <b>Not a roadmap.</b></span>
       </div>
 
-      <div class="legendcol">
-        <h4>Markers</h4>
-        <span class="lgitem"><b class="lgflag">▲</b> row corrected vs the July-14 infographic</span>
-        <span class="lgitem"><span class="swatch deva-augment">A3 <b class="devamark augment">◆</b></span> augments Deva's checklist (agree, with nuance)</span>
-        <span class="lgitem"><span class="swatch deva-disagree">A3 <b class="devamark disagree">⊗</b></span> disagrees with Deva's checklist (documents vs. web, or a correction)</span>
-        <span class="lgitem"><b class="lgcond">†</b> applies only if the feature is present</span>
-      </div>
     </div>
   </div>
 
   <div class="filterbar">
     <label><input type="checkbox" id="v3only" checked> Show only the SCs in Deva's V5 checklist (<span id="v3count"></span>)</label>
-    <span class="filterbar-note">On (default) = just what V5's applicability matrix actually checks — cells outside it dim rather than disappear, so real ACP status is never hidden, only de-emphasized. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
+    <span class="filterbar-note">On (default) = just what V5's applicability matrix actually checks — cells outside it get a hatched background rather than disappearing, so real ACP status is never hidden or dimmed. Grey text means one thing only: Not Applicable. ▲ marks a row corrected against the July-14 infographic. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
   </div>
 
   <table id="tbl">
@@ -429,19 +449,7 @@
   <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
   <div class="foot">Doc build <span class="docbuild"></span> (CalVer, UTC edit timestamp — not deploy.sh's git-ordinal scheme, this file isn't a deployed service).</div>
 
-  <div class="corr">
-    <h3>What Deva's checklist does and doesn't cover</h3>
-    <p style="margin:0 0 8px;color:var(--muted);font-size:13px">From V3's "Gaps vs WCAG" sheet plus V5's applicability matrix (the cell-level source the toggle above uses — V4's version of this same tab, byte-identical) plus V5's new per-format validation-assertion tabs (DOCX/PDF/PPTX/XLS, quoted verbatim in each drawer's §3 as V5_DETAIL) — the checklist and the 20 WCAG criteria this matrix tracks don't cover the same ground. Neither list is wrong; they answer different questions.</p>
-    <ul>
-      <li><b>5 items have no WCAG SC behind them at all</b> — Accessible Fonts (sans-serif, 11pt: no success criterion mandates a typeface or size, a legitimate house-style check, not a conformance one) and, in XLSX, Name the Table / Named Ranges / Cell A1 Text / Unique Sheet Names (Microsoft authoring hygiene that helps screen-reader navigation, but maps to no criterion). None of these five appear as rows in the table above — reporting them as WCAG failures would misrepresent them.</li>
-      <li><b>V5's per-format tabs add five genuinely new WCAG criteria outside this matrix's 20-SC scope</b> — 1.2.1 and 1.2.5 (PPTX: "Embedded audio and video provide required alternatives"), 2.2.2 and 2.3.1 (PPTX: "Animations, transitions, and flashing content do not create barriers"), and 3.3.2 (PDF/XLSX: "Interactive fields and controls are labeled and keyboard accessible" / "Interactive controls and input cells are keyboard accessible and properly labeled"). All five are quoted in V5_DETAIL for completeness, but none are added as table rows here — giving one a RUBRIC ceiling and an ACP-today status needs real capability verification against the engine code, not a plausible-sounding guess for a criterion this matrix has never tracked. (V3's older, separate "2 items outside scope" — Captioning for Multimedia and No Auto-Playing Audio — are a different pair from these five; V5 doesn't carry those old items forward under this framing.)</li>
-      <li><b>3 items are sub-checks, not separate criteria</b> — Table Captions, Decorative Marking, and Uses Slide Layouts are useful operational decompositions of 1.3.1 and 1.1.1, not criteria of their own. They appear in the table under their parent SC's row, not as independent entries.</li>
-      <li><b>Only 2 in-scope WCAG criteria are confirmed absent from V5 entirely</b> — 1.3.3 and 2.1.2 have no item in the Applicability Matrix tab AND no assertion in any V5_DETAIL format tab; genuinely never on her checklist. The picture is murkier for four others: 1.4.4, 1.4.10, 1.4.11, and 1.4.12 all show "no checklist item" in the Applicability Matrix tab, yet V5_DETAIL's per-format tabs contradict that for all four — real assertions exist (PDF/PPTX/XLSX for 1.4.4 & 1.4.10, all four formats for 1.4.11, PPTX only for 1.4.12). That's a direct disagreement between Deva's own two V5 artifacts, not a maturing-checklist story; each affected SC's drawer flags it rather than picking a side. 1.4.1 and 3.1.2 were added to the Applicability Matrix tab on 2026-07-22 (both now X across all four formats) and are no longer in either "absent" bucket. None of 1.3.3/2.1.2 appear as rows when the toggle above is on (nothing in either artifact to show); 1.4.4/1.4.10/1.4.11/1.4.12 also stay hidden under the toggle today, since it still keys off the Applicability Matrix tab, not V5_DETAIL.</li>
-      <li><b>V5 is more precise than V3 at cell level, not just SC level</b> — several of the 14 SCs the Applicability Matrix tab covers only apply to SOME formats (1.3.2/2.1.1/2.4.3: PPTX+PDF only; 1.4.5: DOCX+PDF only; 2.4.6/3.1.1: no XLSX item; 4.1.2: DOCX only conditionally, PDF only). 1.4.1 and 3.1.2 are the two newest additions, both currently X (full DOCX/XLSX/PPTX/PDF coverage) rather than partial. Cells outside V5's applicability for a shown row dim rather than disappear — real ACP status is never hidden, only de-emphasized. The file's own footer reports "34 applicable cells," but a direct count of every marked cell (and its own per-format column totals) both total 36 — a discrepancy in Deva's source file, carried over unchanged from v4.xlsx, noted here rather than silently corrected.</li>
-      <li><b>V5 also adds two tabs outside any per-cell scoring this matrix does</b> — a recommended tech stack ("KEY TECH": Open XML SDK for Office parsing, veraPDF Greenfield for PDF/UA validation, a Python+FastAPI AI/OCR service, PDFium or an enterprise SDK for PDF rendering, LibreOffice for Office rendering — Tesseract OCR and OpenCV are listed with her own annotation "We may not need this" against both), and a short UTSW institutional-applicability screening questionnaire (is a document public/patient-facing, new or republished, required to access a UTSW program/service/course, genuinely archived, an individualized secured record, or third-party-posted) that decides WHETHER a given document needs an accessibility pass at all, before any WCAG-level checking starts. Neither maps to a WCAG SC or an ACP cell, so neither appears in the table — cited here as context for what else is in v5.xlsx, not folded into the per-SC comparison.</li>
-    </ul>
-  </div>
-  </div>
+    </div>
 
   <div id="tab-log" class="tabpanel" style="display:none">
 
@@ -689,7 +697,7 @@ const ROWS=[
   pptx:{b:["None — run-level overrides require knowing WHICH runs, which is the thing only review determines."],ev:["—"]},
   pdf:{b:["None — span-level /Lang in the tag tree is review-directed work."],ev:["—"]}}},
 
-{sc:"1.4.4",name:"Resize Text",lvl:"AA",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.4.4",name:"Resize Text",lvl:"AA",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"NA"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"NA"},
  ae:(function(){const common={
    b:["No document-format check exists — the 1.4.4 fixer in api/remediate.py is HTML-only (viewport un-blocking); don't let it bleed into the document story.","Why Human rather than N/A: zoom is mostly the viewer's job (Word/Excel/PowerPoint/Acrobat all zoom), BUT content can still defeat it — text rasterised into images, tiny fixed frames — so a blanket 'not applicable' overclaims.","Adjacent honest coverage: text-in-images, the main content-side resize failure in practice, IS caught — by the 1.4.5 OCR detector."],
    ev:["api/remediate.py (1.4.4 fixer is HTML-only)","api/ocr.py (the adjacent coverage)"]};
@@ -712,7 +720,7 @@ const ROWS=[
   pdf:{b:["The exception: fixed pages genuinely CAN fail reflow at 400% zoom, and tagged PDFs reflow far better in supporting viewers — another reason pdf.tagged (1.3.1) is the gating investment.","No machine check today → Human. Don't claim; point to the tagging dependency."],ev:["—"]}},
  re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"1.4.12",name:"Text Spacing",lvl:"AA",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.4.12",name:"Text Spacing",lvl:"AA",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"NA"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"NA"},
  ae:(function(){const common={
    b:["The criterion tests whether USER spacing overrides break content — an interactive AT behaviour with no static-file oracle in the current stack.","The HTML fixer (relaxing fixed-pixel line-height) shows the pattern is understood; nothing analogous exists for documents. Unbuilt = Human, stated plainly."],
    ev:["api/remediate.py (1.4.12 fixer is HTML-only)"]};
@@ -783,7 +791,7 @@ const ROWS=[
   pdf:{b:["Live: /Title (filename-derived; existing titles preserved through the two-stage save) + /DisplayDocTitle boolean.","The bookmark gap is ONE integration away: PdfBookmarksFixer (pdfplumber heading extraction, page-level fallback) exists and is registered in the vendored worker — remediate_pdf.py just never invokes it. The cheapest capability upgrade on the board."],
       ev:["api/remediate_pdf.py (stages 1–2)","worker-python/remediation/fixers/pdf/bookmarks_fixer.py (built, unwired)","worker-python/remediation/fixer_registry.py"]}}},
 
-{sc:"2.4.3",name:"Focus Order",lvl:"A",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"2.4.3",name:"Focus Order",lvl:"A",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"A2"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"R1"},
  ae:(function(){const common={
    b:["Focus order is an interaction property; the only implemented check is HTML positive-tabindex (with its reset-to-0 fixer).","For slides, shape tab order — the nearest document analogue — is already detected AND remediated under 1.3.2. Cite the adjacency; don't double-claim it here."],
    ev:["api/remediate.py:_fix_focus_order (HTML only)","see 1.3.2 PPTX for the adjacent coverage"]};
@@ -808,7 +816,7 @@ const ROWS=[
   pptx:{b:["Same draft → approve → manual-apply lane as docx."],ev:["api/ai.py:suggest_fix"]},
   pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"2.1.1",name:"Keyboard",lvl:"A",flag:true,a:{docx:"A2",xlsx:"A2",pptx:"A3",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R2",pdf:"R1"},
+{sc:"2.1.1",name:"Keyboard",lvl:"A",flag:true,a:{docx:"NA",xlsx:"NA",pptx:"A3",pdf:"A2"},r:{docx:"NA",xlsx:"NA",pptx:"R2",pdf:"R1"},
  ae:{
   docx:{b:["Static document content has no keyboard surface of its own — operability lives in the viewer. No check exists, none claimed.","Why Human rather than N/A: embedded ActiveX/macro content could in principle create keyboard issues; Human keeps the door honest."],ev:["—"]},
   xlsx:{b:["Same reasoning as docx; workbook macros/controls are the theoretical surface, unchecked today."],ev:["—"]},
@@ -831,7 +839,7 @@ const ROWS=[
   pdf:{b:["The exception that proves the rule: PDF CAN embed JavaScript and form logic that traps focus. Nothing checks it → Human, honestly."],ev:["—"]}},
  re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R3"},
+{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A2",xlsx:"NA",pptx:"NA",pdf:"A3"},r:{docx:"R1",xlsx:"NA",pptx:"NA",pdf:"R3"},
  ae:{
   docx:{b:["This SC targets UI components; in documents it bites on form controls. What exists nearby: docx content-control fields (checkbox, date, dropdown…) ARE checked for labels — but under 3.3.2, not 4.1.2 (DOCX_FORM_FIELD_NO_LABEL).","Watch the demo-catalog trap: wcagCatalog.js marks 4.1.2 'Shipped (demo)' — that's HTML axe coverage for web pages. Quoting it for documents is exactly the layer-mixing this brief exists to stop."],
       ev:["api/office_structure.py (3.3.2 form-field check — adjacent)","frontend/src/wcagCatalog.js (HTML-only 'Shipped' marker)"]},
@@ -901,41 +909,6 @@ const UPGRADE={
 "2.1.2":"Same as 2.1.1 PDF — no foreseeable bounded technique for judging arbitrary script behavior.",
 "4.1.2":"PDF: /TU, /FT, and /V/DV now all checked (pdf_form_field_checks — /FT validates against the four legal field types, /V required-field-value check gated on the Ff bit-2 Required flag). Landed 2026-07-23 (PR #4), closing the gap the veraPDF spike (2026-07-21, docs/spikes/2026-07-17-verapdf-spike.md) had identified. veraPDF's remaining value is corroboration, not new coverage: finer per-content-item confirmation on 1.3.1/2.4.2/3.1.1 (already-covered SCs) and two PDF/UA categories outside WCAG's 20-SC scope (XMP metadata, font embedding). Free (MPLv2), local, still worth the roadmap slot on that basis — see docs/adr/0028-amendment-local-corroboration-engines.md. DOCX: now also checks w:tag (the programmatic identifier) alongside the existing w:alias (label) check — filed under its own SC_4_1_2, distinct from the 3.3.2-filed alias check. Landed 2026-07-24 (PR #6)."};
 
-// Deva's SECOND checklist (Accessibility Checklist.pdf, provided 2026-07-17) — a per-file manual
-// SOP a human review team actually works through, one page per format, plain-English criteria +
-// native-tool "how to check or fix" steps. Unlike DEVA (above), this one is inherently per-format —
-// each checklist page only covers one format — so it's keyed sc -> format -> [{c: criteria name,
-// h: V3's exact how-to-check-or-fix text}]. Only entries verified as an actual match (🟢 full or
-// 🟡 partial in docs/deva-checklist-reconciliation.md) are included — the 12 confirmed gaps and
-// 6 not-actually-a-WCAG-SC items from that reconciliation are deliberately absent here; showing them
-// as "today's manual step" would imply ACP already has a cell for them to correspond to.
-const CHECKLIST2={
-"1.1.1":{docx:[{c:"Descriptive Alt Text for Images",h:"Right-click image > 'Edit Alt Text'. Provide context."}],
-  xlsx:[{c:"Alt Text for Images",h:"Right-click image > 'Edit Alt Text'. Describe the image meaningfully."}],
-  pptx:[{c:"Alt Text for Images",h:"Right-click image > 'Edit Alt Text'. Describe the image meaningfully."}],
-  pdf:[{c:"Descriptive Alt Text for Images",h:"Right-click image > 'Edit Alt Text' or use TouchUp tool."}]},
-"1.3.1":{docx:[{c:"Uses Heading Styles",h:"Apply headings using the 'Styles' pane (Heading 1, Heading 2, etc.)."},{c:"Simple Tables with Headers",h:"Use table styles with header rows and avoid merged cells."}],
-  xlsx:[{c:"Use table headers",h:"Table Design tab > Table Style Options > Header Row checkbox, type the column headings."}],
-  pptx:[{c:"Meaningful Table Headers",h:"Use visual headers and describe table purpose."}],
-  pdf:[{c:"PDF is Tagged",h:"Use Acrobat Pro > Accessibility > Autotag Document or Full Check."},{c:"Table Headers Tagged",h:"Ensure <TH> is used and scope is defined in tag tree."}]},
-"1.3.2":{pptx:[{c:"Logical Reading Order",h:"Use the 'Selection Pane' to check and arrange reading order."}],
-  pdf:[{c:"Correct Reading Order",h:"Use the Reading Order tool to verify and adjust."}]},
-"1.4.3":{docx:[{c:"Color Contrast",h:"Check color contrast using WebAIM contrast checker."}],
-  xlsx:[{c:"Color Contrast",h:"Select a table style that has colors with a strong contrast. Use sufficient contrast for text and background colors."}],
-  pptx:[{c:"Color Contrast",h:"Check using a contrast analyzer (e.g., WebAIM) for a ratio of at least 4.5:1."}],
-  pdf:[{c:"Color Contrast",h:"Use Acrobat's Accessibility Checker or contrast tools."}]},
-"3.1.1":{docx:[{c:"Document Language Set",h:"Review > Language > Set Proofing Language."}],
-  pptx:[{c:"Slide Language Set",h:"Set File > Options > Language > Set presentation language."}],
-  pdf:[{c:"Language Declared",h:"File > Properties > Advanced > Set Language."}]},
-"2.4.2":{docx:[{c:"Document Title Set (Metadata)",h:"File > Info > Properties > Title."}],
-  xlsx:[{c:"Use unique names for worksheets",h:"Give all worksheets unique names, and remove blank worksheets."}],
-  pptx:[{c:"Unique Slide Titles",h:"Use 'Outline View' to ensure each slide has a unique title."}],
-  pdf:[{c:"Title and Metadata Set",h:"File > Properties > Description tab."}]},
-"2.4.4":{docx:[{c:"Descriptive Hyperlinks",h:"Use meaningful link text; avoid raw URLs."}],
-  pptx:[{c:"Descriptive Hyperlinks",h:"Use meaningful hyperlink text like 'CDC guidelines' instead of 'Click here'."}]},
-"1.4.5":{docx:[{c:"No Use of Images for Text Only",h:"Avoid text inside images unless it's also in alt text."}]},
-"4.1.2":{docx:[{c:"Accessible Form Fields",h:"Use Developer > Content Controls with clear labels."}]},
-"2.1.1":{pptx:[{c:"Keyboard Accessible Navigation",h:"Use Tab key in slideshow mode to test focus order."}]}};
 
 // Open questions from docs/deva-automation-tier-reconciliation.md — deliberately NOT resolved by
 // picking a side. Keyed sc -> [format(s) it applies to, or "*" for all] -> question text.
@@ -948,178 +921,18 @@ const OPENQ={
 "1.3.2":{pptx:"Should this fix cap at Human-assisted? The reorder algorithm is deterministic, but Deva’s analysis scores it Structural rebuild — “highest-risk fix in the deck; reordering changes z-order and can alter appearance.” Not resolved — a risk-philosophy decision, not a code bug."},
 "2.1.1":{pptx:"Shares the 1.3.2/pptx reordering mechanism and risk. Deva’s analysis also scores the assessment side stricter (Det+human, not machine-assisted) — “operability is behavioral.” Not resolved here."}};
 
-// ASSESS_SPEC = Deva's Assessment grid (V3, column D) — per V3's request, THE PRIMARY reference for
-// "how should this be assessed," shown first in §3, ahead of this matrix's own aWhy prose. Every
-// entry also carries the verdict from directly auditing ACP's actual detector code against V3's
-// spec (docs/deva-assessment-grid-comparison.md, 38 items, full detail + file:line citations).
-// v: MATCH (green) | PARTIAL (blue) | GAP (orange) | DIFF (red, different mechanism entirely) |
-// NONE (gray, no detector exists) | UNVER (gray, not independently re-verified this pass).
-const AV_LABEL={MATCH:"Match",PARTIAL:"Partial",GAP:"Gap",DIFF:"Different mechanism",NONE:"No detector",UNVER:"Not re-verified",NOFIX:"No fixer",CONFIRMED:"Confirmed (source-only)"};
-const ASSESS_SPEC={
-"1.1.1":{docx:[{c:"Descriptive Alt Text",s:"Require wp:docPr/@descr non-empty (fall back to inner pic:cNvPr/@descr). Do NOT accept @title — legacy field, AT doesn't read it. Check adec:decorative in docPr/extLst to separate decorative from missing.",v:"MATCH",note:"AltTextRule.cs only reads @descr, never @title."}],
-  xlsx:[{c:"Alt Text for Images",s:"xdr:cNvPr/@descr and @title. Flag empty on pictures AND charts.",v:"MATCH",note:"Only @descr read; covers both Picture and GraphicFrame anchors."}],
-  pptx:[{c:"Alt Text for Images",s:"p:cNvPr/@descr and @title. Flag empty on non-decorative picture/graphicFrame shapes.",v:"MATCH",note:"Covers both shape types via @descr; never reads @title (fine). Now also skips images marked decorative via AltTextHeuristics.IsMarkedDecorative() — merged in PR #47 (mova-io/acp, 1fc3c2a, 2026-07-21)."},
-    {c:"Decorative Images Marked Correctly",s:"Detect the 'mark as decorative' flag: a:extLst decorative extension (adec) on cNvPr, or empty descr paired with no semantic role.",v:"NONE",note:"Confirmed absent."}],
-  pdf:[{c:"Descriptive Alt Text",s:"Require /Alt on the /Figure structure element. Do NOT accept /ActualText — it's a text REPLACEMENT (ligatures), not a description.",v:"MATCH",note:"image_alt_text.py only reads /Alt, no /ActualText."}]},
-"1.3.1":{docx:[{c:"Uses Heading Styles",s:"Primary signal: w:pPr/w:outlineLvl (language-independent). Secondary: canonical English style name, never localized display name.",v:"MATCH",note:"Now reads w:pPr/w:outlineLvl (level = val+1) as a co-equal signal alongside the style-ID lookup, exactly V3's primary+secondary split. Merged PR #49 (mova-io/acp), 2026-07-21."},
-    {c:"Lists Use Proper Formatting",s:"Resolve w:numPr through the full chain: direct, then style's numPr (walk basedOn), then numbering.xml.",v:"NONE",note:"No list-structure detector exists."},
-    {c:"Simple Tables with Headers",s:"w:tblHeader on row 0's trPr. ALSO detect merged cells via w:vMerge/w:gridSpan and flag.",v:"PARTIAL",note:"Checks tblHeader; no merged-cell detection anywhere in the file."},
-    {c:"Table Captions or Descriptions",s:"Canonical style name 'caption' (not localized) immediately before/after w:tbl.",v:"NONE",note:"No caption detector exists."}],
-  xlsx:[{c:"Use Table Headers",s:"tbl.headerRowCount == 1 (xl/tables/tableN.xml).",v:"MATCH",note:"Reads HeaderRowCount, flags when 0."}],
-  pptx:[{c:"Meaningful Table Headers",s:"a:tblPr/@firstRow='1' is a STYLE BANDING flag, not header semantics — PPTX has no <TH>. Corroborate with cell content/formatting.",v:"GAP",note:"firstRow is the sole signal, no corroboration — a declared limitation, now independently confirmed by V3's spec too."}],
-  pdf:[{c:"PDF is Tagged",s:"/MarkInfo/Marked AND /StructTreeRoot present. PRECONDITION for every other PDF check.",v:"MATCH",note:"tagged_pdf.py checks both, AND-combined."},
-    {c:"Headings Tagged Properly",s:"/H1-/H6 present, correct nesting, no skipped levels.",v:"NONE",note:"Nothing beyond overall tagging exists."},
-    {c:"Table Headers Tagged",s:"/TH elements present AND /Scope attribute set (or Headers/IDs association).",v:"GAP",note:"table_headers.py checks /TH only; /Scope never read."}]},
-"1.3.2":{pptx:[{c:"Logical Reading Order",s:"spTree order vs. geometric top-left sort; flag divergence.",v:"MATCH",note:"ReadingOrderRule.cs does exactly this comparison."}],
-  pdf:[{c:"Correct Reading Order",s:"Structure-tree order vs. content-stream order vs. visual x/y.",v:"UNVER",note:"reading_order.py reviewed in an earlier pass; not re-verified against this exact V3 wording."}]},
-"1.4.3":{docx:[{c:"Color Contrast",s:"Resolve direct hex OR theme color, THEN apply themeTint/themeShade (HSL math). Skipping tint/shade is the most common cause of tools disagreeing.",v:"MATCH",note:"ColourContrastRule.cs now resolves direct hex OR ThemeColorHelper.Resolve() (new ThemeColorHelper.cs, full 12-slot scheme + tint/shade HSL math). Merged PR #46 (mova-io/acp), 2026-07-21."}],
-  xlsx:[{c:"Color Contrast",s:"Theme + XLSX-specific tint float formula — DIFFERENT math than DOCX's themeTint/themeShade. Using DOCX's formula gives wrong ratios.",v:"MATCH",note:"api/office_structure.py now has _parse_xlsx_theme() + _apply_xlsx_tint(), using the correct SpreadsheetML-specific tint float formula. Merged PR #46, 2026-07-21. xlsx_contrast_checks() and its fixer's target-color selection switched from a luma-difference proxy to the true WCAG contrast ratio formula, 2026-07-23 (jeremyyuAWS/acp PR #3)."}],
-  pptx:[{c:"Color Contrast",s:"Resolve solidFill (srgbClr/schemeClr+theme) vs. shape→layout→master background chain.",v:"PARTIAL",note:"Full shape→layout→master chain confirmed — but only explicit RGB hex; schemeClr+theme-map resolution isn't handled."}],
-  pdf:[{c:"Color Contrast",s:"veraPDF WCAG profile, OR render+pdfplumber-bbox+pixel-sample.",v:"DIFF",note:"Neither — uses content-stream non_stroking_color extraction + luma heuristic. No rendering at all."}]},
-"1.4.5":{docx:[{c:"No Use of Images for Text Only",s:"Walk word/media/*; no deterministic text detection, needs OCR.",v:"PARTIAL",note:"api/ocr.py walks word/ppt/xl media via tesseract — mechanism matches, but it's a shared module, not docx-specific."}],
-  pdf:[{c:"No Scanned Images of Text (OCR)",s:"Near-zero text layer + large-area image = scan. No OCR needed to DETECT.",v:"NONE",note:"No detector exists."}]},
-"2.1.1":{pptx:[{c:"Keyboard Accessible Navigation",s:"Extract interactive shape order (spTree) + hyperlink/action shapes. Tab order is extractable, not judgeable.",v:"DIFF",note:"AnimationOrderRule.cs checks auto-advancing animation timing entirely — a real 2.1.1 signal, but not the same mechanism V3 describes at all."}]},
-"2.4.2":{docx:[{c:"Document Title Set",s:"docProps/core.xml dc:title present, non-empty.",v:"MATCH",note:"DocumentTitleRule.cs reads PackageProperties.Title."}],
-  xlsx:[{c:"Name the Table",s:"tbl.displayName not matching ^Table\\d+$.",v:"NONE",note:"No detector exists."},
-    {c:"Unique Names for Worksheets",s:"Default-pattern match AND cross-sheet uniqueness.",v:"GAP",note:"SheetNameRule.cs only regex-matches default names; no uniqueness check among custom names."}],
-  pptx:[{c:"Unique Slide Titles",s:"Non-empty AND unique across the deck (set comparison).",v:"GAP",note:"SlideTitleRule.cs checks per-slide non-empty only; no cross-slide uniqueness check."}],
-  pdf:[{c:"Title and Metadata Set",s:"/Title non-empty AND DisplayDocTitle true. BOTH required.",v:"MATCH",note:"Two separate rules (document_title.py + display_title.py), both conditions covered."}]},
-"2.4.3":{pdf:[{c:"Logical Tab Order",s:"Each page's /Tab entry should be /S (structure order); plus AcroForm field order.",v:"PARTIAL",note:"pdf_focus_order_checks() (api/office_structure.py) now flags widget-carrying pages whose /Tabs is missing or not /S, with a matching remediate_pdf.py fixer. Landed 2026-07-23 (jeremyyuAWS/acp PR #4). Existence-check only — the field-order-matches-reading-order half of V3's spec still needs /StructTreeRoot walking, which nothing in this codebase does."}]},
-"2.4.4":{docx:[{c:"Descriptive Hyperlinks",s:"Resolve r:id via rels. Flag generic text ('click here') AND raw URLs (regex ^https?://).",v:"MATCH",note:"LinkPurposeRule.cs resolves rels and flags generic text; raw-URL regex (^(https?://|www\\.)) added 2026-07-23 (jeremyyuAWS/acp PR #3)."}],
-  xlsx:[{c:"Meaningful Hyperlink Text",s:"Public cell.hyperlink; ALSO scan formulas for '=HYPERLINK(' — formula links never appear as cell.hyperlink.",v:"MATCH",note:"New Xlsx/Rules/LinkPurposeRule.cs (XLSX-LINK-001) covers both mechanisms exactly as V3 describes — standard hyperlinks element AND formula-driven =HYPERLINK(...) cells. Merged PR #48 (mova-io/acp), 2026-07-21."}],
-  pptx:[{c:"Descriptive Hyperlinks",s:"run.hyperlink.address+text. Flag generic text AND raw URLs.",v:"MATCH",note:"Same pattern as DOCX — generic-text check plus the same raw-URL regex, added 2026-07-23 (PR #3)."}],
-  pdf:[{c:"Links Are Descriptive and Active",s:"Descriptive-text check, PLUS an HTTP liveness check (HEAD/GET, real User-Agent, exclude mailto/tel/anchors).",v:"NONE",note:"No detector exists."}]},
-"3.1.1":{docx:[{c:"Document Language",s:"Read ALL THREE: @val (Latin), @eastAsia (CJK), @bidi (RTL). @val alone silently misses CJK/RTL.",v:"MATCH",note:"LangSet() checks all three attributes."}],
-  pptx:[{c:"Slide Language",s:"Read a:rPr/@lang AND @altLang (the DrawingML CJK equivalent).",v:"MATCH",note:"DocumentLanguageRule.cs now checks both Language and AlternativeLanguage on runs and end-paragraph marks. Merged PR #51 (mova-io/acp), 2026-07-21."}],
-  pdf:[{c:"Language Declared",s:"Catalog /Lang present, valid BCP-47.",v:"MATCH",note:"document_language.py reads /Lang correctly."}]},
-"4.1.2":{docx:[{c:"Accessible Form Fields",s:"w:sdtPr/w:alias/@val non-empty AND w:tag set — both.",v:"GAP",note:"Only @alias checked (filed under 3.3.2, not 4.1.2, in ACP's catalog); w:tag never read."}],
-  pdf:[{c:"Form Fields Have Labels",s:"AcroForm /Fields, each needs /TU, /FT, /V.",v:"MATCH",note:"pdf_form_field_checks() (api/office_structure.py) walks /AcroForm/Fields and now checks all three: /TU (PDF_FORM_NO_ACCESSIBLE_NAME, live since 2026-07-15), /FT against the four legal field types (PDF_FORM_NO_FIELD_TYPE), and /V or /DV for fields with the Ff Required bit set (PDF_FORM_REQUIRED_NO_VALUE) — both added 2026-07-23 (jeremyyuAWS/acp PR #4)."}]}};
-
-// ASSESS_META = per-item Human role (Assessment tab col F) + Model recommendation (col E,
-// verbatim local+cloud, unlike LOCAL_MODEL on wcag-deva-v3 which strips cloud). Keyed by
-// "format|c" matching ASSESS_SPEC item names exactly (note: two items use a SHORTER name
-// in ASSESS_SPEC than V3's own literal text -- "Descriptive Alt Text for Images" -> "Descriptive
-// Alt Text", "Document Title Set (Metadata)" -> "Document Title Set" -- renamed here to match,
-// do not use V3's literal names for those two or the decoration lookup below silently no-ops.
-const ASSESS_META={
-  "docx|Uses Heading Styles":{m:"Pseudo-heading detection: bold/large manual paragraphs that LOOK like headings. Local: Qwen3-8B or Llama 3.x 8B (text). Cloud: Haiku 4.5.",h:"Confirm flagged pseudo-headings."},
-  "docx|Lists Use Proper Formatting":{m:"None needed.",h:"Spot-audit only."},
-  "docx|Descriptive Alt Text":{m:"Equivalence + drafting. Local: Qwen2.5-VL-7B (24GB) or Llama 3.2 Vision 11B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt."},
-  "docx|Simple Tables with Headers":{m:"None needed.",h:"Confirm complex/nested tables."},
-  "docx|Table Captions or Descriptions":{m:"Is the caption descriptive of the table's purpose? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm vague captions."},
-  "docx|Descriptive Hyperlinks":{m:"Purpose-in-context on non-generic links. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links."},
-  "docx|Color Contrast":{m:"None on solid fills.",h:"Spot-audit text over images."},
-  "docx|Document Language":{m:"Optional: declared-vs-actual mismatch via fastText lid.176 (classifier, not LLM).",h:"Confirm flagged mismatches."},
-  "docx|Accessible Fonts Used":{m:"None needed.",h:"None."},
-  "docx|Document Title Set":{m:"Does the title describe the document's purpose? Flag generic ('Document1'). Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm generic titles."},
-  "docx|No Use of Images for Text Only":{m:"OCR + judgment. Local: Qwen2.5-VL-7B (strongest open OCR) or PaddleOCR/Tesseract for pure transcription. Cloud: Sonnet 5.",h:"Confirm logo/essential exceptions."},
-  "docx|Accessible Form Fields":{m:"Is the label meaningful for the field's purpose? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm vague field labels."},
-  "pptx|Unique Slide Titles":{m:"Optional: is the title descriptive? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm generic titles."},
-  "pptx|Logical Reading Order":{m:"Does the order preserve meaning? Local VLMs are weakest here. Cloud: Sonnet 5 preferred.",h:"Adjudicate flagged slides (decisive)."},
-  "pptx|Alt Text for Images":{m:"Equivalence + drafting. Local: Qwen2.5-VL-7B / Llama 3.2 Vision 11B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt."},
-  "pptx|Decorative Images Marked Correctly":{m:"Is the decorative DECISION correct (is this image actually informative)? Local: Qwen2.5-VL-7B. Cloud: Sonnet 5.",h:"Confirm decorative calls on flagged images."},
-  "pptx|Color Contrast":{m:"Text over picture/gradient: render slide (soffice -> PNG) and pixel-sample. Local: any VLM can flag; math is better done in code.",h:"Spot-audit text-over-image slides."},
-  "pptx|Uses Slide Layouts":{m:"None needed.",h:"None."},
-  "pptx|Descriptive Hyperlinks":{m:"Purpose-in-context. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links."},
-  "pptx|Meaningful Table Headers":{m:"Confirm the first row holds real header labels. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm complex tables."},
-  "pptx|Captioning for Multimedia":{m:"Caption accuracy/sync cannot be judged from the file alone; transcription via local Whisper is possible for comparison.",h:"Review caption quality and sync (decisive)."},
-  "pptx|No Auto-Playing Audio":{m:"None needed.",h:"Confirm intent on flagged media."},
-  "pptx|Keyboard Accessible Navigation":{m:"Limited value; operability is behavioral.",h:"Tab through in slideshow mode (decisive)."},
-  "pptx|Slide Language":{m:"Optional: declared-vs-actual via fastText lid.176.",h:"Confirm flagged mismatches."},
-  "xlsx|Alt Text for Images":{m:"Equivalence; charts need a data-summary alt. Local: Qwen2.5-VL-7B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt; charts need care."},
-  "xlsx|Name the Table":{m:"None needed.",h:"None."},
-  "xlsx|Use Table Headers":{m:"None needed.",h:"Confirm irregular ranges."},
-  "xlsx|Add Text to Cell A1":{m:"Is A1 a useful title/overview for the sheet? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm usefulness on complex sheets."},
-  "xlsx|Meaningful Hyperlink Text":{m:"Purpose-in-context. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links."},
-  "xlsx|Unique Names for Worksheets":{m:"None needed.",h:"None."},
-  "xlsx|Name Cells and Ranges":{m:"None needed.",h:"None."},
-  "xlsx|Color Contrast":{m:"None on resolvable colors.",h:"Spot-audit gradient/image backgrounds."},
-  "pdf|PDF is Tagged":{m:"None needed.",h:"None - gate the pipeline on this."},
-  "pdf|Correct Reading Order":{m:"Linearized coherence. Cloud: Sonnet 5 / Opus 4.8. Local VLMs weakest here.",h:"Adjudicate (Matterhorn human checkpoint)."},
-  "pdf|Headings Tagged Properly":{m:"Descriptiveness of heading text: Local Qwen3-8B / Cloud Haiku 4.5.",h:"Confirm vague headings."},
-  "pdf|Descriptive Alt Text":{m:"Equivalence + drafting. Local: Qwen2.5-VL-7B. Cloud: Sonnet 5.",h:"Approve or edit drafted alt."},
-  "pdf|Table Headers Tagged":{m:"None needed.",h:"Confirm complex/nested tables."},
-  "pdf|Language Declared":{m:"Declared-vs-actual via fastText lid.176 (classifier).",h:"Confirm flagged mismatches."},
-  "pdf|Title and Metadata Set":{m:"Descriptiveness: Local Qwen3-8B / Cloud Haiku 4.5.",h:"Confirm generic titles."},
-  "pdf|Form Fields Have Labels":{m:"Is the label meaningful for the field? Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm vague field labels."},
-  "pdf|No Scanned Images of Text (OCR)":{m:"OCR to remediate. Local: Qwen2.5-VL-7B or PaddleOCR/Tesseract. Cloud: Sonnet 5.",h:"Verify OCR accuracy on remediated pages."},
-  "pdf|Color Contrast":{m:"Ambiguous backgrounds only. Cloud: Sonnet 5.",h:"Spot-audit overlays; cross-check with PAC."},
-  "pdf|Logical Tab Order":{m:"Order preserves meaning: Cloud Sonnet 5.",h:"Confirm on form-heavy PDFs."},
-  "pdf|Links Are Descriptive and Active":{m:"Purpose-in-context. Local: Qwen3-8B. Cloud: Haiku 4.5.",h:"Confirm ambiguous links; review dead-link list."},
-};
-(function(){for(const sc in ASSESS_SPEC)for(const f in ASSESS_SPEC[sc])for(const item of ASSESS_SPEC[sc][f]){
-  const meta=ASSESS_META[f+"|"+item.c];
-  if(meta){item.m=meta.m;item.h=meta.h;}
-}})();
-
-// REMEDIATION_SPEC = V3's Remediation tab vs. ACP's actual fixer code — the remediation-side
-// companion to ASSESS_SPEC. Same shape (sc -> format -> [{c,s,v,note}]), audited 2026-07-21
-// against api/remediate_office.py, api/remediate_pdf.py, api/proposals.py, api/apply_alt.py,
-// api/store.py, config/rule-catalog.json, and api/remediation_capability.py (the newer round-
-// trip-proven source of truth, cited over the catalog when the two disagree). Full detail +
-// file:line citations: docs/deva-remediation-comparison.md. v: MATCH/PARTIAL/GAP/DIFF (same
-// codes as ASSESS_SPEC) plus NOFIX (nothing exists) and CONFIRMED (V3 says source-only/don't
-// automate, ACP agrees — a good outcome, not a gap). Renders in drawer §4, below the CVP cards.
-const REMEDIATION_SPEC={
-"1.1.1":{docx:[{c:"Descriptive Alt Text for Images",s:"Generate+approve — lxml sets wp:docPr/@descr after approval.",v:"PARTIAL",note:"remediate_office.py:316-471,474-572 — same target, but a faithful-source or OCR-grounded description writes immediately with NO approval; only an ungrounded vision guess is held for approval."}],
-  xlsx:[{c:"Alt Text for Images",s:"Generate+approve — zip/XML edit since openpyxl doesn't expose xdr:cNvPr/@descr.",v:"MATCH",note:"remediate_office.py:585,324-467 — same zip/XML mechanism (openpyxl never imported here, so V3's round-trip-loss risk doesn't apply); same faithful-vs-AI split as DOCX."}],
-  pptx:[{c:"Alt Text for Images",s:"Generate+approve — set descr on p:cNvPr; never auto-write unreviewed alt.",v:"PARTIAL",note:"remediate_office.py:316-572 — faithful-source and OCR-grounded cases auto-write with no approval, violating V3's blanket rule by design."},
-    {c:"Decorative Images Marked Correctly",s:"Generate+approve — set the adec:decorative extLst flag, or clear descr.",v:"GAP",note:"Detection/proposal correctly never auto-marks (:392-426) — but no code sets an adec:decorative flag; the only applier would write proposal text into descr= instead of actually flagging the shape decorative."}],
-  pdf:[{c:"Descriptive Alt Text for Images",s:"Generate+approve — pikepdf sets /Alt on /Figure once approved.",v:"PARTIAL",note:"remediate_pdf.py:775-872 — auto-applies when the vision description is grounded (:852-861), only deferring when ungrounded. Catalog claims pure auto, understating the deferred path."}]},
-"1.3.1":{docx:[{c:"Uses Heading Styles",s:"Structural rebuild — p.style='Heading N', strip manual bold/size so style governs.",v:"GAP",note:"remediate_office.py:891-930 — writes w:pStyle but only for paragraphs an existing heuristic flags, and never strips manual w:b/w:sz overrides."},
-    {c:"Lists Use Proper Formatting",s:"Structural rebuild — p.style='List Bullet'/'List Number', strip literal prefix.",v:"NOFIX",note:"Nothing — confirmed by grep across api/*.py, rule-catalog.json, and remediation_capability.py's docx table."},
-    {c:"Simple Tables with Headers",s:"Auto-fix — w:tblHeader on row 0's trPr.",v:"GAP",note:"remediate_office.py:932-951 — exact mechanism match, but V3's merged-cell caveat isn't honored: no gridSpan/vMerge check exists."},
-    {c:"Table Captions or Descriptions",s:"Generate+approve — insert a Caption-styled paragraph.",v:"NOFIX",note:"Nothing — confirmed by grep for 'table caption', w:tblCaption, 'Caption' across fixer code."}],
-  xlsx:[{c:"Use Table Headers",s:"Auto-fix — headerRowCount=1 on the table definition.",v:"PARTIAL",note:"remediate_office.py:1068-1090 — flips the attribute, matching tier — but no first-row-looks-like-data check exists; V3's 'verify before batch-applying' caveat isn't honored."}],
-  pptx:[{c:"Uses Slide Layouts",s:"Source/author — moving content into placeholders isn't safely automatable.",v:"CONFIRMED",note:"Nothing — confirmed by grep; ACP doesn't attempt this and doesn't claim to."},
-    {c:"Meaningful Table Headers",s:"Auto-fix — a:tblPr/@firstRow='1', deterministic, low risk.",v:"MATCH",note:"remediate_office.py:674-707 — exact mechanism match, fails closed on ≤1 row, no caveat missed."}],
-  pdf:[{c:"PDF is Tagged",s:"Structural rebuild — Adobe Auto-Tag API or PDFix SDK; veraPDF validates, doesn't remediate.",v:"CONFIRMED",note:"Nothing — confirmed by grep for 'pdfix'/'auto-tag' (0 hits). Catalog already says human-only, matching V3's own 'fix at source' caveat; ADR 0028 lists Auto-Tag as unbuilt future work."},
-    {c:"Headings Tagged Properly",s:"Structural rebuild — auto-tag assigns heading tags, correct levels via tag-tree edit.",v:"DIFF",note:"remediate_pdf.py:296-330,183-214 — no tag-tree write happens; ACP derives candidate headings from font-size ranking and surfaces a human-confirmed 'heading map,' never writing the tag tree."},
-    {c:"Table Headers Tagged",s:"Structural rebuild — pikepdf/PDFix sets /TH and /Scope in the tag tree.",v:"NOFIX",note:"Nothing — confirmed by grep for /TH, /Scope, 'table_header' scoped to PDF (0 hits)."}]},
-"1.3.2":{pptx:[{c:"Logical Reading Order",s:"Structural rebuild — reorder spTree nodes; V3 flags this highest-risk, can alter appearance.",v:"GAP",note:"remediate_office.py:753-788 — exact reorder mechanism, but applied unconditionally with zero approval, despite the catalog calling it human-only (contradicted by the live code)."}],
-  pdf:[{c:"Correct Reading Order",s:"Structural rebuild — reorder the structure tree via PDFix/Acrobat/pikepdf.",v:"DIFF",note:"remediate_pdf.py:144-180 — never reorders the structure tree; untagged PDFs get a vision-proposed order for human confirmation, never auto-applied; tagged PDFs get nothing (order already comes from structure)."}]},
-"1.4.3":{docx:[{c:"Color Contrast",s:"Source/author — writable, but palette choice is a design decision; propose, don't apply.",v:"GAP",note:"remediate_office.py:1004-1041 — auto-recolors w:color unconditionally, no approval gate, directly contradicting the rule's own human-only catalog/docs policy — the single most consequential finding of this audit."}],
-  xlsx:[{c:"Color Contrast",s:"Source/author — writable, but a design decision; prefer a compliant built-in style; keep conditional formatting separate.",v:"DIFF",note:"remediate_office.py:820-863 — auto-applies immediately, flattens fonts to pure black/white rather than switching styles as V3 recommends. Does correctly leave dxf/cfRule blocks untouched."}],
-  pptx:[{c:"Color Contrast",s:"Source/author — writable, palette is a design decision; algorithmic assist available.",v:"GAP",note:"remediate_office.py:721-751 — the algorithmic assist exists, but auto-applies unconditionally (catalog says human-only) and never touches slide masters/templates."}],
-  pdf:[{c:"Color Contrast",s:"Source/author — not reliably fixable, colors baked into content streams; not worth attempting.",v:"DIFF",note:"remediate_pdf.py:97-141 — the sharpest disagreement in the audit: ACP rewrites content-stream text-fill operators to darken them, applied automatically, exactly what V3 says isn't worth attempting."}]},
-"1.4.5":{docx:[{c:"No Use of Images for Text Only",s:"Source/author — no safe automated path; OCR gives a starting transcript, never auto-applied as alt.",v:"CONFIRMED",note:"api/ocr.py + proposals.py:542-580 — OCRs the baked-in text, proposes the transcript for a human to paste as real text; never silently applied as alt text."}],
-  pdf:[{c:"No Scanned Images of Text (OCR)",s:"Structural rebuild — run OCR to add a real text layer.",v:"NOFIX",note:"Nothing adds a text layer — confirmed by grep for 'ocrmypdf' (0 hits). ACP's OCR usage is detection/evidence only, feeding a human re-keying workflow, never text-layer injection."}]},
-"2.1.1":{pptx:[{c:"Keyboard Accessible Navigation",s:"Structural rebuild — same mechanism as reading order, fix shape order in spTree.",v:"DIFF",note:"remediation_capability.py:150-157 marks this HUMAN, always — ACP disagrees with V3's premise that fixing shape order also fixes 2.1.1, and never applies the reading-order fixer on 2.1.1's behalf."}]},
-"2.4.2":{docx:[{c:"Document Title Set (Metadata)",s:"Generate+approve — doc.core_properties.title = '...'.",v:"PARTIAL",note:"remediate_office.py:1239-1241 — same target, filename-derived value, but writes unconditionally with no approval step."}],
-  xlsx:[{c:"Unique Names for Worksheets",s:"Auto-fix — ws.title='...'; wb.remove(ws) for blanks; V3 flags MAJOR risk (breaks formula refs).",v:"DIFF",note:"proposals.py:868-926 — AI-drafted, human-approval-only, and NO write-back applier exists at all — nothing renames or deletes a sheet in ACP today, despite the catalog claiming auto. No formula-reference tracking exists anywhere."}],
-  pptx:[{c:"Unique Slide Titles",s:"Generate+approve — set title text; add a placeholder from the layout if missing.",v:"PARTIAL",note:"remediate_office.py:660-671,790-802 — adds a placeholder+text, but writes unconditionally (AUTO), and fabricates a new off-slide placeholder rather than applying an existing layout as V3 prefers."}],
-  pdf:[{c:"Title and Metadata Set",s:"Auto-fix — set docinfo /Title AND DisplayDocTitle=true, both needed.",v:"MATCH",note:"remediate_pdf.py:386-388,471-505 — writes both halves deterministically, only when a title is genuinely absent."}]},
-"2.4.3":{pdf:[{c:"Logical Tab Order",s:"Auto-fix — set each page's /Tab to /S, deterministic write.",v:"MATCH",note:"remediate_pdf.py Stage-1 fixer now sets /Tabs = /S on every widget-carrying page missing or mistagged. Landed 2026-07-23 (jeremyyuAWS/acp PR #4). AcroForm field-order verification (the other half of V3's spec) is still unbuilt."}]},
-"2.4.4":{docx:[{c:"Descriptive Hyperlinks",s:"Generate+approve — replace run text inside w:hyperlink, target unchanged.",v:"GAP",note:"proposals.py:612-696 drafts correctly — but NO write-back applier exists (handlers.py:1108-1112: only Office alt text has an applier today). Approving produces no document change."}],
-  xlsx:[{c:"Meaningful Hyperlink Text",s:"Generate+approve — set cell display value, target unchanged; low risk.",v:"GAP",note:"proposals.py:675-727 mirrors V3's approach — same missing-applier gap as DOCX/PPTX. XLSX-LINK-001.md's stated reason ('lane not built') is stale — the lane IS built, it just has no applier."}],
-  pptx:[{c:"Descriptive Hyperlinks",s:"Generate+approve — set run.text, leave hyperlink.address unchanged; low risk.",v:"GAP",note:"proposals.py:675 — same drafting mechanism, same missing-applier gap as DOCX/XLSX."}],
-  pdf:[{c:"Links Are Descriptive and Active",s:"Generate+approve — descriptive-text edit + separate dead-link workflow.",v:"PARTIAL",note:"remediate_pdf.py:221-294 covers descriptive text well (human-confirm, never auto-applied) — but there is no dead-link/liveness-check workflow at all; V3's second workflow is simply unbuilt."}]},
-"3.1.1":{docx:[{c:"Document Language",s:"Auto-fix — w:lang/@val in styles.xml docDefaults + on runs.",v:"DIFF",note:"remediate_office.py:1236-1237 — never touches w:lang; writes the OPC package-level dc:language property instead, a different target than V3 describes. Tier (auto, immediate) matches."}],
-  pptx:[{c:"Slide Language",s:"Auto-fix — a:rPr/@lang on runs + defaultTextStyle in presentation.xml.",v:"DIFF",note:"remediate_office.py:1236-1237 — same as DOCX: only writes dc:language metadata, never per-run lang. Still clears the finding since DocumentLanguageRule.cs accepts metadata OR run-level lang as an OR condition."}],
-  pdf:[{c:"Language Declared",s:"Auto-fix — pdf.Root.Lang = 'en-US', one-line deterministic write.",v:"MATCH",note:"remediate_pdf.py:352-395 via the vendored PdfLanguageFixer — deterministic, immediate, no human step, exactly V3's description."}]},
-"4.1.2":{docx:[{c:"Accessible Form Fields",s:"Generate+approve — w:sdtPr/w:alias/@val on the content control.",v:"PARTIAL",note:"form_labels.py:214-227, called from remediate_office.py:1050-1058 — exact target match, but filed under 3.3.2 internally and applies immediately whenever adjacent label text is found; only genuinely bare fields route to review."}],
-  pdf:[{c:"Form Fields Have Labels",s:"Generate+approve — pikepdf sets /TU on each AcroForm field, deterministic once approved.",v:"MATCH",note:"remediate_pdf.py:630-676,679-709 — exactly the two-tier split V3 implies: real label on /T writes /TU deterministically; generic auto-name defers to a human-authored proposal."}]}};
 
 
 
-// Deva's V3 checklist ("accessibility-checklist-automation V3.xlsx") vs. this matrix's conclusion —
-// now the sole source (jeremy.xlsx retired 2026-07-21). v = V3's automation tier for this SC's
-// item(s) (Deterministic / Det + model / Model-primary / Det + human, Assessment tab col C) ·
-// t = V3's mechanism, paraphrased from col D · k = agree|augment|disagree · ours/note = our
-// conclusion + reason. Five SCs jeremy.xlsx used to cover here — 1.3.3, 1.4.1, 1.4.11, 3.1.2, 2.1.2 —
-// are dropped, not ported: V3's own "Gaps vs WCAG" sheet states outright that V3's checklist
-// doesn't address them ("missing from checklist"), so there is nothing in V3 to agree/augment/disagree
-// WITH for those five; carrying forward jeremy.xlsx-sourced verdicts under a "V3 is canonical" banner
-// would misattribute them.
-// V5_DETAIL = Deva's newest checklist artifact (assessment-applicability-matrix-v5.xlsx,
-// received 2026-07-23) — supersedes the DOCX-only docxV4 spot quotes above with full per-format
+
+
+// V5_DETAIL = Deva's checklist artifact (assessment-applicability-matrix-v5-28JUL.xlsx) — the
+// ONLY checklist version this page cites. Full per-format
 // "Validation assertion / WCAG mapping / Recommended technical approach / Automation level" detail
 // across all four format tabs (DOCX, PDF, PPTX, XLS in her workbook — xlsx here, matching this
 // matrix's FM key). Content is quoted verbatim from the workbook, not paraphrased: a=assertion,
 // appr=her recommended technical approach, auto=her stated automation level. The Applicability
-// Matrix tab in v5.xlsx is byte-for-byte identical to v4.xlsx's (same 14 codes, same X/(X)/blank
-// pattern, same "34 vs 36" footer discrepancy) — V5_APPLICABLE below reuses that data under its
-// new citation rather than re-typing it. What's genuinely new in V5: (1) the technical-approach
+// What's genuinely new in V5: (1) the technical-approach
 // and automation-level columns, for every format, not just DOCX; (2) explicit per-format coverage
 // for 1.4.4/1.4.10/1.4.11/1.4.12 — all four appear here with real assertions despite the
 // Applicability Matrix tab still listing them as having "no checklist item," a direct contradiction
@@ -1812,24 +1625,6 @@ const V5_DETAIL={
 }
 };
 
-const DEVA={
-"1.1.1":{v:"Det + model",t:"Presence via @descr is deterministic; alt is drafted from the image + context and human-approved — same split for the decorative-marking flag.",k:"agree",ours:"Agree",note:"V3's tier for every 1.1.1 item (docx/xlsx/pptx/pdf alt, pptx decorative) is Det+model — presence deterministic, quality model-assisted — exactly ACP's machine-assisted ceiling. All four alt-text items now MATCH V3's spec (PR #47 closed the pptx decorative-marking suppression gap); only a distinct V3 line item — verifying decorative marking ITSELF was applied correctly, not just honoring it — has no detector yet.",docxV4:["Images, charts, SmartArt, equations, and shapes have alternatives","Decorative objects are marked or excluded correctly"]},
-"1.3.1":{v:"Mixed — mostly Deterministic, 3 of 9 items Det + model",t:"Presence checks (list numbering, table headerRowCount, tblHeader, layouts) are pure Deterministic; V3's heading, caption, and PPTX table-header items call for a MODEL to corroborate presence.",k:"augment",ours:"Augment",note:"V3 asks for more than our RUBRIC ceiling models for 3 of the 9 items — heading/caption descriptiveness and PPTX table-header cell-content corroboration — real nuance worth folding into that ceiling. Layered on top: DOCX Lists and Table Captions have no detector at all; DOCX merged-cell detection and PDF /Scope are declared gaps.",docxV4:["Real heading styles are used with a logical hierarchy","Real ordered and unordered lists are used","Tables have identifiable headers and understandable structure","Columns, footnotes, headers, and captions are read meaningfully"]},
-"1.3.2":{v:"Det + model",t:"spTree order vs. geometric sort (PPTX); structure-tree vs. content-stream vs. visual x/y (PDF) — order EXISTS is deterministic, order is CORRECT needs a person.",k:"agree",ours:"Agree",note:"A genuine correction from the retired jeremy.xlsx verdict, which read the old checklist's approach as a web CSS-disable technique and marked 'disagree (documents)'. V3's own item text is written against files, not the DOM, and matches ACP's structure-vs-geometry comparison exactly. FLAG: V5_APPLICABLE marks DOCX blank for 1.3.2 (the Applicability Matrix tab has no X in that cell), but the per-format validation-assertion tabs (V5_DETAIL, both V4's DOCX-only version and V5's fuller one) list two items mapped to 1.3.2 for DOCX — a discrepancy between Deva's own artifacts, not a transcription error here. Left as-is (row.a.docx for 1.3.2 stays whatever ACP's real status is) until Deva confirms which artifact is authoritative.",docxV4:["Floating objects and text boxes have a logical reading order","Columns, footnotes, headers, and captions are read meaningfully"]},
-"2.4.6":{v:"Det + model",t:"Structural presence (heading skips, empty titles) is deterministic; whether the text actually DESCRIBES the section is the model half.",k:"agree",ours:"Agree",note:"Exactly RUBRIC's machine-assisted split for this SC — presence is the deterministic sub-signal, descriptiveness is the semantic remainder neither side claims to auto-certify.",docxV4:["Real heading styles are used with a logical hierarchy"]},
-"3.1.1":{v:"Deterministic",t:"Read the language attribute/property directly — docx: @val/@eastAsia/@bidi; pptx: @lang/@altLang; pdf: /Lang.",k:"agree",ours:"Agree",note:"All three formats now MATCH V3's spec verbatim (PR #51 closed the last gap, pptx @altLang) — full agreement, tier and implementation both.",docxV4:["Default language and language changes are identified"]},
-"3.1.2":{v:"Det + model (docx) / Human (xlsx, pptx, pdf)",t:"V4's checklist item — \"Default language and language changes are identified\" — expects language switches to be caught and flagged under this SC; DOCX carries real detector logic for exactly that, but the other three formats have none.",k:"agree",ours:"Agree",note:"DOCX's two independent detectors (seeded langdetect over extracted text + a script-based LanguageOfPartsRule) substantively match V4's ask, and the underlying .NET rule now reports under its own SC_3_1_2 key (new enum value added, remapped off the shared SC_3_1_1 key) — the deferred remap ADR 0012 called out has landed, 2026-07-23 (jeremyyuAWS/acp PR #3), so coverage queries keyed on SC_3_1_2 no longer undercount DOCX. XLSX/PPTX/PDF still have no equivalent detector at all — V4's checklist expects the same check ACP hasn't built for those three formats.",docxV4:["Default language and language changes are identified"]},
-"1.4.4":{v:"—",t:"Not on V3's checklist — V3's own Gaps vs WCAG sheet calls 1.4.4/1.4.10/1.4.12 'Correctly absent: viewport behaviors static documents cannot fail.'",k:"agree",ours:"Agree",note:"A genuine correction from the retired jeremy.xlsx verdict ('disagree (documents)'), which assumed V3's class was a browser-zoom technique. V3 already reasons about documents-vs-web explicitly and reaches ACP's own N/A conclusion — nothing left to disagree about. FLAG: V4's new DOCX tab adds a 'Content survives zoom, reflow, and text-spacing changes' validation assertion mapped to 1.4.4/1.4.10/1.4.12 — in apparent tension with V3's own 'correctly absent' reasoning quoted above. Not yet reconciled: V4 may be checking a real DOCX-specific proxy (e.g. fixed-width layout, absolute positioning) rather than walking back the N/A conclusion; needs the actual DOCX tab item wording confirmed with Deva before treating this as a reversal.",docxV4:["Content survives zoom, reflow, and text-spacing changes"]},
-"1.4.5":{v:"Model-primary / Det + model",t:"DOCX/PPTX/XLSX images-of-text: OCR only, no deterministic path. PDF: near-zero text layer + large image = scan, no OCR needed to DETECT.",k:"agree",ours:"Agree",note:"PDF now has exactly the deterministic pre-OCR heuristic V3's spec describes — pdf_scanned_page_checks flags near-zero extractable text + one image covering most of the page, no OCR run required to detect it. Landed 2026-07-24 (jeremyyuAWS/acp PR #6). DOCX/PPTX/XLSX remain OCR-only, matching V3's own spec for those three formats (no deterministic path exists in V3's checklist either).",docxV4:["Screenshots do not replace accessible text"]},
-"1.4.10":{v:"—",t:"Not on V3's checklist — same Gaps-sheet note as 1.4.4.",k:"agree",ours:"Agree",note:"Same correction as 1.4.4/1.4.12 — V3's Gaps sheet explicitly agrees reflow is a viewport behavior with no static-document failure mode, matching RUBRIC's N/A (PDF's tagged-structure proxy aside). Same FLAG as 1.4.4: V4's DOCX tab now has a validation assertion mapped here too — see 1.4.4's note.",docxV4:["Content survives zoom, reflow, and text-spacing changes"]},
-"1.4.12":{v:"—",t:"Not on V3's checklist — same Gaps-sheet note as 1.4.4.",k:"agree",ours:"Agree",note:"Same correction as 1.4.4/1.4.10 — V3's Gaps sheet explicitly agrees user text-spacing overrides have no static-document equivalent, matching RUBRIC's N/A. Same FLAG as 1.4.4: V4's DOCX tab now has a validation assertion mapped here too — see 1.4.4's note.",docxV4:["Content survives zoom, reflow, and text-spacing changes"]},
-"1.4.3":{v:"Deterministic (docx/xlsx/pptx) / Det + model (pdf)",t:"Resolve direct hex OR theme + tint/shade (format-specific math). PDF: veraPDF WCAG profile OR render + pixel-sample.",k:"augment",ours:"Agree + augment",note:"DOCX and XLSX now fully MATCH (PR #46 closed theme resolution); XLSX additionally swapped its detector/fixer's luma-difference proxy for the true WCAG contrast ratio formula, 2026-07-23 (PR #3). PPTX still only resolves explicit RGB, not schemeClr+theme. PDF is the real divergence — V3's spec calls for veraPDF or rendering, ACP uses a content-stream luma heuristic — a different mechanism, not a narrower version of V3's.",docxV4:["Text and graphics meet contrast requirements"]},
-"1.4.1":{v:"Human (no automation)",t:"V4's checklist item — \"Color is not the only indicator\" — has no ACP detector in any format; RUBRIC's own machine-assisted ceiling (grayscale render-and-diff, or flagging a colored run with no accompanying icon/text/pattern cue) is unbuilt, not merely unshipped for one format.",k:"disagree",ours:"Disagree",note:"Every format shows pure human assessment for 1.4.1 today — the machine-assisted signal both RUBRIC and V4's checklist call for doesn't exist yet. Grayscale render-and-diff is the concrete next build (see UPGRADE) — it reuses the PDF contrast sampler's existing rendering pipeline, so the gap is scoped and buildable, not open-ended.",docxV4:["Color is not the only indicator"]},
-"2.4.2":{v:"Deterministic to Det + model, by item",t:"Presence is deterministic everywhere; DOCX's descriptiveness judgment is the one model-assisted piece V3 calls out.",k:"agree",ours:"Agree",note:"Presence-level items MATCH (docx, pdf). PPTX's cross-slide title-uniqueness gap is closed — SlideTitleUniquenessRule now flags a slide whose title duplicates an earlier slide's, landed 2026-07-24 (PR #6), alongside the pre-existing per-slide non-empty check. XLSX gained the same treatment: SheetNameUniquenessRule (SC_2_4_6) for duplicate custom sheet names, and a genuinely new SC_2_4_2 rule (TableNameRule) for a formal table left at its default DisplayName.",docxV4:["Document title property exists and is descriptive"]},
-"2.4.3":{v:"Det + human (pptx, shared with 2.1.1) / Deterministic (pdf)",t:"PPTX: extract interactive shape + hyperlink order, tab order is extractable not judgeable. PDF: each page's /Tab entry should be /S (structure order), plus AcroForm field order.",k:"disagree",ours:"Disagree",note:"PPTX still shares AnimationOrderRule with 2.1.1, which checks a genuinely different signal (auto-advancing timing, not shape/hyperlink tab order) — not a narrower version of V3's spec. The PDF /Tab=/S item now has a detector + fixer (pdf_focus_order_checks / remediate_pdf.py), landed 2026-07-23 (jeremyyuAWS/acp PR #4) — but only the existence-check half; AcroForm field-order-matches-reading-order verification is still unbuilt (needs /StructTreeRoot walking, which nothing in this codebase does), so V3's fuller spec remains ahead of what's built."},
-"2.4.4":{v:"Det + model",t:"Resolve the target; flag V3's generic-phrase deny-list AND raw URLs (regex) — consistent across docx/pptx/xlsx/pdf.",k:"augment",ours:"Agree + augment",note:"Tier matches ACP's machine-assisted ceiling; XLSX fully MATCHES (PR #48), and DOCX/PPTX now both carry the raw-URL check V3's spec calls for alongside the generic-phrase deny-list, landed 2026-07-23 (PR #3). The remediation side is no longer just a draft: apply_link_text.py writes an approved link-text proposal into the actual docx/xlsx/pptx hyperlink, landed 2026-07-24 (PR #6) — approving used to record a value nothing wrote in. PDF link-purpose detection still has no detector at all — the one remaining format gap.",docxV4:["Hyperlinks have descriptive text"]},
-"2.1.1":{v:"Det + human",t:"Extract interactive shape order (spTree) + hyperlink/action shapes; tab order is extractable, not judgeable.",k:"disagree",ours:"Disagree",note:"AnimationOrderRule checks auto-advancing animation timing entirely — a real, legitimate 2.1.1 signal, but not the shape/hyperlink tab-order extraction V3's spec describes. Both are defensible ways to attack 2.1.1 in PPTX; they're just not the same check."},
-"4.1.2":{v:"Det + model",t:"DOCX: w:sdtPr/w:alias/@val non-empty AND w:tag set — both required. PDF: AcroForm /Fields, each needs /TU, /FT, /V.",k:"agree",ours:"Agree",note:"Tier matches ACP's machine-assisted ceiling. DOCX now reads w:tag too — a new SC_4_1_2-filed check alongside the pre-existing @alias check (still separately filed under 3.3.2), landed 2026-07-24 (PR #6). PDF checks all three fields V3's spec asks for — /TU, /FT (against the four legal field types), and /V/DV (for fields with the Ff Required bit set) — landed 2026-07-23 (PR #4). Both formats now match V3's spec on this SC."}};
 
 // RUBRIC = the rule-inherent classification: what does WCAG + this file format allow,
 // independent of what ACP has shipped. aClass/fClass are ceilings, not ACP status.
@@ -2006,7 +1801,7 @@ const FMT_LABEL_SHORT={docx:"DOCX",xlsx:"XLSX",pptx:"PPTX",pdf:"PDF"};
 const FM=["docx","xlsx","pptx","pdf"];
 // KEY_TECH_BY_FORMAT / KEY_TECH_CROSSCUT = Deva's "KEY TECH" tab (assessment-applicability-matrix-
 // v5.xlsx), her recommended implementation stack — not ACP's own stack, and not verified against
-// ACP's actual code the way RUBRIC/ASSESS_SPEC are. Quoted, not endorsed. Two per-format tools
+// ACP's actual code the way RUBRIC is. Quoted, not endorsed. Two per-format tools
 // (parser/validator + renderer) badge each format's header; three cross-cutting tools apply to every
 // format identically and are captioned once below the table instead of repeated 4x. Tesseract and
 // OpenCV carry Deva's own annotation, verbatim ("We may not need this.") — rendered as a visually
@@ -2032,33 +1827,20 @@ const KEY_TECH_CROSSCUT=[
   tr.innerHTML=h;
 })();
 const tb=document.querySelector("#tbl tbody");
-// Deva-vs-ours marker: V3's checklist evaluates ASSESSMENT approach only (Remediation is a
-// separate V3 tab this matrix doesn't compare per-SC), so the tag applies to the 4 assess cells,
-// never the 4 remediate cells. "agree" gets no mark.
-const DEVA_MARK={augment:{sym:"◆",word:"augments"},disagree:{sym:"⊗",word:"disagrees with"}};
-// V5_APPLICABLE = Deva's newest checklist artifact (assessment-applicability-matrix-v5.xlsx,
-// received 2026-07-23) — the Applicability Matrix tab in v5.xlsx is byte-for-byte identical to
-// v4.xlsx's (verified: same 20 rows, same cell values), so this is the same data under its current
-// citation, not a re-derivation. Supersedes the SC-level V3_COVERED approximation this matrix used
-// to derive from V3's Gaps-vs-WCAG sheet. Originally 12 WCAG codes (dropping 1.4.4/1.4.10/1.4.12 —
-// the "correctly absent" commentary rows, never real checklist items in V3 either), 14 as of the
-// 2026-07-22 update (added 1.4.1 Use of Color and 3.1.2 Language of Parts, both X across all four
-// formats). Still CELL-level, not SC-level: several codes only apply to some formats (e.g. 1.3.2 has
-// no DOCX/XLSX item at all). "yes" = X, "cond" = (X) "applies only if the feature is present,"
-// absent from the inner object = blank = no checklist item for that format. V3.xlsx remains the
-// citation for the deeper technical-mechanism content in ASSESS_SPEC/REMEDIATION_SPEC/DEVA that
-// predates V5 — V5_DETAIL (defined above DEVA) is the current, richer per-format citation for new
-// content, quoted verbatim from v5.xlsx's DOCX/PDF/PPTX/XLS tabs. NOTE: this file's own footer still
-// says "34 applicable cells," but both the per-format column totals (9+5+10+12=36) and a direct
-// count of every X/(X) mark below total 36 — a discrepancy in Deva's own source file, carried over
-// unchanged from v4.xlsx, not a transcription error here; flagged, not silently corrected. A second
-// discrepancy: the per-format detail tabs have two assertions mapped to 1.3.2 for DOCX, but the
-// Applicability Matrix tab marks DOCX blank for 1.3.2 — also flagged (in DEVA["1.3.2"].note), not
-// resolved. A third, now confirmed MUCH more broadly in V5 than it first looked in V4: 1.4.4/1.4.10/
-// 1.4.11/1.4.12 are all "correctly absent" per the Applicability Matrix tab (dropped from
-// V5_APPLICABLE below), yet V5_DETAIL has real per-format assertions for all four across PDF/PPTX/
-// XLSX (1.4.11 is new evidence V4's DOCX-only tab didn't have) — flagged in each SC's DEVA note
-// rather than silently treated as a policy reversal either direction.
+// V5_APPLICABLE = Deva's checklist applicability matrix, from
+// assessment-applicability-matrix-v5-28JUL.xlsx — the ONLY checklist version this page cites.
+// 14 WCAG codes, CELL-level rather than SC-level: several codes apply to only some formats
+// (1.3.2 has no DOCX/XLSX item at all). "yes" = X, "cond" = (X) "applies only if the feature is
+// present," absent from the inner object = blank = no checklist item for that format.
+//
+// Two discrepancies in Deva's own file, flagged rather than silently corrected:
+//   * its footer says "34 applicable cells", but both the per-format column totals
+//     (9+5+10+12=36) and a direct count of every X/(X) mark total 36;
+//   * the per-format detail tabs carry two assertions mapped to 1.3.2 for DOCX, while the
+//     Applicability Matrix tab marks DOCX blank for 1.3.2.
+// Also: 1.4.4/1.4.10/1.4.11/1.4.12 are "correctly absent" per the Applicability Matrix tab and
+// so are dropped below, yet V5_DETAIL carries real per-format assertions for all four across
+// PDF/PPTX/XLSX. Surfaced, not resolved in either direction — it is her file to reconcile.
 const V5_APPLICABLE={
 "1.1.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "1.3.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
@@ -2135,6 +1917,14 @@ function donut(pct,{size=30,stroke=4,tone="",title=""}={}){
 }
 const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
 
+// The level code as a small chip at the top of a cell. Same colours as the legend chips, so the
+// two match on code AND colour — a reader scanning for "everything at R1" can do it by shape
+// without reading a single label.
+function codeChip(level){
+  const cls = level==="NA" ? "NAx" : level;
+  return `<b class="ccode ${cls}">${level==="NA"?"N/A":level}</b>`;
+}
+
 // Legend donut samples, drawn with the same function the cells use so the key cannot drift
 // from the thing it explains — a hand-drawn legend swatch is exactly how a key goes stale.
 (function(){
@@ -2153,17 +1943,8 @@ function buildTable(){
   tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
   let h=`<td class="sc">${row.sc}</td><td class="name">${row.name}${row.flag?" ▲":""}</td>`;
-  const dv=DEVA[row.sc], dm=dv&&DEVA_MARK[dv.k];
   const v5row=V5_APPLICABLE[row.sc];
   for(const f of FM){const v=row.a[f];
-    // Only mark cells that carry an actual assessment claim (aClass !== NAx) — Deva's per-SC verdict
-    // sometimes covers only SOME formats (e.g. 1.3.2's "documents beat V3's class" is about XLSX/PPTX/PDF,
-    // not DOCX, which is N/A and has no claim to agree or disagree with in the first place).
-    const rubF=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
-    const showMark=dm&&rubF&&rubF.aClass!=="NAx";
-    const markHtml=showMark?` <b class="devamark ${dv.k}" aria-hidden="true">${dm.sym}</b>`:"";
-    const markAria=showMark?` Our conclusion ${dm.word} Deva's conformance checklist for this rule.`:"";
-    const tdCls=showMark?` deva-${dv.k}`:"";
     // v5state: "yes"/"cond" render normally; undefined (no checklist item per V5) mutes the cell
     // when the toggle is on, WITHOUT hiding the real ACP status — never hide real capability data,
     // this matrix's own standing rule. "cond" earns a small marker distinguishing it from a clean X.
@@ -2176,7 +1957,7 @@ function buildTable(){
     const pg=cellProgress(row,f,"a");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;
     const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${AL[v]}, potential ${AL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${tdCls}${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${markAria}${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${markHtml}${condHtml}</button></td>`;}
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
@@ -2208,9 +1989,9 @@ buildTable();
   });
 })();
 
-// "Show only Deva's V5 checklist SCs" toggle — per V3's feedback that the full 20-SC rubric table
+// "Show only Deva's V5 checklist SCs" toggle — per Deva's feedback that the full 20-SC rubric table
 // includes rows outside what her checklist actually checks, refined 2026-07-22 to cell-level using
-// V4 (data unchanged, now cited as V5 — see V5_APPLICABLE's own comment). A row is shown if
+// V5's applicability matrix (see V5_APPLICABLE's own comment). A row is shown if
 // V5_APPLICABLE has ANY entry for that SC; within a shown row, individual cells (both assess and
 // remediate) mute to a quiet "—" when V5 has no item for that specific format — real ACP status
 // stays in the DOM and stays clickable, just visually de-emphasized, so this never becomes "hide
@@ -2495,7 +2276,16 @@ function renderDrawer(sc,f,trigger){
   if(!row.a[f]&&!row.r[f]){f="docx";} // cross-link landed on a format this SC has no columns for — fall back
   const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
-  let html=`<h2 id="panel-title">${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>`;
+  // Both capability codes for this cell, right under the title — the two things the drawer is
+  // about, stated before any prose. Shows the level for whichever view is active, so the codes
+  // always agree with the cell that was clicked.
+  const aShown=(()=>{const pg=cellProgress(row,f,"a");return VIEW==="potential"&&pg?pg.ceiling:row.a[f];})();
+  const rShown=(()=>{const pg=cellProgress(row,f,"r");return VIEW==="potential"&&pg?pg.ceiling:row.r[f];})();
+  let html=`<h2 id="panel-title">${row.sc} ${row.name} (Level ${row.lvl}) — ${f.toUpperCase()}</h2>
+    <div class="dcodes">
+      <span class="dcode"><b class="ccode ${aShown==="NA"?"NAx":aShown}">${aShown==="NA"?"N/A":aShown}</b> ${esc(AL[aShown]||aShown)}</span>
+      <span class="dcode"><b class="ccode ${rShown==="NA"?"NAx":rShown}">${rShown==="NA"?"N/A":rShown}</b> ${esc(RL[rShown]||rShown)}</span>
+    </div>`;
   if(PRINCIPLE[row.sc])html+=`<div class="crumb">${esc(PRINCIPLE[row.sc])} → ${row.sc}</div>`;
   if(slug)html+=`<div class="w3">Canonical: <a href="https://www.w3.org/TR/WCAG22/#${slug}" target="_blank" rel="noopener">W3C WCAG 2.2 — ${row.sc} ${esc(row.name)}</a> · <a href="https://www.w3.org/WAI/WCAG22/Understanding/${slug}.html" target="_blank" rel="noopener">Understanding</a> · <a href="https://www.w3.org/WAI/WCAG22/quickref/#${slug}" target="_blank" rel="noopener">Techniques</a></div>`;
   if(QUOTE[row.sc])html+=`<div class="quote">${QUOTE[row.sc]}<cite>— excerpt, WCAG 2.2 Success Criterion ${row.sc} (full text via the canonical link above)</cite></div>`;
@@ -2505,49 +2295,25 @@ function renderDrawer(sc,f,trigger){
   if(rub){
     html+=`<h4>2 · Can this be assessed automatically?</h4><div class="badge ${rub.aClass}">${RCLASS[rub.aClass]}</div>${assessTodayChip(row,f)}
       <h4 style="margin-top:12px">3 · Why it lands there</h4>`;
-    const aspec=ASSESS_SPEC[row.sc]&&ASSESS_SPEC[row.sc][f];
-    if(aspec&&aspec.length){
-      html+=`<div class="aspec"><div class="aspec-title">Deva's assessment spec — primary reference</div>${aspec.map(x=>
-        `<div class="aspec-item"><span class="c">${esc(x.c)}</span><span class="avbadge ${x.v}">${esc(AV_LABEL[x.v])}</span>
-          <div class="s">${esc(x.s)}</div>${x.m&&x.m!=="None needed."?
-          `<div class="aspec-note"><b>V3's model role:</b> ${esc(x.m)}</div>`:""}${x.h&&x.h!=="None."&&!x.h.startsWith("None -")?
-          `<div class="aspec-note"><b>V3's human role:</b> ${esc(x.h)}</div>`:""}
-          <div class="aspec-note"><b>ACP today:</b> ${esc(x.note)}</div></div>`).join("")}</div>
-        <div class="aspec-vs">This matrix's framing</div>`;
-    }
     html+=`<p class="why">${linkify(esc(rub.aWhy),row.sc,f)}</p>`;
   }
 
-  if(DEVA[row.sc]){const dv=DEVA[row.sc];
-    // V5_DETAIL supersedes the old docx-only docxV4 quotes (same DOCX content, now also PDF/PPTX/XLSX,
-    // now also with her recommended technical approach + automation level, quoted verbatim) — see the
-    // V5_DETAIL comment block above DEVA for the full citation. Shown for whichever format tab is open,
-    // not just DOCX.
+  // Deva's V5 validation assertions for the open format tab, quoted verbatim from
+  // assessment-applicability-matrix-v5-28JUL.xlsx. V5 is the only checklist artifact this page
+  // cites; the older per-SC comparison came from a V3 sheet V5 does not carry, and relabelling
+  // it would have been a false provenance claim, so it was removed rather than re-badged.
+  {
     const v5items=(V5_DETAIL[row.sc]&&V5_DETAIL[row.sc][f])||[];
-    const v5Block=v5items.length?
-      `<div class="aspec"><div class="aspec-title">Deva's V5 validation assertion${v5items.length>1?"s":""} — ${f.toUpperCase()} (assessment-applicability-matrix-v5.xlsx)</div>${v5items.map(x=>
+    if(v5items.length){
+      html+=`<div class="aspec"><div class="aspec-title">Deva's V5 validation assertion${v5items.length>1?"s":""} — ${f.toUpperCase()}</div>${v5items.map(x=>
         `<div class="aspec-item"><div class="s">&ldquo;${esc(x.a)}&rdquo;</div>
           <div class="aspec-note"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
-          <div class="aspec-note"><b>Her stated automation level:</b> ${esc(x.auto)}</div></div>`).join("")}</div>`:"";
-    html+=`<div class="deva">
-      <div><b>vs. Deva's V3 checklist:</b> ${esc(dv.v)} · &ldquo;${esc(dv.t)}&rdquo;</div>
-      ${v5Block}
-      <div><b>Our conclusion:</b> <span class="dv ${dv.k}">${esc(dv.ours)}</span> — ${esc(dv.note)}</div></div>`;}
+          <div class="aspec-note"><b>Her stated automation level:</b> ${esc(x.auto)}</div></div>`).join("")}</div>`;
+    }
+  }
 
   html+=`<h4>4 · Remediation — current vs. potential</h4>${remediationCVP(row,f,rub)}`;
-  const rspec=REMEDIATION_SPEC[row.sc]&&REMEDIATION_SPEC[row.sc][f];
-  if(rspec&&rspec.length){
-    html+=`<div class="aspec"><div class="aspec-title">Deva's V3 remediation spec — vs. ACP's fixer code</div>${rspec.map(x=>
-      `<div class="aspec-item"><span class="c">${esc(x.c)}</span><span class="avbadge ${x.v}">${esc(AV_LABEL[x.v])}</span>
-        <div class="s">${esc(x.s)}</div>
-        <div class="aspec-note"><b>ACP today:</b> ${esc(x.note)}</div></div>`).join("")}</div>`;
-  }
   if(rub)html+=`<p class="why">${linkify(esc(rub.fWhy),row.sc,f)}</p>`;
-  const c2=CHECKLIST2[row.sc]&&CHECKLIST2[row.sc][f];
-  if(c2&&c2.length){
-    html+=`<div class="hitl"><div class="hitl-title">HITL today — Deva's team's own manual step</div>${c2.map(x=>
-      `<div class="hitl-item"><b>${esc(x.c)}:</b> ${esc(x.h)}</div>`).join("")}</div>`;
-  }
   if(UPGRADE[row.sc])html+=`<div class="gap"><b>Gap to close:</b> ${linkify(esc(UPGRADE[row.sc]),row.sc,f)}</div>`;
   const oq=OPENQ[row.sc]&&(OPENQ[row.sc][f]||OPENQ[row.sc]["*"]);
   if(oq)html+=`<div class="openq"><div class="openq-title">Open question — not resolved</div>${linkify(esc(oq),row.sc,f)}</div>`;
@@ -2562,8 +2328,15 @@ function renderDrawer(sc,f,trigger){
   html+=`<details class="tech"><summary>6 · Technical notes</summary>${techNotes(row,f)}</details>`;
 
   if(row.flag)html+=`<div class="disc"><b>▲ Corrected row</b> — this row differs from the July-14 infographic; see the corrections list below the table.</div>`;
-  document.getElementById("panel-body").innerHTML=html;
+  document.getElementById("panel-body").innerHTML=
+    (VIEW==="potential"
+      ? `<div class="potential-flag">Potential view — the rule-inherent ceiling, i.e. what any tool could achieve for this rule and format. Not a roadmap.</div>`
+      : "") + html;
   const panel=document.getElementById("panel");
+  // Tint the drawer in the Potential view. The toggle lives at the top of the page and the open
+  // drawer covers it, so without a mode indicator there is no clue which view produced the
+  // numbers inside. Set after `panel` exists — it is a const in this scope, not a global.
+  panel.classList.toggle("potential", VIEW==="potential");
   panel.classList.add("open");
   document.getElementById("backdrop").classList.add("open");
   document.querySelector(".wrap").inert=true; // real modal isolation: background is unclickable/untabbable, not just visually dimmed
