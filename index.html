@@ -96,6 +96,24 @@
      an unlabelled hour is unorderable by eye. */
   .logentry .logtime{color:var(--muted);font-weight:400;letter-spacing:.02em}
   /* Coverage dashboard. Two axes side by side, one row per format plus an overall. */
+  /* Per-cell donut: progress toward the rule-inherent ceiling. Sized to sit above the label
+     without changing row height much; the number is the whole point, so the ring is thin and
+     the digits carry the weight. */
+  .donut{display:block;margin:0 auto 1px}
+  .donut .dtrack{stroke:#e6e9ef}
+  .donut .darc{stroke:currentColor;transition:stroke-dashoffset .3s ease}
+  .donut .dnum{font-size:11px;font-weight:700;fill:currentColor;font-family:inherit}
+  .donut.t4{color:var(--green)} .donut.t3{color:var(--blue)}
+  .donut.t2{color:var(--orange)} .donut.t1{color:var(--red)}
+  .cellbtn .clab{display:block;font-size:11px;line-height:1.25}
+  .viewtoggle{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0 0}
+  .vtlabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .vtbtn{all:unset;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;
+    border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#fff}
+  .vtbtn:hover{color:var(--navy)}
+  .vtbtn:focus-visible{outline:2px solid #0b57d0;outline-offset:2px}
+  .vtbtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .vthint{font-size:11.5px;color:var(--muted);flex:1 1 260px}
   .covcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px 14px;margin:14px 0 0}
   .covcard h3{margin:0;font-size:15px}
   .covhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
@@ -298,6 +316,17 @@
        Potential Issue genuinely does half the work of a full assessment, and an AI Generated
        Fix most of an automatic one, so counting only the top level would understate ACP and
        counting every non-N/A level would overstate it. -->
+  <!-- Today vs Potential. "Potential" is RUBRIC's rule-inherent ceiling — what any tool could
+       achieve for this rule and format. It is NOT a roadmap, and the label says so: calling it
+       "Future" or "Planned" would imply a commitment to build things nobody has scoped, and the
+       first question that invites is "by when?". -->
+  <div class="viewtoggle" role="group" aria-label="Matrix view">
+    <span class="vtlabel">View</span>
+    <button type="button" class="vtbtn active" data-view="today" aria-pressed="true">Today</button>
+    <button type="button" class="vtbtn" data-view="potential" aria-pressed="false">Potential</button>
+    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
+  </div>
+
   <div class="covcard">
     <div class="covhead">
       <h3>Capability coverage <span class="covsub">weighted, over applicable cells only</span></h3>
@@ -1987,7 +2016,72 @@ const V5_APPLICABLE={
 "3.1.1":{docx:"yes",pptx:"yes",pdf:"yes"},
 "3.1.2":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "4.1.2":{docx:"cond",pdf:"yes"}};
-for(const row of ROWS){
+// ── Cell progress: where a cell stands against its POTENTIAL ─────────────────────────
+// "Potential" is RUBRIC's rule-inherent ceiling — what ANY tool could achieve given WCAG and
+// the file format. It is deliberately NOT a roadmap: nothing here says ACP intends to build
+// it, and the UI must never imply a commitment nobody has scoped. That distinction is why the
+// toggle reads "Potential" and not "Future" or "Planned".
+//
+// Progress is measured on the ORDINAL scale rather than as a ratio of coverage weights,
+// because a weight ratio breaks exactly where it matters: a cell whose ceiling is
+// human-judgment has a ceiling weight of 0, and 0/0 is not "no progress" — it is "already as
+// far as this rule can go". On the ordinal scale that falls out correctly as 100%.
+// Which capability the table shows. "today" = ROWS (shipped); "potential" = the rule-inherent
+// ceiling from RUBRIC. The donuts are identical in both views — they always measure today
+// against potential, so the ring does not move when the labels do. That is deliberate: the
+// number is the gap, and a gap that changed with the view would be meaningless.
+let VIEW="today";
+
+const A_ORDER=["A2","A3","A4"];              // weakest -> strongest
+const R_ORDER=["R1","R2","R3","R4"];
+const A_CEIL_LEVEL={DET:"A4",MA:"A3",HUM:"A2"};      // RUBRIC aClass -> best reachable level
+const R_CEIL_LEVEL={MECH:"R4",GEN:"R3",REAUTH:"R2"}; // RUBRIC fClass -> best reachable level
+
+function cellProgress(row,f,axis){
+  const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
+  if(!rub)return null;
+  const isA=axis==="a";
+  const cls=isA?rub.aClass:rub.fClass;
+  const order=isA?A_ORDER:R_ORDER;
+  const ceilLevel=(isA?A_CEIL_LEVEL:R_CEIL_LEVEL)[cls];
+  const cur=row[axis][f];
+  if(!ceilLevel||cls==="NAx"||cur==="NA")return null;   // not applicable — no progress to show
+  const ci=order.indexOf(ceilLevel), vi=order.indexOf(cur);
+  if(ci<0||vi<0)return null;
+  // ci===0: the ceiling IS the floor — nothing is achievable beyond where ACP already is, so
+  // this is 100% and not a gap. Capped at 100 because a cell may legitimately exceed the
+  // rubric's expectation (AT_CEILING_A allows it), and >100% would read as a bug.
+  const pct=ci===0?100:Math.max(0,Math.min(100,Math.round((vi/ci)*100)));
+  // Potential can never read LOWER than what is already shipped. A cell may legitimately
+  // exceed the rubric's expectation — AT_CEILING_A allows an MA-ceiling cell to ship at A4,
+  // and 1.1.1 on docx does exactly that, because alt-text PRESENCE is a deterministic fact
+  // even though alt QUALITY is not. Showing "Potential Issue" as the potential for a cell that
+  // is already Fully Assessed would read as a regression rather than as headroom.
+  const shownCeiling=order[Math.max(ci,vi)];
+  return {pct, current:cur, ceiling:shownCeiling, rubricCeiling:ceilLevel, atCeiling:vi>=ci,
+          label:isA?AL:RL};
+}
+
+// A compact donut. Inline SVG rather than a chart library: this renders 160 times on the page,
+// the whole file must stay dependency-free, and the shape is one arc.
+function donut(pct,{size=30,stroke=4,tone="",title=""}={}){
+  const r=(size-stroke)/2, c=2*Math.PI*r;
+  const off=c*(1-Math.max(0,Math.min(100,pct))/100);
+  return `<svg class="donut ${tone}" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img"`
+    +` aria-label="${esc(title||pct+"% of potential")}">`
+    +`<circle class="dtrack" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"/>`
+    +`<circle class="darc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"`
+    +` stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"`
+    +` transform="rotate(-90 ${size/2} ${size/2})" stroke-linecap="round"/>`
+    +`<text class="dnum" x="50%" y="50%" dominant-baseline="central" text-anchor="middle">${pct}</text></svg>`;
+}
+const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
+
+// Wrapped in a function so the view toggle can rebuild the table in place. It was a bare
+// top-level loop, which was fine while the table rendered exactly once.
+function buildTable(){
+  tb.innerHTML="";
+  for(const row of ROWS){
   const tr=document.createElement("tr");
   tr.dataset.sc=row.sc;
   if(row.flag)tr.className="flagged";
@@ -2012,13 +2106,40 @@ for(const row of ROWS){
     const v5Cls=v5state?"":" v4-muted";
     const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
     const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
-    h+=`<td class="cell${tdCls}${v5Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}.${markAria}${v5Aria} Open details.">${SHORT_A[v]}${markHtml}${condHtml}</button></td>`;}
+    const pg=cellProgress(row,f,"a");
+    const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${AL[v]}, potential ${AL[pg.ceiling]}`}):"";
+    h+=`<td class="cell${tdCls}${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${markAria}${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}</span>${markHtml}${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${v==="NA"?"NAx":v}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}. Open details.">${SHORT_R[v]}</button></td>`;}
+    const pg=cellProgress(row,f,"r");
+    const shown=VIEW==="potential"&&pg?pg.ceiling:v;
+    const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${RL[v]}, potential ${RL[pg.ceiling]}`}):"";
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}</span></button></td>`;}
   tr.innerHTML=h;tb.appendChild(tr);
+  }
+  // The V5 filter styles rows after they exist, so re-apply it on every rebuild or a rebuild
+  // silently drops the filtering the user had switched on.
+  const cb=document.getElementById("v3only");
+  if(cb)cb.dispatchEvent(new Event("change"));
 }
+buildTable();
+
+// View toggle: Today (shipped) vs Potential (rule-inherent ceiling).
+(function(){
+  const btns=[...document.querySelectorAll(".vtbtn")], hint=document.getElementById("vtHint");
+  const HINT={
+    today:"Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.",
+    potential:"Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it.",
+  };
+  for(const b of btns) b.addEventListener("click",()=>{
+    VIEW=b.dataset.view;
+    for(const o of btns){const on=o===b;o.classList.toggle("active",on);o.setAttribute("aria-pressed",String(on));}
+    if(hint)hint.textContent=HINT[VIEW];
+    buildTable();
+  });
+})();
 
 // "Show only Deva's V5 checklist SCs" toggle — per V3's feedback that the full 20-SC rubric table
 // includes rows outside what her checklist actually checks, refined 2026-07-22 to cell-level using
@@ -2040,6 +2161,7 @@ for(const row of ROWS){
   cb.addEventListener("change",apply);
   apply();
 })();
+
 
 // Capability coverage: one weighted percentage per format per axis, plus an overall.
 //
