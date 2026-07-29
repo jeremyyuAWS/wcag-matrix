@@ -722,7 +722,7 @@ const LEGACY_R={A:"R4",AP:"R4",AC:"R3",AI:"R3",M:"R2",N:"R1",NA:"NA"};
 
 // Each cell: b = argument bullets · c = concede-up-front bullets · x = counterargument it survives · ev = evidence · cat = catalog/drift note
 const ROWS=[
-{sc:"1.1.1",name:"Non-text Content",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R2"},
+{sc:"1.1.1",name:"Non-text Content",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R3"},
  ae:{
   docx:{b:["The .NET AltTextRule reads descr= on every wp:docPr — a deterministic XML attribute check, so pass/fail is machine-decidable, not a heuristic.","Smarter than a bare presence check: bare filenames ('image1.png') and generic auto-names count as missing.","The rubric only certifies files with a clean ANALYSED run (scripts/rubric.py): if any rule errored, the score is an upper bound and the file is not certifiable."],
       c:["Certifies alt PRESENCE, not alt QUALITY — description quality is a review-queue question and the spec says so explicitly.","OLE-embedded images and chart/SmartArt internals are out of scope by declaration, not omission.","Corrected 2026-07-17: the assessment rule does NOT check the OOXML decorative marker (extLst decorative val=\"1\") at all — a properly-marked decorative image with empty descr is currently flagged as a false positive. The FIX side (api/remediate_office.py) does honor the marker and correctly skips it; the detection side doesn't. Real gap, not a documentation error — see the FAQ."],
@@ -1819,7 +1819,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0043";
+const DOC_BUILD="2026.07.29.0558";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3109,6 +3109,14 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"08:05",tz:"PDT",hash:"ca950a3",pr:19,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix: PDF alt approval writes through, so 1.1.1 returns to AI Generated Fix",
+ scs:["1.1.1","4.1.2"],formats:["pdf"],
+ summary:"This cell moved DOWN yesterday and back UP today, on the same criterion, and both moves were right at the time. It was lowered because a reviewer could approve alt text and the document never changed; acp#24 built the missing write-back leg, so the approval now lands.",
+ points:[
+  {label:"Verified, not inferred",text:"On a tagged fixture the figure's /Alt went from absent to 'Bar chart of revenue by region' and the bytes changed; on an AcroForm fixture two fields gained /TU and the 4.1.2 findings cleared entirely. Their own seven regression tests pass alongside."},
+  {label:"2.4.4 deliberately stays down",text:"The same write-back handles pdf:fig: and pdf:field: locators only. A link-purpose approval still reports the URL as unresolved and leaves the bytes untouched — so link text on PDF remains Guided, and was not raised for company."},
+  {label:"Why the down-then-up is not churn",text:"Drafting a value with no way to apply it is not a fix, and recording it as one would have told a customer the gap was closed. The record tracked the code in both directions within a day, which is the point of grounding each cell in a fixture rather than a diff."}]},
 {date:"2026-07-29",time:"02:10",tz:"PDT",hash:"2015bcc",pr:18,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: PDF contrast assessment reaches Fully Assessed as the fixer defect is closed",
  scs:["1.4.3","1.4.6"],formats:["pdf"],
