@@ -23,7 +23,9 @@ code, and a tier is a judgment (ground rules 2 and 3), not a changelog fact.
 from __future__ import annotations
 
 import json
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -43,6 +45,38 @@ def _js_str(s: str) -> str:
     are escaped — keeping the diff readable and the file's existing style intact."""
     out = s.replace("\\", "\\\\").replace('"', '\\"')
     return '"' + out.replace("\n", " ") + '"'
+
+
+def stamp_from_commit(e: dict) -> dict:
+    """Replace any hand-supplied date/time/tz with the referenced commit's own timestamp.
+
+    An entry always names a commit, and that commit has a real authored time. Accepting a
+    hand-typed one instead invited exactly what happened on 2026-07-29: five entries were
+    spliced in with times that had never been derived from anything — four with the wrong DATE
+    as well, because UTC values had been written under a PDT label. A log whose whole purpose
+    is to be a checkable record had five invented rows in it, one of them seven hours in the
+    future.
+
+    So the timestamp is no longer an input. It is read from git, in Pacific, with the real
+    abbreviation for that instant. An entry whose hash git cannot resolve keeps whatever it was
+    given and is reported — a stale hash is a different fault and should not be silently
+    rewritten to now().
+    """
+    h = (e.get("hash") or "").strip()
+    if not h:
+        return e
+    out = subprocess.run(
+        ["git", "log", "-1", "--format=%ad", "--date=format-local:%Y-%m-%d|%H:%M|%Z", h],
+        capture_output=True, text=True,
+        env={**os.environ, "TZ": "America/Los_Angeles"})
+    if out.returncode != 0 or not out.stdout.strip():
+        print(f"  ! {h}: not a commit in this repo — keeping the supplied timestamp",
+              file=sys.stderr)
+        return e
+    date, time, tz = out.stdout.strip().split("|")
+    if (e.get("date"), e.get("time"), e.get("tz")) != (date, time, tz) and e.get("date"):
+        print(f"  {h}: stamped from the commit -> {date} {time} {tz}")
+    return {**e, "date": date, "time": time, "tz": tz}
 
 
 def render(e: dict) -> str:
@@ -93,7 +127,7 @@ def validate(entries: list[dict]) -> None:
 def main() -> int:
     src = sys.argv[1] if len(sys.argv) > 1 else "-"
     raw = sys.stdin.read() if src == "-" else Path(src).read_text()
-    entries = json.loads(raw)
+    entries = [stamp_from_commit(e) for e in json.loads(raw)]
     if not entries:
         print("no new entries — nothing to splice")
         return 0
