@@ -1823,7 +1823,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0645";
+const DOC_BUILD="2026.07.29.0659";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3131,7 +3131,7 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
-{date:"2026-07-29",time:"14:05",tz:"PDT",hash:"6c5fbb2",pr:null,repo:"jeremyyuAWS/acp",
+{date:"2026-07-29",time:"06:07",tz:"PDT",hash:"6c5fbb2",pr:null,repo:"jeremyyuAWS/acp",
  title:"2.4.6 stops certifying a pass it cannot support",
  scs:["2.4.6"],formats:["docx","xlsx","pptx","pdf"],
  summary:"No cell moved, and that is the point: the grid already recorded Potential Issue on all four formats while ACP's own lane table said docx was auto. The code has come to the matrix rather than the matrix to the code.",
@@ -3139,7 +3139,7 @@ const PROGRESS_LOG=[
   {label:"What was wrong",text:"A clean docx scan resolved to a certified PASS on 2.4.6. The only docx detector checks heading-LEVEL skips, so a document with a flawless H1-H2-H3 hierarchy and headings reading 'Section 1', 'Untitled' and 'asdf' passed — as did one whose outline started at H3 with no H1 anywhere, because the skip check never judges the first heading."},
   {label:"What changed",text:"2.4.6 now resolves REVIEW on a clean scan for every format including html, verified directly against store._rule_outcome. A real failure still returns FAIL, and 1.4.3 still returns PASS as a control — so the change is narrow rather than a blanket loss of certification."},
   {label:"Why it is worth logging with no cell change",text:"Certifying a pass on evidence that does not support it is the failure the honest-detection bar exists to prevent. The matrix has been quietly more conservative than the engine for some time; this closes the gap from the engine side."}]},
-{date:"2026-07-29",time:"08:05",tz:"PDT",hash:"ca950a3",pr:19,repo:"jeremyyuAWS/wcag-matrix",
+{date:"2026-07-28",time:"22:01",tz:"PDT",hash:"ca950a3",pr:19,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: PDF alt approval writes through, so 1.1.1 returns to AI Generated Fix",
  scs:["1.1.1","4.1.2"],formats:["pdf"],
  summary:"This cell moved DOWN yesterday and back UP today, on the same criterion, and both moves were right at the time. It was lowered because a reviewer could approve alt text and the document never changed; acp#24 built the missing write-back leg, so the approval now lands.",
@@ -3147,7 +3147,7 @@ const PROGRESS_LOG=[
   {label:"Verified, not inferred",text:"On a tagged fixture the figure's /Alt went from absent to 'Bar chart of revenue by region' and the bytes changed; on an AcroForm fixture two fields gained /TU and the 4.1.2 findings cleared entirely. Their own seven regression tests pass alongside."},
   {label:"2.4.4 deliberately stays down",text:"The same write-back handles pdf:fig: and pdf:field: locators only. A link-purpose approval still reports the URL as unresolved and leaves the bytes untouched — so link text on PDF remains Guided, and was not raised for company."},
   {label:"Why the down-then-up is not churn",text:"Drafting a value with no way to apply it is not a fix, and recording it as one would have told a customer the gap was closed. The record tracked the code in both directions within a day, which is the point of grounding each cell in a fixture rather than a diff."}]},
-{date:"2026-07-29",time:"02:10",tz:"PDT",hash:"2015bcc",pr:18,repo:"jeremyyuAWS/wcag-matrix",
+{date:"2026-07-28",time:"18:32",tz:"PDT",hash:"2015bcc",pr:18,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: PDF contrast assessment reaches Fully Assessed as the fixer defect is closed",
  scs:["1.4.3","1.4.6"],formats:["pdf"],
  summary:"The first cell this week to move because ACP got BETTER rather than because the record was wrong. Everything else recently has been correcting understated claims; this is a real capability change, shipped in acp#22.",
@@ -3156,7 +3156,7 @@ const PROGRESS_LOG=[
   {label:"What it replaced",text:"A luma threshold on the text colour alone that never looked at the background. It was wrong in both directions: white-on-black at a true 21:1 was reported SERIOUS, while #4C4C4C on #262626 at 1.76:1 was silent, and the whole muted-body-text band from #787878 to #9E9E9E failed AA without the AA rule ever firing."},
   {label:"The remediation caveat is resolved",text:"The fixer had inherited the same white-page assumption and was rewriting compliant dark-theme PDFs to roughly 3.5:1 — unattended, so it created AA failures nobody reviewed. It now abstains where structure cannot answer, and what it abstains on stays a finding."},
   {label:"Still a partial, deliberately",text:"Text over an image, or over fills that pull opposite ways, is not judged here — it routes to the over-image review instead. Honest partial coverage, not a clean sweep."}]},
-{date:"2026-07-29",time:"01:34",tz:"PDT",hash:"c5bb47f",pr:17,repo:"jeremyyuAWS/wcag-matrix",
+{date:"2026-07-28",time:"18:13",tz:"PDT",hash:"c5bb47f",pr:17,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: raise the 1.4.3 PDF assessment ceiling, and guard ceilings the way cells are guarded",
  scs:["1.4.3"],formats:["pdf"],
  summary:"The ceiling moves, not the cell. PDF contrast assessment could reach Fully Assessed — the reason recorded for why it could not is contradicted by a fixture — but today's detector does not deliver it, so today stays at Potential Issue and the headroom is now visible instead of denied.",
@@ -3165,7 +3165,7 @@ const PROGRESS_LOG=[
   {label:"Sampling is the weaker path, not the stronger",text:"The render-based measurement that supposedly justified the ceiling abstained on 4 of 4 over-image fixtures with ambiguous_background. Only text over an image genuinely needs pixels, and that is the one case the resolver also declines."},
   {label:"Today is unchanged and that is deliberate",text:"The shipped detector thresholds text luma alone and is wrong in both directions: false SERIOUS on white-on-dark, silent on dark-on-dark, and every grey from #787878 to #9E9E9E is a real AA failure it never reports. Recording A4 today would be a claim the code does not support."},
   {label:"Ceilings are now guarded like cells",text:"check_log_covers_grid.py only watched ROWS values, so a ceiling could move with no entry — and this very change proved it by passing green. It now diffs RUBRIC aClass/fClass too, parsed per rule block rather than by scanning forward, because a forward scan attributes the next rule's ceilings to this one."}]},
-{date:"2026-07-29",time:"01:05",tz:"PDT",hash:"88ca4e5",pr:16,repo:"jeremyyuAWS/wcag-matrix",
+{date:"2026-07-28",time:"18:08",tz:"PDT",hash:"88ca4e5",pr:16,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: apply the verified cell corrections from the eleven-cell sweep",
  scs:["1.1.1","1.3.1","1.3.2","3.1.2","1.4.3","2.4.4","4.1.2"],formats:["docx","pptx","pdf"],
  summary:"Eleven cell-groups were verified against built fixtures, one group per investigation. Eight cells move on evidence, four ceilings move with them, and two cells move DOWN — the sweep corrected the matrix in both directions, not just upward.",
