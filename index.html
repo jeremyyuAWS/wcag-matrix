@@ -561,10 +561,10 @@
 
       <div class="legendcol">
         <h4>The donut in each cell &mdash; progress toward Deva&rsquo;s ask</h4>
-        <span class="lgitem lgdonut"><span id="lgDonutNA"></span> <span class="lgtext"><b>N/A</b> — either ACP already <b>meets Deva's ask</b> for this cell, or the cell is <b>outside his 14 codes</b> so there is nothing to measure against. Not a gap either way, and never a claim that ACP does nothing there.</span></span>
-        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <span class="lgtext"><b>Partway</b> — ACP delivers some of what he asked for, not all</span></span>
-        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <span class="lgtext"><b>0 — nothing yet</b> — he asked for something here and ACP delivers none of it today</span></span>
-        <span class="lgitem lgnote">Each donut is <b>% of Deva&rsquo;s FINAL ask for that cell</b> &mdash; his target is the 100%, not the rule&rsquo;s ceiling and not full automation. In <b>Potential</b> the numerator becomes the rule ceiling, so a donut that <i>stays</i> short there is a cell ACP <b>cannot</b> satisfy however much is built &mdash; 32 of them, and they need the ask revisited rather than more engineering. <b>This grey is the donut&rsquo;s only</b>: a greyed <i>cell</i> still means Not Applicable, as it always has.</span>
+        <span class="lgitem lgdonut"><span id="lgDonutNA"></span> <span class="lgtext"><b>N/A &mdash; nothing more can be done</b> here. ACP is already at what this rule and format allow, so there is no work left to measure. It does NOT mean full automation: several cells top out at Human Assessment Required because the judgement genuinely is not machine-decidable.</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <span class="lgtext"><b>Partway</b> &mdash; some of what is achievable here is built, the rest is not.</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <span class="lgtext"><b>0 &mdash; not started</b>. Something IS achievable here and ACP delivers none of it today. This is the opposite of N/A, and the difference is the whole point of the donut.</span></span>
+        <span class="lgitem lgnote">Each donut is <b>% of what is achievable</b> for that cell &mdash; its denominator is the <b>rule-inherent ceiling</b>, what any tool could do for this rule and format, not what ACP has committed to build. So it answers the engineering question: <i>how much of the possible work is done?</i> <b>0 means not started; N/A means nothing left to start.</b> In <b>Potential</b> a cell with headroom fills to 100% &mdash; that is where it would get to. The big figure above the grid is the different question: how much of <b>Deva&rsquo;s ask</b> ACP meets. <b>This grey is the donut&rsquo;s only</b>: a greyed <i>cell</i> still means Not Applicable.</span>
       </div>
 
     </div>
@@ -1823,7 +1823,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0602";
+const DOC_BUILD="2026.07.29.0605";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -2242,15 +2242,33 @@ function targetProgress(row,f,axis){
           pct:wT===0?100:Math.max(0,Math.min(100,Math.round((num/wT)*100)))};
 }
 
-function donutPct(tp){ return tp&&!tp.met?tp.pct:null; }
+// HEADROOM, not the ask. The donut answers "how much of what is achievable here has ACP
+// built?" — so its denominator is the cell's own rule-inherent ceiling, and:
+//
+//     0    the ceiling is above where ACP sits: work is possible and none of it is done
+//     N/A  ACP is AT the ceiling: nothing more can be done, so there is no progress to draw
+//
+// It briefly measured against Deva's ask instead, and that broke exactly the case this
+// distinction exists for. Under the Human First -> R1 mapping his target weighs nothing, so a
+// cell was "met" the moment he asked for nothing — and every No-Remediation cell on those rows
+// rendered N/A. A reader saw "nothing can be done" on cells where plenty can be done and
+// simply has not been. Zero delivered and nothing achievable are opposite states; they must
+// not share a glyph.
+//
+// The headline above the grid still measures Deva's ask — that is the number he plans against.
+// This is the per-cell engineering question, which is a different question.
+function donutPct(pg){
+  if(!pg||pg.atCeiling)return null;
+  return VIEW==="potential"?100:pg.pct;
+}
 
-function donutTip(tp,todayLabel,ceilLabel,LBL){
-  if(!tp)return `Outside Deva's FINAL checklist — no target for this cell. Today: ${todayLabel}.`;
-  if(tp.met)return `Meets Deva's FINAL ask (${LBL[tp.target]})${tp.exceeds?" — and exceeds it":""}. Today: ${todayLabel}.`;
-  const tail=tp.reachable
-    ? `The rule allows ${ceilLabel}, so this is reachable.`
-    : `The rule tops out at ${ceilLabel}, so this cannot reach his ask.`;
-  return `${tp.pct}% of Deva's ask — he wants ${LBL[tp.target]}, ACP is at ${todayLabel}. ${tail}`;
+function donutTip(pg,tp,todayLabel,LBL){
+  if(!pg)return `Not applicable to this format. `+(tp?`Deva's ask: ${LBL[tp.target]}.`:"Outside Deva's checklist.");
+  const ceil=LBL[pg.ceiling]||pg.ceiling;
+  const ask=tp?`  Deva asks for ${LBL[tp.target]}.`:"  Outside Deva's 14 codes.";
+  if(pg.atCeiling)return `At the ceiling — ${ceil} is as far as this rule and format allow, and ACP is there. Nothing more to build.${ask}`;
+  if(pg.pct===0)return `Nothing built yet — ${ceil} is achievable here and ACP delivers none of it. Today: ${todayLabel}.${ask}`;
+  return `${pg.pct}% of what is achievable — today ${todayLabel}, ceiling ${ceil}.${ask}`;
 }
 
 function codeChip(level){
@@ -2329,10 +2347,10 @@ function buildTable(){
     const key=`${row.sc}|${f}|a`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const tp=targetProgress(row,f,"a");
-    const dp=donutPct(tp);
+    const dp=donutPct(pg);
     // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
     // the same thing twice, and the ring implied a measurement that does not exist.
-    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(tp,AL[v],pg?AL[pg.ceiling]:AL[v],AL)});
+    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(pg,tp,AL[v],AL)});
     h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
@@ -2342,10 +2360,10 @@ function buildTable(){
     const key=`${row.sc}|${f}|r`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
     const tp=targetProgress(row,f,"r");
-    const dp=donutPct(tp);
+    const dp=donutPct(pg);
     // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
     // the same thing twice, and the ring implied a measurement that does not exist.
-    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(tp,RL[v],pg?RL[pg.ceiling]:RL[v],RL)});
+    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(pg,tp,RL[v],RL)});
     h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
   // Per-row coverage: how much of what this criterion allows ACP delivers, across the formats
   // in scope. Both axes shown rather than one blended figure — the whole page turns on assess
@@ -2891,9 +2909,9 @@ function renderDrawer(sc,f,trigger){
       <div class="spgrid">
         <div class="spdonut">
           ${(()=>{const tpA=targetProgress(row,f,"a");
-             const v=donutPct(tpA);
+             const v=donutPct(pgA);
              return donut(v,{size:84,stroke:9,tone:v==null?"":progTone(v),
-               title:donutTip(tpA,AL[row.a[f]],pgA?AL[pgA.ceiling]:AL[row.a[f]],AL)});})()}
+               title:donutTip(pgA,tpA,AL[row.a[f]],AL)});})()}
           <div class="spdlabel">${esc(AL[aShown]||aShown)}</div>
           <div class="spdsub">assessment · ${(()=>{
             // The subtitle names DEVA'S ask, because that is now the donut's denominator. Saying
