@@ -62,8 +62,13 @@ def render(e: dict) -> str:
             for p in e["points"])
         points = f',\n points:[\n{rendered}]'
     # `time` is optional: the entries written before timestamps existed have none, and render
-    # without one rather than being back-filled with a fabricated hour.
+    # without one rather than being back-filled with a fabricated hour. `tz` rides along with it
+    # — the generator returns the real abbreviation for the instant (PST or PDT), because a log
+    # stamped "PST" in July is false, and a reader who cannot tell which offset they are on
+    # cannot order two entries across a DST boundary.
     when = f',time:{_js_str(e["time"])}' if e.get("time") else ""
+    if e.get("time") and e.get("tz"):
+        when += f',tz:{_js_str(e["tz"])}'
     return (f'{{date:{_js_str(e["date"])}{when},hash:{_js_str(e["hash"])},pr:{pr}{repo},\n'
             f' title:{_js_str(e["title"])},\n'
             f' scs:[{scs}],formats:[{fmts}],\n'

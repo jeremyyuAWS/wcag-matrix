@@ -606,7 +606,7 @@
     </ul>
   </div>
   <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
-  <div class="foot">Doc build <span class="docbuild"></span> (CalVer, UTC edit timestamp — not deploy.sh's git-ordinal scheme, this file isn't a deployed service).</div>
+  <div class="foot">Doc build <span class="docbuild"></span> (CalVer, Pacific edit timestamp — not deploy.sh's git-ordinal scheme, this file isn't a deployed service).</div>
 
     </div>
 
@@ -617,7 +617,7 @@
          nothing without knowing when the file was built. Rendered from DOC_BUILD, not written
          twice: two hand-maintained stamps would eventually disagree, and the one in a screenshot
          is exactly the one nobody would notice had gone stale. -->
-    <div class="logbuild">Doc build <span class="docbuild"></span> · CalVer, UTC edit timestamp</div>
+    <div class="logbuild">Doc build <span class="docbuild"></span> · CalVer, Pacific edit timestamp</div>
 
     <!-- Roadmap: what has NOT shipped, above the timeline of what has. Every row is DERIVED —
          a cell counts as open when ACP's shipped tier (ROWS.a/ROWS.r) has not reached that
@@ -1813,12 +1813,13 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // "potential" (RUBRIC's fClass) read on one shared scale. AC (1.1.1's vision-conditional auto-apply) is
 // AI-assisted; AP (1.3.2 xlsx / 2.4.2's partial-mechanical auto-fixes) is rules-based — verified against
 // the actual re[] mechanism text for every SC that uses AC/AP before assuming the mapping.
-// CalVer doc build — YYYY.MM.DD.HHMM in UTC, NOT deploy.sh's git-ordinal scheme (this file
-// isn't a deployed service). UTC rather than local because the sync workflow stamps this too and
-// a CI runner has no meaningful local zone; mixing the two makes the stamp jump non-monotonically.
+// CalVer doc build — YYYY.MM.DD.HHMM in Pacific time, NOT deploy.sh's git-ordinal scheme (this file
+// isn't a deployed service). Pacific rather than UTC because every reader of this page works
+// Pacific hours, and a stamp that needs mental arithmetic to place in the day gets misread as
+// stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0035";
+const DOC_BUILD="2026.07.29.0039";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3079,7 +3080,7 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
-{date:"2026-07-29",time:"00:31",hash:"a3d3859",pr:14,repo:"jeremyyuAWS/wcag-matrix",
+{date:"2026-07-28",time:"17:31",tz:"PDT",hash:"a3d3859",pr:14,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: correct nine cells the matrix understated, verified against fixtures",
  scs:["2.4.6","2.4.4","3.1.2","1.4.3"],formats:["xlsx","pptx","pdf"],
  summary:"Nine cells were recording less than ACP actually ships. Not a capability change — a correction to the record, found by going to build work that turned out to already exist, and verified by running the real detectors and proposers against built fixtures rather than by reading code.",
@@ -3088,7 +3089,7 @@ const PROGRESS_LOG=[
   {label:"3.1.2 XLSX/PPTX/PDF",text:"propose_language_parts has no format branch at all — DOCX was already recorded at Guided Remediation while the other three ran the identical path at No Remediation. Two proposals each on a mixed EN/FR/ES fixture."},
   {label:"2.4.6 and 2.4.4 on PDF",text:"both assess and fix. PDF_NO_HEADINGS and PDF_LINK_RAW_URL both fire, and the link proposer derived \"Download Regional Summary 2026 (PDF)\" with AI switched off."},
   {label:"Still open",text:"2.4.6 fix on XLSX stays at No Remediation. propose_xlsx_labels needs a reachable model and there was none — unverified rather than absent, so it was not upgraded on faith."}]},
-{date:"2026-07-28",time:"19:24",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
+{date:"2026-07-28",time:"12:24",tz:"PDT",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
  title:"fix(rules): resync generated index + re-file the matrix note dropped at squash (#13)",
  scs:["4.1.2","2.4.3","1.4.11","3.1.1"],formats:["docx","xlsx","pptx","pdf"],
  summary:"acp now declares, per criterion and format, how much of the criterion its detector actually reaches — and assessment respects the conformance level the scan was run for.",
@@ -3297,7 +3298,7 @@ const PROGRESS_LOG=[
     const ref=e.pr?`<a href="https://github.com/${repo}/pull/${e.pr}" target="_blank" rel="noopener">${esc(e.title)}</a>`
                   :`<a href="https://github.com/${repo}/commit/${e.hash}" target="_blank" rel="noopener">${esc(e.title)}</a>`;
     return `<div class="logentry">
-      <div class="logdate">${e.date}${e.time?` <span class="logtime">${esc(e.time)} UTC</span>`:""} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
+      <div class="logdate">${e.date}${e.time?` <span class="logtime">${esc(e.time)}${e.tz?" "+esc(e.tz):""}</span>`:""} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
       <div class="logtitle">${ref}</div>
       <div class="logbadges">${scBadges}${fmtBadges}</div>
       <details class="logdetails"><summary>What changed</summary><div class="logsummary${pts?" haspoints":""}">${esc(e.summary)}</div>${pts}</details>

@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the log guard diffs against origin/main
 
       # Catches unbalanced braces and unterminated literals. Necessary but nowhere near
       # sufficient — every TDZ bug this repo has shipped passed this step cleanly.
@@ -49,3 +51,8 @@ jobs:
 
       - name: No boot-time temporal dead zone
         run: python3 scripts/check_boot_order.py
+
+      # The grid and the log are two claims about the same thing, and only the acp side was
+      # guarded. Three PRs in one day moved capability cells and one of them said so in the log.
+      - name: Progress Log covers every capability change
+        run: python3 scripts/check_log_covers_grid.py
