@@ -45,6 +45,9 @@
   .lgcond{color:#6a3fb5;font-weight:800;flex:none}
   .lghatch{flex:none;display:inline-block;width:26px;height:14px;border:1px solid var(--line);border-radius:3px;
     background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.18) 0 5px,transparent 5px 10px)}
+  /* One flex child, not one per <b>: .lgitem is a flex row, so bold runs inside the prose
+     were being laid out as siblings of the swatch and the sentence broke into a column. */
+  .lgitem .lgtext{flex:1;min-width:0}
   .lgdonut .donut{flex:none;margin:0}
   .lgnote{display:block;color:var(--muted);font-size:11.5px;margin-top:5px;line-height:1.45}
   .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
@@ -127,12 +130,33 @@
   /* Per-cell donut: progress toward the rule-inherent ceiling. Sized to sit above the label
      without changing row height much; the number is the whole point, so the ring is thin and
      the digits carry the weight. */
+  /* Deva's-ask headline. Two bars in one track: today's fill over the ceiling fill, so the
+     gap between "what we have" and "what building everything buys" is one glance rather than
+     two numbers to subtract. The potential bar sits BEHIND, hence the source order. */
+  .devahead{margin:0 0 14px;padding:12px 14px;border:1px solid #dfe4ec;border-radius:10px;background:#f7f9fc}
+  .dhrow{display:flex;align-items:center;gap:14px}
+  .dhnum{flex:none;min-width:104px;line-height:1.15}
+  .dhnum b{display:block;font-size:22px;font-weight:800;color:var(--blue)}
+  .dhnum span{font-size:10.5px;color:#5b6472}
+  .dhnum.dhalt{text-align:right}
+  .dhnum.dhalt b{color:#8aa0bd;font-size:18px}
+  .dhbar{position:relative;flex:1;height:12px;border-radius:7px;background:#e6e9ef;overflow:hidden}
+  .dhfill{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--blue);z-index:2;
+          transition:width .35s ease}
+  .dhfill.dhpot{background:#c3d3e8;z-index:1}
+  .dhnote{margin:9px 0 0;font-size:11px;color:#4a5462;line-height:1.5}
   .donut{display:block;margin:0 auto 1px}
   .donut .dtrack{stroke:#e6e9ef}
   .donut .darc{stroke:currentColor;transition:stroke-dashoffset .3s ease}
   .donut .dnum{font-size:11px;font-weight:700;fill:currentColor;font-family:inherit}
   .donut.t4{color:var(--green)} .donut.t3{color:var(--blue)}
   .donut.t2{color:var(--orange)} .donut.t1{color:var(--red)}
+  /* No headroom: a flat grey ring with no arc at all. Deliberately not a full green ring —
+     a full ring is a claim about ACP, and this is a claim about the rule. The ring is drawn
+     one shade lighter than the numbered donuts' track so the two do not read as the same
+     unfilled state, and the N/A sits smaller than a percentage would to keep it quiet. */
+  .donut.dna .dtrack{stroke:#eceff4}
+  .donut.dna .dnanum{font-size:8px;font-weight:700;fill:#9aa3b0;letter-spacing:.2px}
   .cellbtn .clab{display:block;font-size:11px;line-height:1.25}
   /* Delta mode: today's level, then the gain. Muted and lighter so the eye still lands on
      today first — the arrow is the roadmap, not the status. */
@@ -175,7 +199,7 @@
   .covformula{font-size:11px;color:var(--muted)}
   .covexplain{flex:1 1 100%;margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--muted)}
   /* Deva's checklist quoted the way the WCAG excerpt is — it is a primary source for this
-     matrix, and the reader should be able to check any line against her workbook. */
+     matrix, and the reader should be able to check any line against his workbook. */
   /* Score panel — the "why is it this number" answer at the top of the drawer. */
   /* In-drawer Today/Potential switch — same control as above the table, within reach of the
      thing it changes, so a reader comparing one cell does not have to close the drawer. */
@@ -283,6 +307,34 @@
     .rmtable td:last-child{padding-top:4px}
   }
   tr.v3-hidden{display:none}
+  /* Per-row coverage column and the per-format footer. Both weighted the same way as the
+     headline card, and both scoped by the V5 filter, so every number on the page counts one
+     population — a reader can add them up and get the same answer. */
+  /* The summary column made the grid wider than the page. Scroll the TABLE, never the page —
+     a horizontally scrolling document breaks every other section too. */
+  .tblscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  th.rowsumh{font-size:9.5px;letter-spacing:.03em}
+  /* Tighten the widest cells so the extra column mostly fits without scrolling at all. */
+  td.cell{min-width:74px}
+  td.name{min-width:150px}
+  td.rowsum{padding:5px 8px;border-left:2px solid var(--line);white-space:nowrap;min-width:112px}
+  .rsline{font-size:11px;color:var(--navy);line-height:1.5;text-align:left}
+  .rsline b{display:inline-block;width:12px;color:var(--muted);font-weight:800}
+  .rsarrow{color:var(--muted);margin:0 3px}
+  .rsgain{display:inline-block;margin-left:5px;padding:0 5px;border-radius:999px;background:#d8efdc;
+    color:#14532d;font-size:9.5px;font-weight:800}
+  .rsline.rsna{color:var(--gray)}
+  tfoot .ftrow td{border-top:2px solid var(--line);background:#f7f9fc;padding:8px 6px;vertical-align:top}
+  td.ftlabel{text-align:left;font-size:11px;font-weight:700;color:var(--navy);white-space:nowrap}
+  td.ftlabel span{color:var(--muted)}
+  td.ftcell{font-size:12px;color:var(--navy);line-height:1.35}
+  td.ftcell b{font-size:13.5px}
+  .ftarrow{color:var(--muted);margin:0 3px}
+  .ftpot{color:var(--muted);font-weight:700}
+  .ftn{display:block;font-size:9.5px;color:var(--muted);font-weight:400}
+  .ftsplit{margin-top:4px;padding-top:4px;border-top:1px solid var(--line)}
+  td.ftcell.fttot{border-left:2px solid var(--line)}
+  td.ftcell.ftna{color:var(--gray)}
   /* v4-muted cells stay full-strength unless the toggle is on (table.v4-mute-on) — never mute by
      default, only when the viewer has actively asked to see just Deva's V5-covered cells (class
      name kept as "v4-*" internally — an implementation detail, not a citation; see V5_APPLICABLE's
@@ -295,7 +347,7 @@
      content. Dimming was the bug: a faded cell reads as inactive, so a muted "Human Required"
      was indistinguishable from a genuine N/A — the FILTER's meaning collided with the DATA's.
      Grey now means exactly one thing on this table: Not Applicable. Everything else keeps full
-     colour and its donut, whether or not it is on her checklist. */
+     colour and its donut, whether or not it is on his checklist. */
   table.v4-mute-on td.cell.v4-muted{
     background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.09) 0 5px,transparent 5px 10px)}
   table.v4-mute-on td.cell.v4-muted .cellbtn{opacity:1}
@@ -445,7 +497,7 @@
 <body>
 <div class="wrap">
   <h1>WCAG 2.1 AA — 20 Document Core Rules · Ceiling &amp; Coverage</h1>
-  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's checklist: <code>assessment-applicability-matrix-v5-28JUL.xlsx</code> · 2026-07-28.</div>
+  <div class="sub">The classification is rule-inherent — what WCAG + the file format allow, independent of what ACP has shipped — so it doesn't churn every release. ACP's coverage is a measurement <i>against</i> that ceiling, not the definition of it. Click any cell for the full drawer: the rule in plain words, the assessment ceiling and why, the fix ceiling and why, where ACP stands today, and the technical detail underneath. Basis: <b>acp</b> repo · rule-catalog v2026.06.2 · live <code>api/</code> engines · 2026-07-16 · Deva's checklist: <code>assessment-applicability-matrix-28JUL-Final.xlsx</code> · 2026-07-28.</div>
 
   <div class="tabbar">
     <button type="button" class="tabbtn active" id="tabbtn-matrix" data-tab="matrix">Matrix</button>
@@ -473,6 +525,10 @@
         Cells the rule cannot apply to are excluded entirely, so no format is penalised for rules it
         was never subject to.</p>
     </div>
+    <!-- The one number Deva is actually asking for, stated before the rubric coverage below it.
+         Those two answer different questions and are easy to confuse: the bars measure ACP
+         against what any tool COULD do, this measures ACP against what HE ASKED FOR. -->
+    <div class="devahead" id="devaHead"></div>
     <div class="covgrid" id="covGrid"></div>
   </div>
   <!-- Legend. Boxed and grouped by AXIS, because the two axes use different level sets and the
@@ -500,11 +556,11 @@
       </div>
 
       <div class="legendcol">
-        <h4>The donut in each cell</h4>
-        <span class="lgitem lgdonut"><span id="lgDonutHi"></span> <b>At potential</b> — nothing more this rule allows</span>
-        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <b>Partway</b> — headroom remains for this cell</span>
-        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>0 — nothing yet</b> — the rule allows a fix (or an automated assessment) and ACP does not provide one today</span>
-        <span class="lgitem lgnote">% of the <b>rule-inherent ceiling</b> reached today — what any tool could achieve for this rule and format, not what ACP has committed to build. A <b>0 does not mean impossible</b>: it means possible in principle, absent in ACP today.</span>
+        <h4>The donut in each cell &mdash; progress toward Deva&rsquo;s ask</h4>
+        <span class="lgitem lgdonut"><span id="lgDonutNA"></span> <span class="lgtext"><b>N/A</b> — either ACP already <b>meets Deva's ask</b> for this cell, or the cell is <b>outside his 14 codes</b> so there is nothing to measure against. Not a gap either way, and never a claim that ACP does nothing there.</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <span class="lgtext"><b>Partway</b> — ACP delivers some of what he asked for, not all</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <span class="lgtext"><b>0 — nothing yet</b> — he asked for something here and ACP delivers none of it today</span></span>
+        <span class="lgitem lgnote">Each donut is <b>% of Deva&rsquo;s FINAL ask for that cell</b> &mdash; his target is the 100%, not the rule&rsquo;s ceiling and not full automation. In <b>Potential</b> the numerator becomes the rule ceiling, so a donut that <i>stays</i> short there is a cell ACP <b>cannot</b> satisfy however much is built &mdash; 32 of them, and they need the ask revisited rather than more engineering. <b>This grey is the donut&rsquo;s only</b>: a greyed <i>cell</i> still means Not Applicable, as it always has.</span>
       </div>
 
     </div>
@@ -524,18 +580,21 @@
     <button type="button" class="vtbtn active" data-view="today" aria-pressed="true">Today</button>
     <button type="button" class="vtbtn" data-view="delta" aria-pressed="false">Today &rarr; Potential</button>
     <button type="button" class="vtbtn" data-view="potential" aria-pressed="false">Potential</button>
-    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
+    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward Deva's FINAL ask.</span>
   </div>
 
+  <div class="tblscroll">
   <table id="tbl">
     <thead>
-      <tr><th class="grp" colspan="2">WCAG 2.1 AA</th><th class="grp" colspan="4">ASSESS — can ACP decide pass/fail?</th><th class="grp" colspan="4">REMEDIATE — how does ACP fix it?</th></tr>
-      <tr><th>SC</th><th style="text-align:left">Criterion</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th></tr>
+      <tr><th class="grp" colspan="2">WCAG 2.1 AA</th><th class="grp" colspan="4">ASSESS — can ACP decide pass/fail?</th><th class="grp" colspan="4">REMEDIATE — how does ACP fix it?</th><th class="grp rowsumh">COVERAGE</th></tr>
+      <tr><th>SC</th><th style="text-align:left">Criterion</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th>DOCX</th><th>XLSX</th><th>PPTX</th><th>PDF</th><th class="rowsumh">today &rarr; potential</th></tr>
       <tr class="techrow" id="techrow"></tr>
     </thead>
     <tbody></tbody>
+    <tfoot id="tblfoot"></tfoot>
   </table>
-  <div class="filterbar-note" style="margin:6px 0 14px">Column-header badges are Deva's recommended stack per format, from V5's "KEY TECH" tab (quoted, not ACP's actual stack, not verified against ACP's code) — hover a badge for its full role. Applies to every format identically, cited once rather than repeated per column: <span class="tech-badge" title="AI/OCR service — Python + FastAPI (Deva's sheet also notes &quot;Lama&quot; alongside this row)">Python + FastAPI</span> <span class="tech-badge tentative" title="OCR — Deva's own annotation: &quot;We may not need this.&quot;">Tesseract</span> <span class="tech-badge tentative" title="Vision — Deva's own annotation: &quot;We may not need this.&quot;">OpenCV</span> — the dashed badges are the two she flagged herself as possibly unnecessary.</div>
+  </div>
+  <div class="filterbar-note" style="margin:6px 0 14px">Column-header badges are Deva's recommended stack per format, from V5's "KEY TECH" tab (quoted, not ACP's actual stack, not verified against ACP's code) — hover a badge for its full role. Applies to every format identically, cited once rather than repeated per column: <span class="tech-badge" title="AI/OCR service — Python + FastAPI (Deva's sheet also notes &quot;Lama&quot; alongside this row)">Python + FastAPI</span> <span class="tech-badge tentative" title="OCR — Deva's own annotation: &quot;We may not need this.&quot;">Tesseract</span> <span class="tech-badge tentative" title="Vision — Deva's own annotation: &quot;We may not need this.&quot;">OpenCV</span> — the dashed badges are the two he flagged himself as possibly unnecessary.</div>
 
   <div class="corr">
     <h3>How to read this version</h3>
@@ -630,6 +689,20 @@ const SHORT_R={R4:"Auto-Fixed",R3:"AI Fix",R2:"Guided",R1:"None",NA:"N/A"};
 // except A2/R1, where ACP contributes nothing mechanical.
 const A_WEIGHT={A4:1.0,A3:0.5,A2:0};
 const R_WEIGHT={R4:1.0,R3:0.75,R2:0.4,R1:0};
+
+// Cost & automation methodology, stated once here — every number below traces back to these four
+// assumptions, not to any measured ACP data (ACP doesn't track $/finding or findings-per-doc today).
+// Change these constants, not the prose below, if the assumptions need revising.
+const COST_ASSUMPTIONS={
+  humanRatePerHour:50,        // loaded reviewer rate, $/hr — a mid-market accessibility-reviewer assumption, not ACP's actual cost
+  minutesPerAssessConfirm:3,  // minutes to review + confirm/reject one machine-assisted assessment finding
+  minutesPerFixApprove:2,     // minutes to review + approve one drafted remediation (already-written, just needs a decision)
+  minutesPerHumanOnly:8,      // minutes for a fully human assessment/fix with no machine assist at all (find it, judge it, act)
+  cloudCallCost:"$0.01–0.05", // per model call at current Sonnet 5 / Haiku 4.5 pricing — vision calls trend toward the high end, short text toward the low end
+  minutesManualPerSC:15,      // fully-manual baseline: a human audits a whole document for ONE criterion with zero tool assistance (find every instance, judge each, fix it) and no machine pre-filter to triage against. Flat across tiers on purpose — manual effort doesn't know ACP's own DET/MA/HUM taxonomy; this is the "if ACP didn't exist" number.
+  findingRateTypical:0.40,    // same Typical scenario used in the pricing artifacts — the share of applicable checks that surface ≥1 item on a realistic document
+  minutesPerFixApprovePartial:1, // approval time where a faithful-source shortcut (AC/AP-shipped) already covers most cases — lighter than a full drafted-proposal approval
+};
 
 // Migration from the pre-2026-07-28 vocabulary. Retained because the drawer prose, the Deva
 // comparison tabs and the Progress Log all still speak the old terms in places, and a reader
@@ -1026,18 +1099,18 @@ const OPENQ={
 
 
 
-// V5_DETAIL = Deva's checklist artifact (assessment-applicability-matrix-v5-28JUL.xlsx) — the
+// V5_DETAIL = Deva's checklist artifact (assessment-applicability-matrix-28JUL-Final.xlsx) — the
 // ONLY checklist version this page cites. Full per-format
 // "Validation assertion / WCAG mapping / Recommended technical approach / Automation level" detail
-// across all four format tabs (DOCX, PDF, PPTX, XLS in her workbook — xlsx here, matching this
+// across all four format tabs (DOCX, PDF, PPTX, XLS in his workbook — xlsx here, matching this
 // matrix's FM key). Content is quoted verbatim from the workbook, not paraphrased: a=assertion,
-// appr=her recommended technical approach, auto=her stated automation level. The Applicability
+// appr=his recommended technical approach, auto=his stated automation level. The Applicability
 // What's genuinely new in V5: (1) the technical-approach
 // and automation-level columns, for every format, not just DOCX; (2) explicit per-format coverage
 // for 1.4.4/1.4.10/1.4.11/1.4.12 — all four appear here with real assertions despite the
 // Applicability Matrix tab still listing them as having "no checklist item," a direct contradiction
 // between Deva's own two artifacts (flagged in each SC's drawer note below, not silently resolved
-// either direction); (3) five WCAG criteria entirely new to any version of her checklist — 1.2.1
+// either direction); (3) five WCAG criteria entirely new to any version of his checklist — 1.2.1
 // (Audio-only/Video-only), 1.2.5 (Audio Description), 2.2.2 (Pause/Stop/Hide), 2.3.1 (Three
 // Flashes), and 3.3.2 (Labels/Instructions) — all outside this matrix's 20-SC scope, so quoted here
 // for completeness but not added as new rows (adding a RUBRIC ceiling and ACP-today status for a
@@ -1745,7 +1818,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // a CI runner has no meaningful local zone; mixing the two makes the stamp jump non-monotonically.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.28.2009";
+const DOC_BUILD="2026.07.29.0004";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -1900,7 +1973,7 @@ const RUBRIC={
 const FMT_LABEL_SHORT={docx:"DOCX",xlsx:"XLSX",pptx:"PPTX",pdf:"PDF"};
 const FM=["docx","xlsx","pptx","pdf"];
 // KEY_TECH_BY_FORMAT / KEY_TECH_CROSSCUT = Deva's "KEY TECH" tab (assessment-applicability-matrix-
-// v5.xlsx), her recommended implementation stack — not ACP's own stack, and not verified against
+// v5.xlsx), his recommended implementation stack — not ACP's own stack, and not verified against
 // ACP's actual code the way RUBRIC is. Quoted, not endorsed. Two per-format tools
 // (parser/validator + renderer) badge each format's header; three cross-cutting tools apply to every
 // format identically and are captioned once below the table instead of repeated 4x. Tesseract and
@@ -1927,10 +2000,65 @@ const KEY_TECH_CROSSCUT=[
   tr.innerHTML=h;
 })();
 const tb=document.querySelector("#tbl tbody");
-// V5_APPLICABLE = Deva's checklist applicability matrix, from
-// assessment-applicability-matrix-v5-28JUL.xlsx — the ONLY checklist version this page cites.
-// 14 WCAG codes, CELL-level rather than SC-level: several codes apply to only some formats
-// (1.3.2 has no DOCX/XLSX item at all). "yes" = X, "cond" = (X) "applies only if the feature is
+
+// DEVA_TARGET = what Deva's FINAL tab ASKS FOR, per cell, on each axis. This is the only place
+// the page states a target rather than a fact, and it is his target, not ours.
+//
+// Three labels in his sheet map 1:1 onto this page's levels. The mapping is stated here rather
+// than inferred per read, because it is the whole basis of the "how close are we" number:
+//
+//     Fully Automated -> A4 / R4      the tool decides, or the tool edits
+//     AI First        -> A3 / R3      AI leads, a person confirms or approves
+//     Human First     -> A2 / R2      a person leads; for remediation ACP still guides
+//
+// "Human First" maps to R2 (Guided Remediation), NOT R1 (No Remediation). R1 means ACP offers
+// nothing at all, which is not what he is asking for — he is asking for the human to lead, and
+// guidance is how a tool serves that.
+//
+// 94 cells carry a target: 47 on each axis, across his 14 codes. The remaining cells of the
+// 20-SC grid have none, and their donuts read N/A because there is no ask to measure against —
+// not because ACP does nothing there.
+const DEVA_TARGET={
+ a:{
+ "1.1.1":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "1.3.1":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "1.3.2":{pptx:"A3",pdf:"A3"},
+ "1.4.1":{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},
+ "1.4.3":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "1.4.5":{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},
+ "2.1.1":{pptx:"A2",pdf:"A2"},
+ "2.4.2":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "2.4.3":{pptx:"A2",pdf:"A2"},
+ "2.4.4":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "2.4.6":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "3.1.1":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "3.1.2":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "4.1.2":{pdf:"A4"}},
+ r:{
+ "1.1.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "1.3.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "1.3.2":{pptx:"R3",pdf:"R3"},
+ "1.4.1":{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
+ "1.4.3":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "1.4.5":{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
+ "2.1.1":{pptx:"R2",pdf:"R2"},
+ "2.4.2":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "2.4.3":{pptx:"R2",pdf:"R2"},
+ "2.4.4":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "2.4.6":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "3.1.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "3.1.2":{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R3"},
+ "4.1.2":{pdf:"R4"}}};
+
+// V5_APPLICABLE = Deva's IN-SCOPE grid, from the FINAL tab of
+// assessment-applicability-matrix-28JUL-Final.xlsx — his final word on scope, and the ONLY
+// checklist version this page cites. 14 WCAG codes, CELL-level rather than SC-level: several
+// apply to only some formats (1.3.2 has no DOCX/XLSX item at all).
+//
+// FINAL widened three codes and narrowed one against the earlier Applicability Matrix tab:
+// 1.4.5 gains XLSX+PPTX, 2.4.6 gains XLSX, 3.1.1 gains XLSX, and 4.1.2 drops DOCX to become
+// PDF-only (it had been a conditional "(X)" there). Taken from FINAL because that is what he
+// called final; the older tab is not cited anywhere. "yes" = X, "cond" = (X) "applies only if the feature is
 // present," absent from the inner object = blank = no checklist item for that format.
 //
 // Two discrepancies in Deva's own file, flagged rather than silently corrected:
@@ -1940,22 +2068,22 @@ const tb=document.querySelector("#tbl tbody");
 //     Applicability Matrix tab marks DOCX blank for 1.3.2.
 // Also: 1.4.4/1.4.10/1.4.11/1.4.12 are "correctly absent" per the Applicability Matrix tab and
 // so are dropped below, yet V5_DETAIL carries real per-format assertions for all four across
-// PDF/PPTX/XLSX. Surfaced, not resolved in either direction — it is her file to reconcile.
+// PDF/PPTX/XLSX. Surfaced, not resolved in either direction — it is his file to reconcile.
 const V5_APPLICABLE={
 "1.1.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "1.3.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "1.3.2":{pptx:"yes",pdf:"yes"},
 "1.4.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "1.4.3":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
-"1.4.5":{docx:"yes",pdf:"yes"},
+"1.4.5":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "2.1.1":{pptx:"yes",pdf:"yes"},
 "2.4.2":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "2.4.3":{pptx:"yes",pdf:"yes"},
 "2.4.4":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
-"2.4.6":{docx:"yes",pptx:"yes",pdf:"yes"},
-"3.1.1":{docx:"yes",pptx:"yes",pdf:"yes"},
+"2.4.6":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
+"3.1.1":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
 "3.1.2":{docx:"yes",xlsx:"yes",pptx:"yes",pdf:"yes"},
-"4.1.2":{docx:"cond",pdf:"yes"}};
+"4.1.2":{pdf:"yes"}};
 // ── Cell progress: where a cell stands against its POTENTIAL ─────────────────────────
 // "Potential" is RUBRIC's rule-inherent ceiling — what ANY tool could achieve given WCAG and
 // the file format. It is deliberately NOT a roadmap: nothing here says ACP intends to build
@@ -2016,22 +2144,104 @@ function cellProgress(row,f,axis){
 
 // A compact donut. Inline SVG rather than a chart library: this renders 160 times on the page,
 // the whole file must stay dependency-free, and the shape is one arc.
+// The word shown in a donut that has no headroom to measure. One constant because it is a
+// judgement call that may well want reversing: see the note on donutPct.
+const DONUT_NONE="N/A";
+
+// pct===null means "there is no progress to draw here" — the cell is already as good as this
+// rule and format allow. That is drawn as a flat grey ring rather than a full green one, because
+// a full green ring is a claim about ACP and this is a claim about the rule.
 function donut(pct,{size=30,stroke=4,tone="",title=""}={}){
   const r=(size-stroke)/2, c=2*Math.PI*r;
-  const off=c*(1-Math.max(0,Math.min(100,pct))/100);
-  return `<svg class="donut ${tone}" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img"`
-    +` aria-label="${esc(title||pct+"% of potential")}">`
+  const none=pct==null;
+  const off=none?c:c*(1-Math.max(0,Math.min(100,pct))/100);
+  return `<svg class="donut ${none?"dna":tone}" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img"`
+    +` aria-label="${esc(title||(none?"no headroom — already at what this rule allows":pct+"% of potential"))}">`
     +`<circle class="dtrack" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"/>`
-    +`<circle class="darc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"`
+    +(none?"":`<circle class="darc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"`
     +` stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"`
-    +` transform="rotate(-90 ${size/2} ${size/2})" stroke-linecap="round"/>`
-    +`<text class="dnum" x="50%" y="50%" dominant-baseline="central" text-anchor="middle">${pct}</text></svg>`;
+    +` transform="rotate(-90 ${size/2} ${size/2})" stroke-linecap="round"/>`)
+    +`<text class="dnum${none?" dnanum":""}" x="50%" y="50%" dominant-baseline="central" text-anchor="middle">${none?DONUT_NONE:pct}</text></svg>`;
 }
 const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
 
 // The level code as a small chip at the top of a cell. Same colours as the legend chips, so the
 // two match on code AND colour — a reader scanning for "everything at R1" can do it by shape
 // without reading a single label.
+// How full a cell's donut is drawn, for the view being shown.
+//
+// The scale runs BASELINE -> POTENTIAL, not baseline -> theoretical-perfect: 100% means "as far
+// as this cell can go", which for many cells is not A4/R4 at all. 2.4.3 on PDF tops out at Human
+// Assessment Required because reading order in an untagged PDF is not a machine-decidable fact;
+// a donut that drew it against A4 would read as a two-thirds failure when it is actually done.
+// The denominator is the cell's own ceiling (see cellProgress) so "full" always means "finished".
+//
+// In the Potential view the donut is full by definition — that view IS the ceiling, so drawing
+// today's fill under a cell labelled with its ceiling level showed a number that contradicted
+// the label right next to it. The drawer already did this; the grid did not, and the grid is
+// where nearly everyone looks.
+// null when the cell has NO HEADROOM — today already equals the ceiling, so there is no
+// improvement to express as a percentage and the donut reads N/A instead of 100.
+//
+// This is not cosmetic. A green 100 conflates three different situations that were reading
+// identically: 20 cells where ACP fully assesses (ceiling A4, and it got there), 21 where the
+// ceiling is only Potential Issue, and 2 — 2.1.1 and 2.1.2 on PDF — where the ceiling is Human
+// Assessment Required and ACP therefore automates NOTHING. That last pair showed a full green
+// ring, which reads as "solved" and is close to the opposite of the truth.
+//
+// A cell that DOES have headroom still shows 100 in the Potential view: that view is where it
+// would get to, and it earns the full ring by moving.
+//
+// KNOWN TENSION, flagged rather than hidden: the legend promises "grey means one thing only:
+// Not Applicable", and this puts a grey N/A on 71 cells that ARE applicable. The whole cell is
+// deliberately left at full strength — only the donut greys — so the out-of-scope hatching and
+// the N/A level chips still mean what they always did. If the word turns out to mislead, change
+// DONUT_NONE to "Max"; nothing else needs to move.
+// How close ACP is to what DEVA ASKED FOR in this cell — not to the rule's ceiling.
+//
+// The denominator is his FINAL target, so the donut answers the question he will actually put:
+// "how much of what I asked for do I have?" Measuring against the rule ceiling answered a
+// different and more flattering question, because the ceiling is sometimes far below his ask
+// (2.4.6 assessment tops out at Potential Issue on every format; he asked for Fully Automated)
+// and sometimes far above it (he asked for Human First on 2.1.1, which ACP already meets).
+//
+// Returns null — drawn as N/A — in the two cases where a percentage would be meaningless:
+//   * no target: the cell is outside his 14 codes, so there is no ask to measure against. This
+//     is NOT "ACP does nothing here"; several of those cells are fully assessed today.
+//   * already met or exceeded: the gap is closed. 2 cells actually exceed his ask.
+//
+// In the Potential view the numerator becomes the rule ceiling instead of today, which is how
+// the 32 cells that CANNOT reach his target even at full build show up as short rather than
+// full — the single most important thing on this page for a scoping conversation.
+function targetProgress(row,f,axis){
+  const t=DEVA_TARGET[axis][row.sc]&&DEVA_TARGET[axis][row.sc][f];
+  if(!t)return null;
+  const W=axis==="a"?A_WEIGHT:R_WEIGHT;
+  const wT=W[t]??0;
+  const cur=row[axis][f];
+  const pg=cellProgress(row,f,axis);
+  const wCur=W[cur]??0;
+  const wCeil=pg?(W[pg.rubricCeiling]??wCur):wCur;
+  const num=VIEW==="potential"?Math.max(wCur,wCeil):wCur;
+  // A zero-weight target (he asked for Human First on an axis where that scores nothing) is met
+  // by definition — there is no value to deliver, so it cannot be short.
+  const met=wT===0||num>=wT;
+  return {target:t, current:cur, met, exceeds:wCur>wT,
+          reachable:Math.max(wCur,wCeil)>=wT,
+          pct:wT===0?100:Math.max(0,Math.min(100,Math.round((num/wT)*100)))};
+}
+
+function donutPct(tp){ return tp&&!tp.met?tp.pct:null; }
+
+function donutTip(tp,todayLabel,ceilLabel,LBL){
+  if(!tp)return `Outside Deva's FINAL checklist — no target for this cell. Today: ${todayLabel}.`;
+  if(tp.met)return `Meets Deva's FINAL ask (${LBL[tp.target]})${tp.exceeds?" — and exceeds it":""}. Today: ${todayLabel}.`;
+  const tail=tp.reachable
+    ? `The rule allows ${ceilLabel}, so this is reachable.`
+    : `The rule tops out at ${ceilLabel}, so this cannot reach his ask.`;
+  return `${tp.pct}% of Deva's ask — he wants ${LBL[tp.target]}, ACP is at ${todayLabel}. ${tail}`;
+}
+
 function codeChip(level){
   const cls = level==="NA" ? "NAx" : level;
   return `<b class="ccode ${cls}">${level==="NA"?"N/A":level}</b>`;
@@ -2039,10 +2249,14 @@ function codeChip(level){
 
 // Legend donut samples, drawn with the same function the cells use so the key cannot drift
 // from the thing it explains — a hand-drawn legend swatch is exactly how a key goes stale.
+//
+// Three swatches, and each is a value the grid really contains: 112 cells read N/A (met, or
+// outside his codes), 25 read 0, and the partials land on 40/50/53/75.
 (function(){
-  for(const [id,pct] of [["lgDonutHi",100],["lgDonutMid",50],["lgDonutLo",0]]){
+  for(const [id,pct] of [["lgDonutNA",null],["lgDonutMid",75],["lgDonutLo",0]]){
     const el=document.getElementById(id);
-    if(el)el.innerHTML=donut(pct,{size:26,stroke:3.5,tone:progTone(pct),title:pct+"% of potential"});
+    if(el)el.innerHTML=donut(pct,{size:26,stroke:3.5,tone:pct==null?"":progTone(pct),
+      title:pct==null?"no headroom — already at what this rule allows":pct+"% of potential"});
   }
 })();
 
@@ -2052,6 +2266,33 @@ function codeChip(level){
 // Only populated after the first paint — the initial render animates nothing, since everything
 // would "change" from undefined and the whole grid would flash on load.
 let PREV_LEVELS=null;
+
+// Same V5 scope the coverage card uses, so every number on the page counts one population.
+function inScopeRow(sc,f){
+  const onlyV5=!!(document.getElementById("v3only")||{}).checked;
+  return !onlyV5 || !!(V5_APPLICABLE[sc]&&V5_APPLICABLE[sc][f]);
+}
+
+// Hover/focus summary for a cell: both axes, the remaining human effort, and the nudge to
+// open the drawer. Built from the same values the cell renders, so it cannot drift from what
+// is on screen. A native title= rather than a custom tooltip — it survives keyboard focus and
+// touch long-press for free, and this page has no tooltip infrastructure worth adding for it.
+function cellTip(row,f){
+  const a=row.a[f], r=row.r[f];
+  const pgA=cellProgress(row,f,"a"), pgR=cellProgress(row,f,"r");
+  const L=[];
+  L.push(`${row.sc} ${row.name} — ${f.toUpperCase()}`);
+  L.push(`Assessment: ${AL[a]||a}${pgA&&pgA.ceiling!==a?`  →  ${AL[pgA.ceiling]}`:""}`);
+  L.push(`Remediation: ${RL[r]||r}${pgR&&pgR.ceiling!==r?`  →  ${RL[pgR.ceiling]}`:""}`);
+  const ht=humanTime(a,r);
+  if(ht)L.push(`Human time: ~${ht.mins} min per finding (${ht.conf} confidence)`);
+  const rungs=[];
+  if(pgA&&pgA.rungs>0)rungs.push(`assess ${pgA.rungs}`);
+  if(pgR&&pgR.rungs>0)rungs.push(`fix ${pgR.rungs}`);
+  if(rungs.length)L.push(`Levels to climb: ${rungs.join(" · ")}`);
+  L.push("Click for the full breakdown →");
+  return L.join("\n");
+}
 
 function buildTable(){
   const prev=PREV_LEVELS, next={};
@@ -2071,13 +2312,17 @@ function buildTable(){
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
     const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
-    const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside her checklist's scope.";
+    const v5Aria=v5state?"":" Not in Deva's V5 checklist for this format — real ACP status shown, just outside his checklist's scope.";
     const pg=cellProgress(row,f,"a");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|a`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
-    const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${AL[v]}, potential ${AL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${pg.pct}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
+    const tp=targetProgress(row,f,"a");
+    const dp=donutPct(tp);
+    // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
+    // the same thing twice, and the ring implied a measurement that does not exist.
+    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(tp,AL[v],pg?AL[pg.ceiling]:AL[v],AL)});
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
@@ -2085,8 +2330,32 @@ function buildTable(){
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|r`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
-    const dot=pg?donut(pg.pct,{tone:progTone(pg.pct),title:`${pg.pct}% of potential — today ${RL[v]}, potential ${RL[pg.ceiling]}`}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${pg.pct}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
+    const tp=targetProgress(row,f,"r");
+    const dp=donutPct(tp);
+    // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
+    // the same thing twice, and the ring implied a measurement that does not exist.
+    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(tp,RL[v],pg?RL[pg.ceiling]:RL[v],RL)});
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
+  // Per-row coverage: how much of what this criterion allows ACP delivers, across the formats
+  // in scope. Both axes shown rather than one blended figure — the whole page turns on assess
+  // and remediate being different questions, and averaging them here would undo that.
+  {
+    const sum=(ax)=>{
+      let n=0,d=0,p=0;
+      for(const f of FM){
+        if(!inScopeRow(row.sc,f))continue;
+        const lvl=row[ax][f]; if(!lvl||lvl==="NA")continue;
+        const W=ax==="a"?A_WEIGHT:R_WEIGHT;
+        const pg=cellProgress(row,f,ax);
+        d++; n+=W[lvl]??0; p+=W[(pg&&pg.ceiling)||lvl]??0;
+      }
+      return d?{t:Math.round(n/d*100),p:Math.round(p/d*100)}:null;
+    };
+    const a=sum("a"), r=sum("r");
+    const line=(lbl,v)=>v?`<div class="rsline"><b>${lbl}</b> ${v.t}%<span class="rsarrow">→</span>${v.p}%`
+      +(v.p>v.t?`<span class="rsgain">+${v.p-v.t}</span>`:"")+`</div>`:`<div class="rsline rsna"><b>${lbl}</b> —</div>`;
+    h+=`<td class="rowsum">${line("A",a)}${line("R",r)}</td>`;
+  }
   tr.innerHTML=h;tb.appendChild(tr);
   }
   // The V5 filter styles rows after they exist, so re-apply it on every rebuild or a rebuild
@@ -2094,6 +2363,41 @@ function buildTable(){
   const cb=document.getElementById("v3only");
   if(cb)cb.dispatchEvent(new Event("change"));
   PREV_LEVELS=next;
+  buildFoot();
+}
+
+// Per-format totals under the columns they summarise. The coverage card at the top says the
+// same thing, but a reader who has scrolled to row 20 should not have to scroll back to answer
+// "so how does PDF do overall?" — the number belongs at the foot of its own column too.
+function buildFoot(){
+  const foot=document.getElementById("tblfoot"); if(!foot)return;
+  const col=(ax,f)=>{
+    let n=0,d=0,p=0;
+    for(const row of ROWS){
+      if(!inScopeRow(row.sc,f))continue;
+      const lvl=row[ax][f]; if(!lvl||lvl==="NA")continue;
+      const W=ax==="a"?A_WEIGHT:R_WEIGHT, pg=cellProgress(row,f,ax);
+      d++; n+=W[lvl]??0; p+=W[(pg&&pg.ceiling)||lvl]??0;
+    }
+    return d?{t:Math.round(n/d*100),p:Math.round(p/d*100),d}:null;
+  };
+  const cell=(v)=>v?`<td class="ftcell"><b>${v.t}%</b><span class="ftarrow">→</span><span class="ftpot">${v.p}%</span>`
+    +`<span class="ftn">${v.d} cell${v.d>1?"s":""}</span></td>`:`<td class="ftcell ftna">—</td>`;
+  const all=(ax)=>{let n=0,d=0,p=0;
+    for(const row of ROWS)for(const f of FM){
+      if(!inScopeRow(row.sc,f))continue;
+      const lvl=row[ax][f]; if(!lvl||lvl==="NA")continue;
+      const W=ax==="a"?A_WEIGHT:R_WEIGHT, pg=cellProgress(row,f,ax);
+      d++; n+=W[lvl]??0; p+=W[(pg&&pg.ceiling)||lvl]??0;}
+    return d?{t:Math.round(n/d*100),p:Math.round(p/d*100)}:null;};
+  const a=all("a"), r=all("r");
+  foot.innerHTML=`<tr class="ftrow">
+    <td class="ftlabel" colspan="2">Coverage — today <span>→</span> potential</td>
+    ${FM.map(f=>cell(col("a",f))).join("")}
+    ${FM.map(f=>cell(col("r",f))).join("")}
+    <td class="ftcell fttot">${a?`<b>${a.t}%</b><span class="ftarrow">→</span><span class="ftpot">${a.p}%</span><span class="ftn">assess</span>`:"—"}
+      ${r?`<div class="ftsplit"><b>${r.t}%</b><span class="ftarrow">→</span><span class="ftpot">${r.p}%</span><span class="ftn">remediate</span></div>`:""}</td>
+  </tr>`;
 }
 buildTable();
 
@@ -2101,9 +2405,9 @@ buildTable();
 (function(){
   const btns=[...document.querySelectorAll(".vtbtn")], hint=document.getElementById("vtHint");
   const HINT={
-    today:"Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.",
-    delta:"Cells show today and the gain available — the rule-inherent ceiling in grey beside it. Cells already at their ceiling show one value.",
-    potential:"Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it.",
+    today:"Cells show ACP's shipped capability. Donuts show how far that is toward Deva's FINAL ask.",
+    delta:"Cells show today and the gain available — the rule-inherent ceiling in grey beside it. Donuts stay on today's progress toward Deva's ask.",
+    potential:"Cells show the rule-inherent ceiling — what any tool could achieve. Donuts now measure THAT against Deva's ask, so a donut still short here is a cell no amount of building satisfies.",
   };
   for(const b of btns) b.addEventListener("click",()=>{
     VIEW=b.dataset.view;
@@ -2114,12 +2418,12 @@ buildTable();
 })();
 
 // "Show only Deva's V5 checklist SCs" toggle — per Deva's feedback that the full 20-SC rubric table
-// includes rows outside what her checklist actually checks, refined 2026-07-22 to cell-level using
+// includes rows outside what his checklist actually checks, refined 2026-07-22 to cell-level using
 // V5's applicability matrix (see V5_APPLICABLE's own comment). A row is shown if
 // V5_APPLICABLE has ANY entry for that SC; within a shown row, individual cells (both assess and
 // remediate) mute to a quiet "—" when V5 has no item for that specific format — real ACP status
 // stays in the DOM and stays clickable, just visually de-emphasized, so this never becomes "hide
-// real data," only "de-emphasize what's outside her checklist's scope." Doesn't touch the ceiling
+// real data," only "de-emphasize what's outside his checklist's scope." Doesn't touch the ceiling
 // tiles, which describe ACP's own rubric-wide ceiling independent of any one checklist's scope.
 (function(){
   const cb=document.getElementById("v3only"), countEl=document.getElementById("v3count");
@@ -2145,8 +2449,45 @@ buildTable();
 // The denominator is APPLICABLE cells only. A criterion that does not apply to a format is not
 // a gap and must not drag the percentage down — otherwise a format is punished for the rules it
 // was never subject to, and the number stops meaning anything comparable across formats.
+// Progress against DEVA'S FINAL ASK, weighted the same way as everything else on this page.
+//
+// Deliberately separate from the rubric coverage below it. That measures ACP against what any
+// tool could do; this measures ACP against what he wrote down. They disagree in both directions
+// and the disagreement is the conversation: some of his asks are below the ceiling and already
+// met, and 32 cells sit ABOVE the ceiling, meaning no amount of building gets there.
+//
+// A cell that over-delivers is capped at its target so that beating one ask cannot paper over
+// missing another — without the cap the total would drift upward on cells nobody asked about.
+function renderDevaHead(){
+  const el=document.getElementById("devaHead"); if(!el)return;
+  let wT=0,wToday=0,wCeil=0,met=0,short=0,unreachable=0,cells=0;
+  for(const row of ROWS)for(const ax of ["a","r"])for(const f of FM){
+    const tp=targetProgress(row,f,ax); if(!tp)continue;
+    const W=ax==="a"?A_WEIGHT:R_WEIGHT;
+    const t=W[tp.target]??0, cur=W[row[ax][f]]??0;
+    const pg=cellProgress(row,f,ax);
+    const ceil=Math.max(cur, pg?(W[pg.rubricCeiling]??cur):cur);
+    cells++; wT+=t; wToday+=Math.min(cur,t); wCeil+=Math.min(ceil,t);
+    if(cur>=t)met++; else {short++; if(ceil<t)unreachable++;}
+  }
+  const p=(n)=>wT?Math.round((n/wT)*1000)/10:0;
+  const today=p(wToday), pot=p(wCeil);
+  el.innerHTML=`<div class="dhrow">
+      <div class="dhnum"><b>${today}%</b><span>of Deva's FINAL ask, today</span></div>
+      <div class="dhbar" role="img" aria-label="${today}% of Deva's ask today, ${pot}% if everything the rules allow were built">
+        <span class="dhfill" style="width:${today}%"></span>
+        <span class="dhfill dhpot" style="width:${pot}%"></span>
+      </div>
+      <div class="dhnum dhalt"><b>${pot}%</b><span>if built to the rule ceiling</span></div>
+    </div>
+    <p class="dhnote"><b>${met}</b> of <b>${cells}</b> cells already meet his ask · <b>${short}</b> fall short,
+      of which <b>${unreachable}</b> cannot reach it even if ACP built everything the rule allows —
+      those need the ask revisited, not more engineering.</p>`;
+}
+
 function renderCoverage(){
   const grid=document.getElementById("covGrid"); if(!grid)return;
+  renderDevaHead();
   // SCOPE: Deva's V5 checklist only, when the filter above the table is on (its default).
   // Coverage previously counted all 80 cells regardless, so the headline described a rubric
   // wider than the checklist anyone is measured against — and it did not move when the filter
@@ -2167,7 +2508,6 @@ function renderCoverage(){
   function coverage(axis, fmts){
     let num=0, den=0, pnum=0;
     for(const row of ROWS) for(const f of fmts){
-      if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
       if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
       const lvl=row[axis.key][f];
       if(!lvl||lvl==="NA")continue;            // not applicable — outside the denominator
@@ -2321,19 +2661,6 @@ function buildFAQ(row,f,rub){
   return faqs;
 }
 
-// Cost & automation methodology, stated once here — every number below traces back to these four
-// assumptions, not to any measured ACP data (ACP doesn't track $/finding or findings-per-doc today).
-// Change these constants, not the prose below, if the assumptions need revising.
-const COST_ASSUMPTIONS={
-  humanRatePerHour:50,        // loaded reviewer rate, $/hr — a mid-market accessibility-reviewer assumption, not ACP's actual cost
-  minutesPerAssessConfirm:3,  // minutes to review + confirm/reject one machine-assisted assessment finding
-  minutesPerFixApprove:2,     // minutes to review + approve one drafted remediation (already-written, just needs a decision)
-  minutesPerHumanOnly:8,      // minutes for a fully human assessment/fix with no machine assist at all (find it, judge it, act)
-  cloudCallCost:"$0.01–0.05", // per model call at current Sonnet 5 / Haiku 4.5 pricing — vision calls trend toward the high end, short text toward the low end
-  minutesManualPerSC:15,      // fully-manual baseline: a human audits a whole document for ONE criterion with zero tool assistance (find every instance, judge each, fix it) and no machine pre-filter to triage against. Flat across tiers on purpose — manual effort doesn't know ACP's own DET/MA/HUM taxonomy; this is the "if ACP didn't exist" number.
-  findingRateTypical:0.40,    // same Typical scenario used in the pricing artifacts — the share of applicable checks that surface ≥1 item on a realistic document
-  minutesPerFixApprovePartial:1, // approval time where a faithful-source shortcut (AC/AP-shipped) already covers most cases — lighter than a full drafted-proposal approval
-};
 function money(mins){const h=mins/60; return "$"+(h*COST_ASSUMPTIONS.humanRatePerHour).toFixed(2);}
 function costAutomation(row,f,rub){
   const A=COST_ASSUMPTIONS;
@@ -2426,65 +2753,66 @@ let lastTrigger=null;
 // cell, so it needs to know which one without re-reading it out of the DOM.
 let CURRENT_CELL={sc:null,f:null};
 
+// ── Score panel: why this cell scores what it does ───────────────────────────────────
+// Every bullet is LIFTED from existing per-cell metadata, never written for the panel and
+// never invented. Sources, in the order they are drawn on:
+//   1. ae/re[f].c  — the cell's own recorded concessions. Literally "why this isn't 100".
+//   2. registry     — acp's declared coverage reason, where the pair has been migrated.
+//   3. RUBRIC aWhy/fWhy — why the rule-inherent ceiling sits where it does.
+//   4. UPGRADE      — the cheapest concrete build that would close the gap.
+// A cell with none of these shows nothing rather than filler. Capped at five: past that it
+// stops being a summary.
+// The two views ask different questions of the same cell, so they get different bullets in a
+// different order — not the same list under a different heading.
+//   Today     → "why isn't this 100 yet?"  Lead with what ACP concedes it cannot do.
+//   Potential → "what would it take to get there?"  Lead with the work that closes the gap
+//               and the reasoning that fixes the ceiling where it is.
+function whyBullets(row,f,rub,view){
+  const out=[];
+  const push=(txt,src)=>{ if(txt&&out.length<5&&!out.some(o=>o.txt===String(txt))) out.push({txt:String(txt),src}); };
+  const mat=(typeof MATURITY!=="undefined"&&MATURITY[row.sc]&&MATURITY[row.sc][f])||null;
+  if(view==="potential"){
+    if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
+    if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling stops here");
+    if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling stops here");
+    if(mat&&mat.why) push(mat.why,`acp coverage today: ${mat.c}`);
+  }else{
+    for(const c of (row.ae&&row.ae[f]&&row.ae[f].c)||[]) push(c,"assessment limit");
+    for(const c of (row.re&&row.re[f]&&row.re[f].c)||[]) push(c,"remediation limit");
+    if(mat&&mat.why) push(mat.why,`acp coverage: ${mat.c}`);
+    if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling is there");
+    if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling is there");
+    if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
+  }
+  return out;
+}
+
+// Remaining human effort, from the page's own COST_ASSUMPTIONS — the same model the cost
+// section uses. These are ASSUMPTIONS, not measurements: ACP does not track actual minutes
+// per finding, and the panel says so rather than implying a measured number.
+function humanTime(a,r){
+  const A=COST_ASSUMPTIONS;
+  if(a==="NA"&&r==="NA")return null;
+  const parts=[];
+  if(a==="A2") parts.push({m:A.minutesPerHumanOnly, t:"assess by hand — no machine verdict exists here"});
+  else if(a==="A3") parts.push({m:A.minutesPerAssessConfirm, t:"confirm or reject what ACP flagged"});
+  if(r==="R1"&&a!=="NA") parts.push({m:A.minutesPerHumanOnly, t:"make the fix by hand"});
+  else if(r==="R2") parts.push({m:A.minutesPerHumanOnly, t:"apply the guided fix yourself"});
+  else if(r==="R3") parts.push({m:A.minutesPerFixApprove, t:"approve the drafted fix before it is written"});
+  if(!parts.length)return {mins:0, parts:[], conf:"high"};
+  const mins=parts.reduce((n,p)=>n+p.m,0);
+  // Confidence tracks how much of the estimate rests on a fully-human step, which is the
+  // widest-variance assumption in the model.
+  const humanHeavy=parts.some(p=>p.m===A.minutesPerHumanOnly);
+  return {mins, parts, conf: humanHeavy?"low":(a==="A3"?"medium":"high")};
+}
+
 function renderDrawer(sc,f,trigger){
   const row=ROWS.find(r=>r.sc===sc);if(!row)return;
   if(!row.a[f]&&!row.r[f]){f="docx";}
   CURRENT_CELL={sc,f}; // cross-link landed on a format this SC has no columns for — fall back
   const rub=RUBRIC[row.sc]&&RUBRIC[row.sc].formats[f];
   const slug=W3SLUG[row.sc];
-  // ── Score panel: why this cell scores what it does ───────────────────────────────────
-  // Every bullet is LIFTED from existing per-cell metadata, never written for the panel and
-  // never invented. Sources, in the order they are drawn on:
-  //   1. ae/re[f].c  — the cell's own recorded concessions. Literally "why this isn't 100".
-  //   2. registry     — acp's declared coverage reason, where the pair has been migrated.
-  //   3. RUBRIC aWhy/fWhy — why the rule-inherent ceiling sits where it does.
-  //   4. UPGRADE      — the cheapest concrete build that would close the gap.
-  // A cell with none of these shows nothing rather than filler. Capped at five: past that it
-  // stops being a summary.
-  // The two views ask different questions of the same cell, so they get different bullets in a
-  // different order — not the same list under a different heading.
-  //   Today     → "why isn't this 100 yet?"  Lead with what ACP concedes it cannot do.
-  //   Potential → "what would it take to get there?"  Lead with the work that closes the gap
-  //               and the reasoning that fixes the ceiling where it is.
-  function whyBullets(row,f,rub,view){
-    const out=[];
-    const push=(txt,src)=>{ if(txt&&out.length<5&&!out.some(o=>o.txt===String(txt))) out.push({txt:String(txt),src}); };
-    const mat=(typeof MATURITY!=="undefined"&&MATURITY[row.sc]&&MATURITY[row.sc][f])||null;
-    if(view==="potential"){
-      if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
-      if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling stops here");
-      if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling stops here");
-      if(mat&&mat.why) push(mat.why,`acp coverage today: ${mat.c}`);
-    }else{
-      for(const c of (row.ae&&row.ae[f]&&row.ae[f].c)||[]) push(c,"assessment limit");
-      for(const c of (row.re&&row.re[f]&&row.re[f].c)||[]) push(c,"remediation limit");
-      if(mat&&mat.why) push(mat.why,`acp coverage: ${mat.c}`);
-      if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling is there");
-      if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling is there");
-      if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
-    }
-    return out;
-  }
-
-  // Remaining human effort, from the page's own COST_ASSUMPTIONS — the same model the cost
-  // section uses. These are ASSUMPTIONS, not measurements: ACP does not track actual minutes
-  // per finding, and the panel says so rather than implying a measured number.
-  function humanTime(a,r){
-    const A=COST_ASSUMPTIONS;
-    if(a==="NA"&&r==="NA")return null;
-    const parts=[];
-    if(a==="A2") parts.push({m:A.minutesPerHumanOnly, t:"assess by hand — no machine verdict exists here"});
-    else if(a==="A3") parts.push({m:A.minutesPerAssessConfirm, t:"confirm or reject what ACP flagged"});
-    if(r==="R1"&&a!=="NA") parts.push({m:A.minutesPerHumanOnly, t:"make the fix by hand"});
-    else if(r==="R2") parts.push({m:A.minutesPerHumanOnly, t:"apply the guided fix yourself"});
-    else if(r==="R3") parts.push({m:A.minutesPerFixApprove, t:"approve the drafted fix before it is written"});
-    if(!parts.length)return {mins:0, parts:[], conf:"high"};
-    const mins=parts.reduce((n,p)=>n+p.m,0);
-    // Confidence tracks how much of the estimate rests on a fully-human step, which is the
-    // widest-variance assumption in the model.
-    const humanHeavy=parts.some(p=>p.m===A.minutesPerHumanOnly);
-    return {mins, parts, conf: humanHeavy?"low":(a==="A3"?"medium":"high")};
-  }
 
   // Both capability codes for this cell, right under the title — the two things the drawer is
   // about, stated before any prose. Shows the level for whichever view is active, so the codes
@@ -2519,12 +2847,20 @@ function renderDrawer(sc,f,trigger){
     html+=`<div class="scorepanel">
       <div class="spgrid">
         <div class="spdonut">
-          ${(()=>{const v=isPot?100:(pgA?pgA.pct:null);
-             return v==null?"":donut(v,{size:84,stroke:9,tone:progTone(v),
-               title:isPot?"at the ceiling":`${v}% of potential`});})()}
+          ${(()=>{const tpA=targetProgress(row,f,"a");
+             const v=donutPct(tpA);
+             return donut(v,{size:84,stroke:9,tone:v==null?"":progTone(v),
+               title:donutTip(tpA,AL[row.a[f]],pgA?AL[pgA.ceiling]:AL[row.a[f]],AL)});})()}
           <div class="spdlabel">${esc(AL[aShown]||aShown)}</div>
-          <div class="spdsub">assessment · ${isPot?"at the ceiling"
-            :(pgA&&pgA.pct<100?`${100-pgA.pct}% headroom`:"at the ceiling")}</div>
+          <div class="spdsub">assessment · ${(()=>{
+            // The subtitle names DEVA'S ask, because that is now the donut's denominator. Saying
+            // "headroom" here would describe the rule ceiling while the ring beside it described
+            // his target — two scales, one panel, which is the confusion this page keeps hitting.
+            const tp=targetProgress(row,f,"a");
+            if(!tp)return "outside his checklist";
+            if(tp.met)return tp.exceeds?"exceeds his ask":"meets his ask";
+            return `${100-tp.pct}% short of ${esc(AL[tp.target])}${tp.reachable?"":" · unreachable"}`;
+          })()}</div>
           ${(()=>{
             // The percentage hides distance: A2->A3 and A2->A4 can both read 0. State the steps.
             // Nothing to climb in the Potential view — that view IS the top of the ladder.
@@ -2575,8 +2911,8 @@ function renderDrawer(sc,f,trigger){
     html+=`<p class="why">${linkify(esc(rub.aWhy),row.sc,f)}</p>`;
   }
 
-  // Deva's V5 validation assertions for the open format tab, quoted verbatim from
-  // assessment-applicability-matrix-v5-28JUL.xlsx. V5 is the only checklist artifact this page
+  // Deva's validation assertions for the open format tab, quoted verbatim from
+  // assessment-applicability-matrix-28JUL-Final.xlsx. V5 is the only checklist artifact this page
   // cites; the older per-SC comparison came from a V3 sheet V5 does not carry, and relabelling
   // it would have been a false provenance claim, so it was removed rather than re-badged.
   {
@@ -2586,13 +2922,13 @@ function renderDrawer(sc,f,trigger){
       // tab, then the words verbatim in quotes, then a <cite>. Deva's checklist is a primary
       // source for this matrix, and a paraphrase of it is not checkable against the workbook.
       html+=`<div class="devaquote">`
-        +`<div class="devasrc">Source: <code>assessment-applicability-matrix-v5-28JUL.xlsx</code>`
+        +`<div class="devasrc">Source: <code>assessment-applicability-matrix-28JUL-Final.xlsx</code>`
         +` &middot; <b>${f.toUpperCase()}</b> tab &middot; ${v5items.length} assertion${v5items.length>1?"s":""} for ${row.sc}</div>`
         + v5items.map(x=>
         `<blockquote class="dq">${esc(x.a)}
-          <cite>— Deva's V5 checklist, ${f.toUpperCase()} tab, &ldquo;Validation assertion&rdquo;</cite></blockquote>
-         <div class="dqmeta"><b>Her recommended technical approach:</b> ${esc(x.appr)}</div>
-         <div class="dqmeta"><b>Her stated automation level:</b> ${esc(x.auto)}</div>`).join("")
+          <cite>— Deva's checklist, ${f.toUpperCase()} tab, &ldquo;Validation assertion&rdquo;</cite></blockquote>
+         <div class="dqmeta"><b>His recommended technical approach:</b> ${esc(x.appr)}</div>
+         <div class="dqmeta"><b>His stated automation level:</b> ${esc(x.auto)}</div>`).join("")
         +`</div>`;
     }
   }
@@ -2658,7 +2994,7 @@ panelBody.addEventListener("click",(e)=>{
       const hint=document.getElementById("vtHint");
       if(hint)hint.textContent=VIEW==="potential"
         ? "Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it."
-        : "Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.";
+        : "Cells show ACP's shipped capability. Donuts show how far that is toward Deva's FINAL ask.";
       buildTable();
       renderDrawer(CURRENT_CELL.sc, CURRENT_CELL.f, lastTrigger);
       // Mark the panel so the changed regions animate in.
