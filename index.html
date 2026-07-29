@@ -561,10 +561,11 @@
 
       <div class="legendcol">
         <h4>The donut in each cell &mdash; progress toward Deva&rsquo;s ask</h4>
-        <span class="lgitem lgdonut"><span id="lgDonutNA"></span> <span class="lgtext"><b>N/A &mdash; nothing more can be done</b> here. ACP is already at what this rule and format allow, so there is no work left to measure. It does NOT mean full automation: several cells top out at Human Assessment Required because the judgement genuinely is not machine-decidable.</span></span>
-        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <span class="lgtext"><b>Partway</b> &mdash; some of what is achievable here is built, the rest is not.</span></span>
-        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <span class="lgtext"><b>0 &mdash; not started</b>. Something IS achievable here and ACP delivers none of it today. This is the opposite of N/A, and the difference is the whole point of the donut.</span></span>
-        <span class="lgitem lgnote">Each donut is <b>% of what is achievable</b> for that cell &mdash; its denominator is the <b>rule-inherent ceiling</b>, what any tool could do for this rule and format, not what ACP has committed to build. So it answers the engineering question: <i>how much of the possible work is done?</i> <b>0 means not started; N/A means nothing left to start.</b> In <b>Potential</b> a cell with headroom fills to 100% &mdash; that is where it would get to. The big figure above the grid is the different question: how much of <b>Deva&rsquo;s ask</b> ACP meets. <b>This grey is the donut&rsquo;s only</b>: a greyed <i>cell</i> still means Not Applicable.</span>
+        <span class="lgitem lgdonut"><span id="lgDonutNA"></span> <span class="lgtext"><b>N/A &mdash; no code reaches further</b>. The best any tool could do here is still a human judgement, so there is nothing for ACP to build. Only <b>2 cells</b> qualify: keyboard-trap assessment (2.1.1, 2.1.2) on PDF.</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutHi"></span> <span class="lgtext"><b>100 &mdash; built to the promise</b>. ACP delivers everything this cell allows.</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <span class="lgtext"><b>Partway</b> &mdash; some of what this cell allows is built, the rest is not.</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <span class="lgtext"><b>0 &mdash; not started</b>. Something IS achievable here and ACP delivers none of it today.</span></span>
+        <span class="lgitem lgnote">Each donut is <b>% of what that cell allows</b>. <b>100 means built to the promise</b> &mdash; ACP delivers everything this rule and format make possible, which is <i>not</i> the same as full automation: a cell whose ceiling is a drafted-then-approved fix reads 100 when that fix ships. <b>0 means not started</b>, and the work is possible. <b>N/A is reserved for the two cells where no amount of code reaches anything</b> &mdash; the best outcome is a person deciding. The big figure above the grid answers the other question: how much of <b>Deva&rsquo;s ask</b> ACP meets. <b>This grey is the donut&rsquo;s only</b>: a greyed <i>cell</i> still means Not Applicable.</span>
       </div>
 
     </div>
@@ -1823,7 +1824,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0659";
+const DOC_BUILD="2026.07.29.0713";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -2258,17 +2259,25 @@ function targetProgress(row,f,axis){
 // The headline above the grid still measures Deva's ask — that is the number he plans against.
 // This is the per-cell engineering question, which is a different question.
 function donutPct(pg){
-  if(!pg||pg.atCeiling)return null;
-  return VIEW==="potential"?100:pg.pct;
+  if(!pg)return null;                       // the rule cannot apply to this format at all
+  const W=pg.label===AL?A_WEIGHT:R_WEIGHT;
+  // A ceiling that scores NOTHING means no amount of code reaches anything here — the best
+  // available outcome is still "a person decides" (A2) or "no meaningful fix" (R1). That is
+  // the only honest N/A: not "we finished", but "there is nothing here for code to finish".
+  if((W[pg.rubricCeiling]??0)===0)return null;
+  return VIEW==="potential"?100:pg.pct;     // 100 when ACP is built to what the cell promises
 }
 
 function donutTip(pg,tp,todayLabel,LBL){
   if(!pg)return `Not applicable to this format. `+(tp?`Deva's ask: ${LBL[tp.target]}.`:"Outside Deva's checklist.");
   const ceil=LBL[pg.ceiling]||pg.ceiling;
+  const W=pg.label===AL?A_WEIGHT:R_WEIGHT;
   const ask=tp?`  Deva asks for ${LBL[tp.target]}.`:"  Outside Deva's 14 codes.";
-  if(pg.atCeiling)return `At the ceiling — ${ceil} is as far as this rule and format allow, and ACP is there. Nothing more to build.${ask}`;
+  if((W[pg.rubricCeiling]??0)===0)
+    return `No code reaches further here — the best any tool can do is ${ceil}, which is a human judgement rather than something ACP can decide or write.${ask}`;
+  if(pg.atCeiling)return `Built to 100% of what this cell allows — ${ceil}, and ACP is there.${ask}`;
   if(pg.pct===0)return `Nothing built yet — ${ceil} is achievable here and ACP delivers none of it. Today: ${todayLabel}.${ask}`;
-  return `${pg.pct}% of what is achievable — today ${todayLabel}, ceiling ${ceil}.${ask}`;
+  return `${pg.pct}% of what this cell allows — today ${todayLabel}, ceiling ${ceil}.${ask}`;
 }
 
 function codeChip(level){
@@ -2282,7 +2291,7 @@ function codeChip(level){
 // Three swatches, and each is a value the grid really contains: 112 cells read N/A (met, or
 // outside his codes), 25 read 0, and the partials land on 40/50/53/75.
 (function(){
-  for(const [id,pct] of [["lgDonutNA",null],["lgDonutMid",75],["lgDonutLo",0]]){
+  for(const [id,pct] of [["lgDonutNA",null],["lgDonutHi",100],["lgDonutMid",50],["lgDonutLo",0]]){
     const el=document.getElementById(id);
     if(el)el.innerHTML=donut(pct,{size:26,stroke:3.5,tone:pct==null?"":progTone(pct),
       title:pct==null?"no headroom — already at what this rule allows":pct+"% of potential"});
