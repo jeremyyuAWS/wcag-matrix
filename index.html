@@ -907,7 +907,7 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  ae:{
   docx:{b:["The .NET rule computes the TRUE WCAG relative-luminance contrast ratio — 4.5:1 normal text, 3:1 large (≥18pt or 14pt bold) — for every run with explicit colour (w:color) against its shading (w:shd). The real formula, not a luma shortcut.","The declared scope is the RIGHT scope: automatic-colour runs are skipped because their rendered colour depends on the viewer theme — outside the document.","Findings are actionable by design: fg/bg hex, measured ratio, required ratio, text excerpt — a designer can act without re-scanning."],
       c:["Effective backgrounds from table-cell or page fills aren't resolved (declared FP mode); theme-driven low contrast passes (declared FN mode)."],
@@ -929,7 +929,7 @@ const ROWS=[
   pptx:{b:["Live recolour on explicit srgbClr runs over explicit solid fills — the same narrow scope the detector measures, so every recolour targets a run the scanner actually flagged.","Catalog 'human-only' is acknowledged drift; the poster already follows code here."],
       ev:["api/remediate_office.py:_remediate_pptx_slides (recolor_run_in_sp)"],
       cat:"Catalog drift: PPTX-CONTRAST-001 fix_mode=human-only vs live auto-recolour."},
-  pdf:{b:["CAVEAT, found 2026-07-29 and not yet fixed: the fixer assumes a WHITE page and never resolves what is actually behind the glyphs. On white it is sound \u2014 a ~#CCCCCC fixture was rewritten and the re-scan came back clean. On a dark background it INVERTS the intent: white text on black went 21:1 \u2192 #666666 \u2192 3.66:1, and white on navy 19.27:1 \u2192 3.36:1, i.e. it takes compliant dark-theme PDFs and makes them fail AA, unattended. The tier below records what the mechanism IS (an unattended automatic edit); it is not a statement that the edit is always safe. Gating it on a resolved background is filed as a defect.","None: rewriting colours inside PDF content streams is high-risk surgery on the page-painting program itself. Report-and-review is the defensible ceiling today."],
+  pdf:{b:["FIXED 2026-07-29 (acp#22). This cell was briefly recorded as a clean automatic fix on the strength of a white-background fixture, which hid a defect on both sides: the detector never computed a ratio (it thresholded the text colour's luma and ignored the background) and the fixer inherited the same assumption. On a white page the two errors cancel; off it they compound \u2014 white-on-black measured 21:1 and was rewritten to 3.66:1, an AA failure the fixer CREATED, unattended. Both halves now resolve the background structurally. It is an honest PARTIAL rather than a clean sweep: text over an image, or over fills that pull opposite ways, is left alone and stays a finding for a human.","None: rewriting colours inside PDF content streams is high-risk surgery on the page-painting program itself. Report-and-review is the defensible ceiling today."],
       ev:["—"]}}},
 
 {sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
@@ -1819,7 +1819,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0042";
+const DOC_BUILD="2026.07.29.0043";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3109,6 +3109,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"02:10",tz:"PDT",hash:"2015bcc",pr:18,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix: PDF contrast assessment reaches Fully Assessed as the fixer defect is closed",
+ scs:["1.4.3","1.4.6"],formats:["pdf"],
+ summary:"The first cell this week to move because ACP got BETTER rather than because the record was wrong. Everything else recently has been correcting understated claims; this is a real capability change, shipped in acp#22.",
+ points:[
+  {label:"What shipped",text:"pdf_contrast_checks now resolves the background structurally — topmost filled rect containing the glyph, else the page default — and computes a true WCAG ratio with large-text thresholds, attaching the evidence: 'text #787878 on #FFFFFF is 4.42:1 (needs 4.5:1)'. Deterministic pass/fail with evidence is the Fully Assessed bar, and it is the same shape XLSX and PPTX already met."},
+  {label:"What it replaced",text:"A luma threshold on the text colour alone that never looked at the background. It was wrong in both directions: white-on-black at a true 21:1 was reported SERIOUS, while #4C4C4C on #262626 at 1.76:1 was silent, and the whole muted-body-text band from #787878 to #9E9E9E failed AA without the AA rule ever firing."},
+  {label:"The remediation caveat is resolved",text:"The fixer had inherited the same white-page assumption and was rewriting compliant dark-theme PDFs to roughly 3.5:1 — unattended, so it created AA failures nobody reviewed. It now abstains where structure cannot answer, and what it abstains on stays a finding."},
+  {label:"Still a partial, deliberately",text:"Text over an image, or over fills that pull opposite ways, is not judged here — it routes to the over-image review instead. Honest partial coverage, not a clean sweep."}]},
 {date:"2026-07-29",time:"01:34",tz:"PDT",hash:"c5bb47f",pr:17,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: raise the 1.4.3 PDF assessment ceiling, and guard ceilings the way cells are guarded",
  scs:["1.4.3"],formats:["pdf"],
