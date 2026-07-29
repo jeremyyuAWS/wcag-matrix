@@ -606,7 +606,7 @@
     </ul>
   </div>
   <div class="foot">Ceiling claims (drawer §§2–4, table tiles) are argued from the WCAG 2.2 normative text and each format's structural model — see <code>docs/deva-reconciliation.md</code> and <code>docs/tier-methodology.md</code> for the reasoning basis. ACP-status claims (drawer §5, table cell colors) cite <code>engine/office-analysers</code> + vendored <code>worker-python</code> + <code>api/ocr.py · textchecks.py · office_structure.py</code> (detection) and <code>api/remediate_office.py · remediate_pdf.py</code> + HITL lane (<code>api/ai.py</code>) (remediation). <code>rule-catalog.json</code>/<code>docs/rules</code> = intent &amp; spec. <code>digital-accessibility/</code> (partner remediators) is gitignored and not deployed — never capability.</div>
-  <div class="foot">Doc build <span class="docbuild"></span> (CalVer, UTC edit timestamp — not deploy.sh's git-ordinal scheme, this file isn't a deployed service).</div>
+  <div class="foot">Doc build <span class="docbuild"></span> (CalVer, Pacific edit timestamp — not deploy.sh's git-ordinal scheme, this file isn't a deployed service).</div>
 
     </div>
 
@@ -617,7 +617,7 @@
          nothing without knowing when the file was built. Rendered from DOC_BUILD, not written
          twice: two hand-maintained stamps would eventually disagree, and the one in a screenshot
          is exactly the one nobody would notice had gone stale. -->
-    <div class="logbuild">Doc build <span class="docbuild"></span> · CalVer, UTC edit timestamp</div>
+    <div class="logbuild">Doc build <span class="docbuild"></span> · CalVer, Pacific edit timestamp</div>
 
     <!-- Roadmap: what has NOT shipped, above the timeline of what has. Every row is DERIVED —
          a cell counts as open when ACP's shipped tier (ROWS.a/ROWS.r) has not reached that
@@ -1813,12 +1813,13 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // "potential" (RUBRIC's fClass) read on one shared scale. AC (1.1.1's vision-conditional auto-apply) is
 // AI-assisted; AP (1.3.2 xlsx / 2.4.2's partial-mechanical auto-fixes) is rules-based — verified against
 // the actual re[] mechanism text for every SC that uses AC/AP before assuming the mapping.
-// CalVer doc build — YYYY.MM.DD.HHMM in UTC, NOT deploy.sh's git-ordinal scheme (this file
-// isn't a deployed service). UTC rather than local because the sync workflow stamps this too and
-// a CI runner has no meaningful local zone; mixing the two makes the stamp jump non-monotonically.
+// CalVer doc build — YYYY.MM.DD.HHMM in Pacific time, NOT deploy.sh's git-ordinal scheme (this file
+// isn't a deployed service). Pacific rather than UTC because every reader of this page works
+// Pacific hours, and a stamp that needs mental arithmetic to place in the day gets misread as
+// stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0035";
+const DOC_BUILD="2026.07.29.0040";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -2780,25 +2781,50 @@ let CURRENT_CELL={sc:null,f:null};
 //   Today     → "why isn't this 100 yet?"  Lead with what ACP concedes it cannot do.
 //   Potential → "what would it take to get there?"  Lead with the work that closes the gap
 //               and the reasoning that fixes the ceiling where it is.
+// WHAT IS LEFT TO DO in this cell, and — when ACP cannot get all the way there — why not.
+//
+// Rewritten from "why this score". The score is now a percentage of DEVA'S ASK, so the reader's
+// question changed with it: not "how did you arrive at this number" but "what is still missing,
+// and is anyone going to fix it". Those have different answers and the old bullets only ever
+// gave the first.
+//
+// Order is deliberate and is the answer to the question, most actionable first:
+//   1. the gap itself, in plain terms — what he asked for versus what he gets
+//   2. what would close it, when something would
+//   3. why it cannot be closed, split by AXIS — assessment limits and remediation limits are
+//      different problems and were previously interleaved into one undifferentiated list
+//   4. what ACP does deliver here, so a cell that is short does not read as a cell that is empty
+//
+// A cell that meets the ask returns [] and the panel says so, rather than padding with
+// limitations that no longer matter to anyone.
 function whyBullets(row,f,rub,view){
   const out=[];
   const push=(txt,src)=>{ if(txt&&out.length<5&&!out.some(o=>o.txt===String(txt))) out.push({txt:String(txt),src}); };
   const mat=(typeof MATURITY!=="undefined"&&MATURITY[row.sc]&&MATURITY[row.sc][f])||null;
-  if(view==="potential"){
-    if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
-    if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling stops here");
-    if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling stops here");
-    if(mat&&mat.why) push(mat.why,`acp coverage today: ${mat.c}`);
-  }else{
-    for(const c of (row.ae&&row.ae[f]&&row.ae[f].c)||[]) push(c,"assessment limit");
-    for(const c of (row.re&&row.re[f]&&row.re[f].c)||[]) push(c,"remediation limit");
-    if(mat&&mat.why) push(mat.why,`acp coverage: ${mat.c}`);
-    if(rub&&rub.aWhy) push(rub.aWhy,"why the assess ceiling is there");
-    if(rub&&rub.fWhy) push(rub.fWhy,"why the fix ceiling is there");
-    if(UPGRADE[row.sc]) push(UPGRADE[row.sc],"what would close the gap");
-  }
+  const tpA=targetProgress(row,f,"a"), tpR=targetProgress(row,f,"r");
+  const shortA=tpA&&!tpA.met, shortR=tpR&&!tpR.met;
+
+  // 1. The gap, stated before any explanation of it.
+  if(shortA)push(`Deva asks for ${AL[tpA.target]}; ACP assesses at ${AL[row.a[f]]||row.a[f]}.`,
+                 tpA.reachable?"assessment gap — reachable":"assessment gap — beyond the ceiling");
+  if(shortR)push(`Deva asks for ${RL[tpR.target]}; ACP remediates at ${RL[row.r[f]]||row.r[f]}.`,
+                 tpR.reachable?"remediation gap — reachable":"remediation gap — beyond the ceiling");
+
+  // 2. What would close it — only when something would.
+  if((shortA||shortR)&&UPGRADE[row.sc])push(UPGRADE[row.sc],"what would close it");
+
+  // 3. Why it cannot be closed, per axis, and only for the axis that is actually short. A
+  //    remediation ceiling is not an answer to an assessment question.
+  if(shortA&&!tpA.reachable&&rub&&rub.aWhy)push(rub.aWhy,"why assessment stops here");
+  if(shortR&&!tpR.reachable&&rub&&rub.fWhy)push(rub.fWhy,"why remediation stops here");
+  for(const c of (shortA?((row.ae&&row.ae[f]&&row.ae[f].c)||[]):[]))push(c,"assessment limit");
+  for(const c of (shortR?((row.re&&row.re[f]&&row.re[f].c)||[]):[]))push(c,"remediation limit");
+
+  // 4. What ACP does deliver, so "short" is not read as "nothing".
+  if(mat&&mat.why)push(mat.why,`acp coverage today: ${mat.c}`);
   return out;
 }
+
 
 // Remaining human effort, from the page's own COST_ASSUMPTIONS — the same model the cost
 // section uses. These are ASSUMPTIONS, not measurements: ACP does not track actual minutes
@@ -2885,11 +2911,15 @@ function renderDrawer(sc,f,trigger){
           })()}
         </div>
         <div class="spwhy">
-          <h5>${isPot?"What it would take to get here":"Why this score"}</h5>
+          <h5>${(()=>{const a=targetProgress(row,f,"a"),r=targetProgress(row,f,"r");
+            if(!a&&!r)return "Outside Deva\u2019s checklist";
+            const short=(a&&!a.met)||(r&&!r.met);
+            return short?"What\u2019s left to do":"Nothing left \u2014 meets Deva\u2019s ask";})()}</h5>
           ${why.length?`<ul>${why.map(b=>
             `<li>${esc(b.txt)} <span class="spsrc">${esc(b.src)}</span></li>`).join("")}</ul>`
-            :`<p class="spnone">${isPot?"Nothing recorded about closing this gap — the cell already sits at its ceiling."
-              :"No limitation is recorded for this cell — it sits at its ceiling."}</p>`}
+            :`<p class="spnone">${(()=>{const a=targetProgress(row,f,"a"),r=targetProgress(row,f,"r");
+              if(!a&&!r)return "This cell is outside Deva\u2019s 14 codes, so there is no ask to measure against \u2014 which is not the same as ACP doing nothing here.";
+              return "ACP already delivers what he asked for on both axes. Nothing outstanding.";})()}</p>`}
         </div>
       </div>
 
@@ -3079,7 +3109,7 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
-{date:"2026-07-29",time:"00:31",hash:"a3d3859",pr:14,repo:"jeremyyuAWS/wcag-matrix",
+{date:"2026-07-28",time:"17:31",tz:"PDT",hash:"a3d3859",pr:14,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: correct nine cells the matrix understated, verified against fixtures",
  scs:["2.4.6","2.4.4","3.1.2","1.4.3"],formats:["xlsx","pptx","pdf"],
  summary:"Nine cells were recording less than ACP actually ships. Not a capability change — a correction to the record, found by going to build work that turned out to already exist, and verified by running the real detectors and proposers against built fixtures rather than by reading code.",
@@ -3088,7 +3118,7 @@ const PROGRESS_LOG=[
   {label:"3.1.2 XLSX/PPTX/PDF",text:"propose_language_parts has no format branch at all — DOCX was already recorded at Guided Remediation while the other three ran the identical path at No Remediation. Two proposals each on a mixed EN/FR/ES fixture."},
   {label:"2.4.6 and 2.4.4 on PDF",text:"both assess and fix. PDF_NO_HEADINGS and PDF_LINK_RAW_URL both fire, and the link proposer derived \"Download Regional Summary 2026 (PDF)\" with AI switched off."},
   {label:"Still open",text:"2.4.6 fix on XLSX stays at No Remediation. propose_xlsx_labels needs a reachable model and there was none — unverified rather than absent, so it was not upgraded on faith."}]},
-{date:"2026-07-28",time:"19:24",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
+{date:"2026-07-28",time:"12:24",tz:"PDT",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
  title:"fix(rules): resync generated index + re-file the matrix note dropped at squash (#13)",
  scs:["4.1.2","2.4.3","1.4.11","3.1.1"],formats:["docx","xlsx","pptx","pdf"],
  summary:"acp now declares, per criterion and format, how much of the criterion its detector actually reaches — and assessment respects the conformance level the scan was run for.",
@@ -3297,7 +3327,7 @@ const PROGRESS_LOG=[
     const ref=e.pr?`<a href="https://github.com/${repo}/pull/${e.pr}" target="_blank" rel="noopener">${esc(e.title)}</a>`
                   :`<a href="https://github.com/${repo}/commit/${e.hash}" target="_blank" rel="noopener">${esc(e.title)}</a>`;
     return `<div class="logentry">
-      <div class="logdate">${e.date}${e.time?` <span class="logtime">${esc(e.time)} UTC</span>`:""} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
+      <div class="logdate">${e.date}${e.time?` <span class="logtime">${esc(e.time)}${e.tz?" "+esc(e.tz):""}</span>`:""} · ${e.pr?`PR #${e.pr}`:e.hash}</div>
       <div class="logtitle">${ref}</div>
       <div class="logbadges">${scBadges}${fmtBadges}</div>
       <details class="logdetails"><summary>What changed</summary><div class="logsummary${pts?" haspoints":""}">${esc(e.summary)}</div>${pts}</details>
