@@ -1824,7 +1824,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0713";
+const DOC_BUILD="2026.07.29.0735";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3140,6 +3140,53 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"07:35",tz:"PDT",hash:"944880a",pr:59,repo:"jeremyyuAWS/acp",
+ title:"feat(charts): resolve docx/pptx chart values from the embedded data workbook (#59)",
+ scs:["1.1.1"],formats:["docx","pptx"],
+ summary:"Native charts in docx and pptx files that cache no values now receive deterministic, data-grounded alt text read from the workbook embedded in the package, where they previously received none, and their datasheet proposals resolve the same values.",
+ points:[
+  {text:"Reaches only files whose generator left the chart caches empty; Word- and PowerPoint-authored charts always populated them and were already covered."},
+  {text:"The capability itself is unchanged for xlsx, which resolves against its own worksheets and never consults an embedding."}]},
+{date:"2026-07-29",time:"06:41",tz:"PDT",hash:"f200e17",pr:25,repo:"jeremyyuAWS/acp",
+ title:"fix(charts): give default-namespace xlsx charts the alt text they were silently denied (#25)",
+ scs:["1.1.1"],formats:["xlsx"],
+ summary:"Native xlsx charts in default-namespace workbooks now receive deterministic, data-grounded alt text instead of none, and their datasheet proposals resolve values from worksheet cells. Closes a silent gap, not a new capability — the xdr:-prefixed flavour was always covered, so the matrix cell itself does not move."},
+{date:"2026-07-29",time:"06:32",tz:"PDT",hash:"356ad32",pr:27,repo:"jeremyyuAWS/acp",
+ title:"fix(pdf): 2.4.4 Link Purpose is explain-only — stop offering a card nothing can apply (#27)",
+ scs:["2.4.4"],formats:["docx","xlsx","pptx","pdf"],
+ summary:"PDF 2.4.4 fix drops from AI Generated Fix to Guided Remediation. The proposal card was real but unappliable — no PDF link-text write-back exists, so approving it changed nothing and blocked the file from certifying. Assessment is unchanged; the detector still fires."},
+{date:"2026-07-29",time:"05:56",tz:"PDT",hash:"676f081",pr:24,repo:"jeremyyuAWS/acp",
+ title:"fix(pdf): write reviewer-approved alt text and field names into the PDF (#24)",
+ scs:["1.1.1","4.1.2"],formats:["pdf"],
+ summary:"PDF figure alt text and form-field accessible names approved in the HITL queue are now written back into the document, so 1.1.1/pdf rises from guided-manual to AI-assisted (it had been capped at M precisely because no write-back applier existed) and 4.1.2/pdf gains an applier. Both cells' ceilings are derived, not asserted — the change is the generator observing a writer that now exists."},
+{date:"2026-07-28",time:"18:46",tz:"PDT",hash:"6d48285",pr:null,repo:"jeremyyuAWS/acp",
+ title:"fix(pdf): stop turning dollar figures and pull quotes into headings",
+ scs:["2.4.6"],formats:["pdf"],
+ summary:"PDF heading extraction now filters layout noise before it becomes navigation.",
+ points:[
+  {label:"Auto-applied bookmarks were the real damage",text:"2.4.1 writes its outline unattended, so a dollar figure and a pull quote shipped as bookmarks in remediated files."},
+  {label:"Levels ranked by absolute font size",text:", so a large cover-page number outranked every real section heading and the level sequence came out non-monotonic."},
+  {text:"Levels are now clamped monotonic, and numerics, pull quotes and running headers are dropped. Documents with no visible hierarchy still produce nothing."}]},
+{date:"2026-07-28",time:"18:46",tz:"PDT",hash:"a267e28",pr:null,repo:"jeremyyuAWS/acp",
+ title:"fix(pdf): never write an ungrounded vision description into /Alt",
+ scs:["1.1.1"],formats:["pdf"],
+ summary:"PDF figure alt text is no longer written when the vision model reports it could not ground the description — it defers to a review card with the page image instead, which is what the Office path already did."},
+{date:"2026-07-28",time:"18:45",tz:"PDT",hash:"a3a5d44",pr:null,repo:"jeremyyuAWS/acp",
+ title:"fix(2.4.4): real link-purpose detectors for docx/pptx, and stop crediting what nothing checks",
+ scs:["2.4.4"],formats:["docx","pptx"],
+ summary:"DOCX and PPTX now really check link purpose, and a fix can no longer be credited on a criterion nothing verifies.",
+ points:[
+  {label:"DOCX and PPTX had no 2.4.4 detector",text:", only the 2.4.9 duplicate-text check — while the proposer offered 2.4.4 fixes for them and claimed detector parity it did not have."},
+  {label:"The credit was vacuous.",text:"Approving a link-text fix cleared 2.4.4 on those formats by re-scanning for a finding that could never have been emitted in the first place."},
+  {label:"A parity test now guards the class",text:", not the instance: any applier that clears a criterion no detector emits for that format fails the build. It caught xlsx 2.4.9 as well."}]},
+{date:"2026-07-28",time:"18:44",tz:"PDT",hash:"2caaa6c",pr:null,repo:"jeremyyuAWS/acp",
+ title:"fix(pdf): resolve a real background before judging or fixing contrast",
+ scs:["1.4.3"],formats:["pdf"],
+ summary:"PDF contrast is now measured against the background actually behind the text rather than assumed white, on both the assess and fix sides.",
+ points:[
+  {label:"Was wrong in both directions",text:"white-on-dark was reported as a SERIOUS failure at a true 21:1, while grey-on-grey at 1.77:1 was reported as nothing at all."},
+  {label:"The fixer was damaging files.",text:"Running unattended, it rewrote compliant dark-theme PDFs to roughly 3.5:1. It now leaves anything that already passes untouched."},
+  {label:"Every grey from #787878 to #9E9E9E",text:"the ordinary muted-body-text range — was a real AA failure the AA rule never fired on. Thresholds are now the WCAG ratios themselves."}]},
 {date:"2026-07-29",time:"06:07",tz:"PDT",hash:"6c5fbb2",pr:null,repo:"jeremyyuAWS/acp",
  title:"2.4.6 stops certifying a pass it cannot support",
  scs:["2.4.6"],formats:["docx","xlsx","pptx","pdf"],
