@@ -812,7 +812,7 @@ const ROWS=[
    ev:["— (report-and-route only)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})()},
 
-{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"A3",xlsx:"A2",pptx:"A3",pdf:"A2"},r:{docx:"R4",xlsx:"R1",pptx:"R4",pdf:"R1"},
+{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R4",xlsx:"R1",pptx:"R4",pdf:"R3"},
  ae:{
   docx:{b:["DOCX_HEADING_SKIP (office_structure) fires on Heading1→Heading3 style skips — deterministic for that narrow signal, and exactly the outline defect that breaks jump-by-heading navigation.","The SC verdict stays Guided because 2.4.6 asks whether headings DESCRIBE their topic — semantic, human-confirmed. The skip check is evidence toward the criterion, not the whole criterion."],
       ev:["api/office_structure.py:docx_checks (DOCX_HEADING_SKIP)"]},
@@ -852,7 +852,7 @@ const ROWS=[
   pdf:{b:["PdfLanguageFixer writes /Lang in stage 1 of the two-stage pipeline; the pikepdf→pypdf split exists precisely to make these writes reliable in a long-lived worker.","Applied to a copy; provenance-stamped in docinfo."],
       ev:["api/remediate_pdf.py (stage 1)","worker-python/remediation/fixers/pdf/language_fixer.py"]}}},
 
-{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
  ae:{
   docx:{b:["Two independent detectors: (1) seeded langdetect over extracted text fires when ≥2 languages are confidently detected — ≥12-word segments, ≥0.90 confidence, thresholds chosen against false positives; DetectorFactory.seed=0 makes it reproducible run-to-run. (2) LanguageOfPartsRule flags long runs whose Unicode SCRIPT differs from the document's dominant script with no w:lang of their own — deliberately narrow after ADR 0012 killed the old false-positive flood (it used to flag every 20+ word run).","Guided because the hard call — foreign language vs proper noun vs quotation — is judgment; the spec says script detection 'drafts nothing safe enough to auto-apply'."],
       c:["Known drift to disclose before someone finds it: the .NET rule still reports under SC_3_1_1 (ADR 0012 defers separate 3.1.2 modelling). SC-keyed coverage queries under-report DOCX until the remap lands.","Latin-script switches (English→Spanish quote) pass the script detector; the langdetect check partially covers this at document level."],
@@ -907,7 +907,7 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R1"},
+{sc:"1.4.3",name:"Contrast (Minimum)",lvl:"AA",flag:true,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  ae:{
   docx:{b:["The .NET rule computes the TRUE WCAG relative-luminance contrast ratio — 4.5:1 normal text, 3:1 large (≥18pt or 14pt bold) — for every run with explicit colour (w:color) against its shading (w:shd). The real formula, not a luma shortcut.","The declared scope is the RIGHT scope: automatic-colour runs are skipped because their rendered colour depends on the viewer theme — outside the document.","Findings are actionable by design: fg/bg hex, measured ratio, required ratio, text excerpt — a designer can act without re-scanning."],
       c:["Effective backgrounds from table-cell or page fills aren't resolved (declared FP mode); theme-driven low contrast passes (declared FN mode)."],
@@ -971,7 +971,7 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"2.4.4",name:"Link Purpose (In Context)",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A2"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R1"},
+{sc:"2.4.4",name:"Link Purpose (In Context)",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R3"},
  ae:{
   docx:{b:["Deterministic FAILURE detection: every w:hyperlink's display text is tested against a generic-phrase deny-list ('click here', 'read more', 'more', 'link'…) plus a bare-URL pattern.","The harm story is concrete: screen-reader users skim a links list; ten 'click here's are indistinguishable — the destination is only knowable by leaving the list.","Why Guided, not Certified: a PASS can't certify purpose — descriptive-sounding text that lies about its destination passes, because the rule never fetches the target (declared). Semantic criteria cap at Guided."],
       c:["Short-but-clear texts ('map') can false-positive against the deny-list (declared)."],
@@ -1818,7 +1818,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // a CI runner has no meaningful local zone; mixing the two makes the stamp jump non-monotonically.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0010";
+const DOC_BUILD="2026.07.29.0035";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -1919,7 +1919,7 @@ const RUBRIC={
   pptx:{aClass:"DET",aWhy:"Color resolves through a defined chain — run → placeholder → layout → master theme — against the effective slide background; once resolved, it's the same arithmetic. Text over a photo or gradient is correctly out of scope (the background isn't a computable color), not silently passed.",
    fClass:"MECH",fWhy:"Same deterministic recolor as DOCX/XLSX, scoped to runs with an explicit color over an explicit solid fill."},
   pdf:{aClass:"MA",aWhy:"PDF has no structured \"run + background\" model — text and fills are independent paint operators in a content stream. Recovering which paint corresponds to foreground vs. background text requires sampling, not a resolvable property chain — a genuine format-level ceiling, not just an unbuilt feature.",
-   fClass:"REAUTH",fWhy:"Rewriting colors inside a PDF content stream is surgery on the page-painting program itself, with no discrete property to target safely. Re-export from source is the honest remedy."}}},
+   fClass:"MECH",fWhy:"Superseded by shipped code, and the earlier rationale \u2014 that rewriting colours inside a content stream is surgery on the page \u2014 turned out to be wrong. _fix_pdf_text_contrast (api/remediate_pdf.py:97) rewrites the text fill-colour operators in place, text-scoped, leaving shapes and backgrounds untouched. Verified 2026-07-29 on a fixture at ~#CCCCCC on white: one run rewritten, and the post-fix re-scan returned zero findings where it had returned PDF_LOW_CONTRAST_AA and _AAA. A ceiling is a judgement (ground rules 2 and 3), and this one was simply too conservative."}}},
 
 "1.4.11":{plain:"UI-style elements — icons, borders, form-control outlines, chart lines — need the same minimum contrast as text (3:1) against their background, so shapes and boundaries are perceivable, not just words.",
  formats:(function(){const c={aClass:"MA",aWhy:"The math is the identical WCAG ratio used for 1.4.3 — deterministic once you know the two colors. The blocker is resolving WHICH colors: a shape's fill or border against an arbitrary background (a photo, a gradient, another shape) needs render-and-measure, not a structured property read. Machine-assisted in principle; nothing ships today.",
@@ -3079,6 +3079,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"00:31",hash:"a3d3859",pr:14,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix: correct nine cells the matrix understated, verified against fixtures",
+ scs:["2.4.6","2.4.4","3.1.2","1.4.3"],formats:["xlsx","pptx","pdf"],
+ summary:"Nine cells were recording less than ACP actually ships. Not a capability change — a correction to the record, found by going to build work that turned out to already exist, and verified by running the real detectors and proposers against built fixtures rather than by reading code.",
+ points:[
+  {label:"1.4.3 PDF",text:"was recorded as No Remediation while _fix_pdf_text_contrast had been rewriting text fill-colour operators in the content stream all along. On a fixture at ~#CCCCCC on white it rewrote one run and the post-fix re-scan came back empty. Now Automatically Fixed, and its rubric ceiling moved with it."},
+  {label:"3.1.2 XLSX/PPTX/PDF",text:"propose_language_parts has no format branch at all — DOCX was already recorded at Guided Remediation while the other three ran the identical path at No Remediation. Two proposals each on a mixed EN/FR/ES fixture."},
+  {label:"2.4.6 and 2.4.4 on PDF",text:"both assess and fix. PDF_NO_HEADINGS and PDF_LINK_RAW_URL both fire, and the link proposer derived \"Download Regional Summary 2026 (PDF)\" with AI switched off."},
+  {label:"Still open",text:"2.4.6 fix on XLSX stays at No Remediation. propose_xlsx_labels needs a reachable model and there was none — unverified rather than absent, so it was not upgraded on faith."}]},
 {date:"2026-07-28",time:"19:24",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
  title:"fix(rules): resync generated index + re-file the matrix note dropped at squash (#13)",
  scs:["4.1.2","2.4.3","1.4.11","3.1.1"],formats:["docx","xlsx","pptx","pdf"],
