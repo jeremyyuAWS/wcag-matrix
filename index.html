@@ -1818,7 +1818,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // a CI runner has no meaningful local zone; mixing the two makes the stamp jump non-monotonically.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0031";
+const DOC_BUILD="2026.07.29.0035";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3079,6 +3079,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"00:31",hash:"a3d3859",pr:14,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix: correct nine cells the matrix understated, verified against fixtures",
+ scs:["2.4.6","2.4.4","3.1.2","1.4.3"],formats:["xlsx","pptx","pdf"],
+ summary:"Nine cells were recording less than ACP actually ships. Not a capability change — a correction to the record, found by going to build work that turned out to already exist, and verified by running the real detectors and proposers against built fixtures rather than by reading code.",
+ points:[
+  {label:"1.4.3 PDF",text:"was recorded as No Remediation while _fix_pdf_text_contrast had been rewriting text fill-colour operators in the content stream all along. On a fixture at ~#CCCCCC on white it rewrote one run and the post-fix re-scan came back empty. Now Automatically Fixed, and its rubric ceiling moved with it."},
+  {label:"3.1.2 XLSX/PPTX/PDF",text:"propose_language_parts has no format branch at all — DOCX was already recorded at Guided Remediation while the other three ran the identical path at No Remediation. Two proposals each on a mixed EN/FR/ES fixture."},
+  {label:"2.4.6 and 2.4.4 on PDF",text:"both assess and fix. PDF_NO_HEADINGS and PDF_LINK_RAW_URL both fire, and the link proposer derived \"Download Regional Summary 2026 (PDF)\" with AI switched off."},
+  {label:"Still open",text:"2.4.6 fix on XLSX stays at No Remediation. propose_xlsx_labels needs a reachable model and there was none — unverified rather than absent, so it was not upgraded on faith."}]},
 {date:"2026-07-28",time:"19:24",hash:"dede1b0",pr:13,repo:"jeremyyuAWS/acp",
  title:"fix(rules): resync generated index + re-file the matrix note dropped at squash (#13)",
  scs:["4.1.2","2.4.3","1.4.11","3.1.1"],formats:["docx","xlsx","pptx","pdf"],
