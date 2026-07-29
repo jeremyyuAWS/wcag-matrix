@@ -56,3 +56,10 @@ jobs:
       # guarded. Three PRs in one day moved capability cells and one of them said so in the log.
       - name: Progress Log covers every capability change
         run: python3 scripts/check_log_covers_grid.py
+
+      # UPGRADE was one string per criterion, rendered on all four format cells, and 15 of the 20
+      # entries named a format in prose — so three cells out of four showed claims about a format
+      # they were not. Nothing caught it because nothing was checking that a per-cell panel said
+      # something about that cell.
+      - name: Upgrade notes are scoped to their own cell
+        run: python3 scripts/check_upgrade_scope.py
