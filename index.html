@@ -1818,7 +1818,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // a CI runner has no meaningful local zone; mixing the two makes the stamp jump non-monotonically.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0004";
+const DOC_BUILD="2026.07.29.0010";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -2011,9 +2011,15 @@ const tb=document.querySelector("#tbl tbody");
 //     AI First        -> A3 / R3      AI leads, a person confirms or approves
 //     Human First     -> A2 / R2      a person leads; for remediation ACP still guides
 //
-// "Human First" maps to R2 (Guided Remediation), NOT R1 (No Remediation). R1 means ACP offers
-// nothing at all, which is not what he is asking for — he is asking for the human to lead, and
-// guidance is how a tool serves that.
+// "Human First" maps to R1 (No Remediation), on Jeremy's call. I had mapped it to R2 (Guided
+// Remediation) on the reasoning that "the human leads" still implies the tool helps — he
+// overrode that, and it is his read of his customer's sheet, not mine.
+//
+// The consequence is worth knowing rather than buried: R1 weighs 0, so those 12 remediation
+// cells now carry a zero-weight target and drop out of the "% of his ask" denominator entirely.
+// They cannot be short, because nothing is being asked for. That RAISES the headline figure —
+// not because ACP improved, but because the ask got smaller. The cell count reported beside the
+// percentage is what keeps this honest.
 //
 // 94 cells carry a target: 47 on each axis, across his 14 codes. The remaining cells of the
 // 20-SC grid have none, and their donuts read N/A because there is no ask to measure against —
@@ -2038,12 +2044,12 @@ const DEVA_TARGET={
  "1.1.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  "1.3.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  "1.3.2":{pptx:"R3",pdf:"R3"},
- "1.4.1":{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
+ "1.4.1":{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  "1.4.3":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
- "1.4.5":{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
- "2.1.1":{pptx:"R2",pdf:"R2"},
+ "1.4.5":{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+ "2.1.1":{pptx:"R1",pdf:"R1"},
  "2.4.2":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
- "2.4.3":{pptx:"R2",pdf:"R2"},
+ "2.4.3":{pptx:"R1",pdf:"R1"},
  "2.4.4":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  "2.4.6":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
  "3.1.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
@@ -2460,7 +2466,7 @@ buildTable();
 // missing another — without the cap the total would drift upward on cells nobody asked about.
 function renderDevaHead(){
   const el=document.getElementById("devaHead"); if(!el)return;
-  let wT=0,wToday=0,wCeil=0,met=0,short=0,unreachable=0,cells=0;
+  let wT=0,wToday=0,wCeil=0,met=0,short=0,unreachable=0,cells=0,nothingAsked=0;
   for(const row of ROWS)for(const ax of ["a","r"])for(const f of FM){
     const tp=targetProgress(row,f,ax); if(!tp)continue;
     const W=ax==="a"?A_WEIGHT:R_WEIGHT;
@@ -2468,7 +2474,12 @@ function renderDevaHead(){
     const pg=cellProgress(row,f,ax);
     const ceil=Math.max(cur, pg?(W[pg.rubricCeiling]??cur):cur);
     cells++; wT+=t; wToday+=Math.min(cur,t); wCeil+=Math.min(ceil,t);
-    if(cur>=t)met++; else {short++; if(ceil<t)unreachable++;}
+    // A zero-weight target asks for nothing deliverable — Human First on either axis. Those
+    // cells cannot be short, so counting them as "met" would inflate the met figure with cells
+    // nobody is waiting on. Counted apart, and stated apart.
+    if(t===0)nothingAsked++;
+    else if(cur>=t)met++;
+    else {short++; if(ceil<t)unreachable++;}
   }
   const p=(n)=>wT?Math.round((n/wT)*1000)/10:0;
   const today=p(wToday), pot=p(wCeil);
@@ -2480,9 +2491,11 @@ function renderDevaHead(){
       </div>
       <div class="dhnum dhalt"><b>${pot}%</b><span>if built to the rule ceiling</span></div>
     </div>
-    <p class="dhnote"><b>${met}</b> of <b>${cells}</b> cells already meet his ask · <b>${short}</b> fall short,
+    <p class="dhnote"><b>${met}</b> of <b>${cells}</b> cells meet his ask · <b>${short}</b> fall short,
       of which <b>${unreachable}</b> cannot reach it even if ACP built everything the rule allows —
-      those need the ask revisited, not more engineering.</p>`;
+      those need the ask revisited, not more engineering. The remaining <b>${nothingAsked}</b> ask
+      for <b>no automated remediation or assessment</b> (Human First), so they carry no weight either
+      way and are not counted as met.</p>`;
 }
 
 function renderCoverage(){
