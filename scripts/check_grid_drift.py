@@ -49,11 +49,35 @@ FORMATS = ("docx", "xlsx", "pptx", "pdf")
 A_TIERS = ("NA", "H", "Q", "C")
 R_TIERS = ("NA", "N", "M", "AI", "AP", "AC", "A")
 
+# ── Two vocabularies, and the bridge between them ────────────────────────────────────
+# acp's gen_matrix_coverage.py still emits the ORIGINAL tier codes (C/Q/H, A/AP/AC/AI/M/N).
+# The grid moved to the two-axis model (A4/A3/A2, R4/R3/R2/R1) and index.html carries the same
+# LEGACY_A/LEGACY_R translation this mirrors. Comparing them directly is what broke: every run
+# died on `unknown a tier 'A4'`, so the drift guard — the thing that catches the grid claiming
+# more than the code supports — has been dead since the model changed, failing loudly into a
+# workflow nobody was reading.
+#
+# Translation happens on READ, so ranks, labels and --apply all speak the grid's vocabulary.
+# That last one matters most: apply() writes the ceiling straight back into ROWS, so an
+# untranslated ceiling would rewrite live cells as "Q" and "AI" and corrupt the grid it exists
+# to protect.
+#
+# Both maps are monotonic — H<Q<C maps to A2<A3<A4, and N<M<{AI,AC}<{AP,A} maps to
+# R1<R2<R3<R4 — so ordering survives, which is all a rank comparison needs. The many-to-one
+# pairs (AP and A both R4; AI and AC both R3) lose a distinction the grid does not draw.
+FROM_LEGACY_A = {"C": "A4", "Q": "A3", "H": "A2", "NA": "NA"}
+FROM_LEGACY_R = {"A": "R4", "AP": "R4", "AC": "R3", "AI": "R3",
+                 "M": "R2", "N": "R1", "NA": "NA"}
+
+# The grid's own vocabulary, weakest -> strongest. Ranks are computed in THIS one.
+GRID_A_TIERS = ("NA", "A2", "A3", "A4")
+GRID_R_TIERS = ("NA", "R1", "R2", "R3", "R4")
+
 # Human-readable, matching index.html's AL/RL maps.
-A_LABEL = {"C": "Certified", "Q": "Guided review", "H": "Human assessment", "NA": "Not applicable"}
-R_LABEL = {"A": "Automatic", "AC": "Automatic (conditional)", "AP": "Automatic (partial)",
-           "AI": "AI proposal", "M": "Manual (guided)", "N": "No automated remediation",
-           "NA": "Not applicable"}
+A_LABEL = {"A4": "Fully Assessed", "A3": "Potential Issue",
+           "A2": "Human Assessment Required", "NA": "Not applicable"}
+R_LABEL = {"R4": "Automatically Fixed", "R3": "AI Generated Fix",
+           "R2": "Guided Remediation", "R1": "No Remediation", "NA": "Not applicable"}
 
 # One ROWS entry's header. `a:` and `r:` are flat maps of short quoted codes and contain no
 # nested braces, so a brace-free inner match is exact — and it stops well before the drawer
@@ -93,7 +117,9 @@ def _rank_maps(cov: dict) -> tuple[dict[str, int], dict[str, int]]:
             f"  there a={a_tiers} r={r_tiers}\n"
             "Reconcile the two lists — a rank comparison across different vocabularies is "
             "meaningless, so this refuses to guess.")
-    return ({t: i for i, t in enumerate(A_TIERS)}, {t: i for i, t in enumerate(R_TIERS)})
+    # Ranks are in the GRID's vocabulary; acp's tiers are translated into it before comparison.
+    return ({t: i for i, t in enumerate(GRID_A_TIERS)},
+            {t: i for i, t in enumerate(GRID_R_TIERS)})
 
 
 def find_drift(rows: list[dict], cov: dict) -> list[dict]:
@@ -111,11 +137,22 @@ def find_drift(rows: list[dict], cov: dict) -> list[dict]:
         for fmt in FORMATS:
             for axis, rank, label in (("a", a_rank, A_LABEL), ("r", r_rank, R_LABEL)):
                 claimed = row[axis].get(fmt)
-                ceiling = derived[fmt]["ceiling_a" if axis == "a" else "ceiling_r"]
-                if claimed is None or ceiling is None:
+                raw = derived[fmt]["ceiling_a" if axis == "a" else "ceiling_r"]
+                if claimed is None or raw is None:
                     continue
+                # acp speaks the legacy vocabulary; translate before ranking or writing back.
+                bridge = FROM_LEGACY_A if axis == "a" else FROM_LEGACY_R
+                if raw not in bridge:
+                    raise SystemExit(
+                        f"{row['sc']}/{fmt}: acp emitted {axis} ceiling {raw!r}, which has no "
+                        f"mapping into the grid's vocabulary. Add it to "
+                        f"{'FROM_LEGACY_A' if axis == 'a' else 'FROM_LEGACY_R'} — refusing to "
+                        f"guess, because a wrong mapping silently rewrites live cells.")
+                ceiling = bridge[raw]
                 if claimed not in rank:
-                    raise SystemExit(f"{row['sc']}/{fmt}: unknown {axis} tier {claimed!r}")
+                    raise SystemExit(
+                        f"{row['sc']}/{fmt}: unknown {axis} tier {claimed!r} in the grid. "
+                        f"Expected one of {GRID_A_TIERS if axis == 'a' else GRID_R_TIERS}.")
                 if rank[claimed] > rank[ceiling]:
                     out.append({
                         "sc": row["sc"], "name": row["name"], "fmt": fmt, "axis": axis,
