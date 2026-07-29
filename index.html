@@ -225,6 +225,18 @@
   #panel .spdonut{flex:none;text-align:center;min-width:96px}
   #panel .spdlabel{font-weight:700;font-size:12.5px;color:var(--navy);margin-top:4px}
   #panel .spdsub{font-size:10.5px;color:var(--muted)}
+  #panel .execsum{margin:0 0 14px;padding:12px 13px;border:1px solid #dfe4ec;border-radius:10px;background:#f7f9fc}
+  #panel .execsum h5{margin:0 0 7px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  #panel .execsum ul{margin:0;padding-left:16px}
+  #panel .execsum li{margin:5px 0;font-size:12.5px;line-height:1.5;color:var(--navy)}
+  /* One accent per verdict, so the state is readable before the sentence is. The two that
+     matter commercially are `human` (no engineering will change this) and `unbuilt` (a costed
+     backlog item) — they look identical in the grid and must not look identical here. */
+  #panel .execsum li.ev-human b{color:var(--orange)}
+  #panel .execsum li.ev-unbuilt b{color:var(--red)}
+  #panel .execsum li.ev-done b{color:var(--green)}
+  #panel .execsum li.ev-partial b{color:var(--blue)}
+  #panel .execsum li.ev-na b{color:var(--muted)}
   #panel .spwhy{flex:1 1 260px}
   #panel .spwhy ul{margin:0;padding-left:16px}
   #panel .spwhy li{margin:4px 0;font-size:12.5px;line-height:1.45;color:var(--navy)}
@@ -1824,7 +1836,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0803";
+const DOC_BUILD="2026.07.29.0824";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -2828,6 +2840,69 @@ let CURRENT_CELL={sc:null,f:null};
 //
 // A cell that meets the ask returns [] and the panel says so, rather than padding with
 // limitations that no longer matter to anyone.
+// A plain-language verdict for a non-engineer: can this be automated at all, and if so, has
+// anyone built it? Written because the drawer answered neither question directly — it opened
+// with "Deva asks for AI Generated Fix; ACP remediates at Guided Remediation", which is precise
+// and means nothing to an exec, a customer, or a product owner deciding what to fund.
+//
+// Every cell resolves to exactly one of four states per axis, and the distinction that matters
+// commercially is the SECOND one: "no software can do this" and "we have not written it yet"
+// look identical in a grid of coloured labels and are completely different conversations. One
+// is a fact about the format; the other is a backlog item with a price.
+//
+// No tier codes in the text. If a stakeholder has to learn what R2 means to read the summary,
+// the summary has failed.
+function execVerdict(row, f, axis){
+  const pg = cellProgress(row, f, axis);
+  // Whether the CUSTOMER asked for more than ACP delivers. Headroom and demand are different
+  // questions, and answering only the first produced a panel that said "buildable, but not
+  // built yet" directly above "nothing left — meets Deva's ask". Both were true; together they
+  // read as a contradiction. Unbuilt-but-unrequested is a real and useful state: it is work
+  // nobody has asked to be funded.
+  const tp = targetProgress(row, f, axis);
+  const asked = !!(tp && !tp.met);
+  const cur = row[axis][f];
+  const isA = axis === "a";
+  const noun = isA ? "assess" : "fix";
+  const W = isA ? A_WEIGHT : R_WEIGHT;
+
+  if(!pg || cur === "NA")
+    return {state:"na", head:`This rule cannot apply to ${f.toUpperCase()} files.`,
+            body:"Nothing to measure, and nothing to build. It is excluded from the score rather than counted as a miss."};
+
+  // A ceiling that scores nothing means the best possible outcome is still a person deciding.
+  if((W[pg.rubricCeiling] ?? 0) === 0)
+    return {state:"human", head:`No software can ${noun} this — a person has to.`,
+            body:`This is a limit of the rule and the file format, not a gap in ACP. Building more would not change it. Budget review time here, not engineering time.`};
+
+  if(pg.atCeiling)
+    return {state:"done", head:`Fully built. ACP does everything that is possible here.`,
+            body:`Nothing further to fund on this cell. "Possible" is the honest bar: for some rules the best any tool can do is draft a fix a person approves, and this reaches that.`};
+
+  if(pg.pct === 0)
+    return {state:"unbuilt", head:`Buildable, but not built yet.`,
+            body:`Nothing in ${f.toUpperCase()} prevents this — ACP simply does not do it today. `
+                 + (asked ? `Deva's checklist asks for more here, so this is a costed backlog item.`
+                          : `Deva's checklist does not ask for it, so it is headroom nobody has requested — worth knowing, not worth funding on his account.`)};
+
+  return {state:"partial", head:`Partly built — ${pg.pct}% of what is possible.`,
+          body:`Some of this is automated today and the rest is not. The remainder is engineering work, not a format limit. `
+               + (asked ? `Deva's checklist asks for more than is built.` : `It already covers what Deva's checklist asks for.`)};
+}
+
+// The one that decides most remediation conversations: a drafted fix nobody can apply is not a
+// fix. Seven cells were lowered on 2026-07-29 for exactly this — the value was proposed, the
+// reviewer approved it, and the document never changed.
+function execApplyNote(row, f){
+  const r = row.r[f];
+  if(r === "NA") return null;
+  if(r === "R4") return "Applied automatically — the file is changed and re-checked, with no one in the loop.";
+  if(r === "R3") return "ACP drafts the fix and a person approves it before it is written into the file.";
+  if(r === "R2") return "ACP explains what to change and shows the evidence, but a person makes the edit. Approving in the queue does not alter the document.";
+  if(r === "R1") return "ACP offers no fix here — it can only tell you the problem exists.";
+  return null;
+}
+
 function whyBullets(row,f,rub,view){
   const out=[];
   const push=(txt,src)=>{ if(txt&&out.length<5&&!out.some(o=>o.txt===String(txt))) out.push({txt:String(txt),src}); };
@@ -2940,6 +3015,25 @@ function renderDrawer(sc,f,trigger){
             if(pgR&&pgR.rungs>0)steps.push(`fix ${pgR.rungs} level${pgR.rungs>1?"s":""}`);
             return steps.length?`<div class="sprungs" title="how many capability levels below the ceiling this cell sits">${esc(steps.join(" · "))} to climb</div>`:"";
           })()}
+        </div>
+        <div class="execsum">
+          <h5>In plain terms</h5>
+          <ul>${(()=>{
+            const out=[];
+            for(const [ax,label] of [["a","Judging it"],["r","Fixing it"]]){
+              const v=execVerdict(row,f,ax);
+              if(v.state==="na"&&ax==="r"&&execVerdict(row,f,"a").state==="na")continue;
+              out.push(`<li class="ev-${v.state}"><b>${esc(label)}: ${esc(v.head)}</b> ${esc(v.body)}</li>`);
+            }
+            const ap=execApplyNote(row,f);
+            if(ap)out.push(`<li class="ev-apply"><b>What happens when someone approves:</b> ${esc(ap)}</li>`);
+            // "about 0 minutes per finding" is a silly thing to tell an exec about a cell that
+            // needs no person at all — say so in words instead.
+            const ht=humanTime(row.a[f],row.r[f]);
+            if(ht&&ht.mins>0)out.push(`<li class="ev-cost"><b>Human effort that remains:</b> about ${ht.mins} minute${ht.mins===1?"":"s"} per finding (${esc(ht.conf)} confidence — an assumption from this page's cost model, not a measurement).</li>`);
+            else if(ht)out.push(`<li class="ev-cost"><b>Human effort that remains:</b> none — this cell needs no review time per finding.</li>`);
+            return out.join("");
+          })()}</ul>
         </div>
         <div class="spwhy">
           <h5>${(()=>{const a=targetProgress(row,f,"a"),r=targetProgress(row,f,"r");
