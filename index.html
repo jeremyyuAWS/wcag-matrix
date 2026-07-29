@@ -1823,7 +1823,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0605";
+const DOC_BUILD="2026.07.29.0645";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3131,6 +3131,14 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"14:05",tz:"PDT",hash:"6c5fbb2",pr:null,repo:"jeremyyuAWS/acp",
+ title:"2.4.6 stops certifying a pass it cannot support",
+ scs:["2.4.6"],formats:["docx","xlsx","pptx","pdf"],
+ summary:"No cell moved, and that is the point: the grid already recorded Potential Issue on all four formats while ACP's own lane table said docx was auto. The code has come to the matrix rather than the matrix to the code.",
+ points:[
+  {label:"What was wrong",text:"A clean docx scan resolved to a certified PASS on 2.4.6. The only docx detector checks heading-LEVEL skips, so a document with a flawless H1-H2-H3 hierarchy and headings reading 'Section 1', 'Untitled' and 'asdf' passed — as did one whose outline started at H3 with no H1 anywhere, because the skip check never judges the first heading."},
+  {label:"What changed",text:"2.4.6 now resolves REVIEW on a clean scan for every format including html, verified directly against store._rule_outcome. A real failure still returns FAIL, and 1.4.3 still returns PASS as a control — so the change is narrow rather than a blanket loss of certification."},
+  {label:"Why it is worth logging with no cell change",text:"Certifying a pass on evidence that does not support it is the failure the honest-detection bar exists to prevent. The matrix has been quietly more conservative than the engine for some time; this closes the gap from the engine side."}]},
 {date:"2026-07-29",time:"08:05",tz:"PDT",hash:"ca950a3",pr:19,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: PDF alt approval writes through, so 1.1.1 returns to AI Generated Fix",
  scs:["1.1.1","4.1.2"],formats:["pdf"],
