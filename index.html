@@ -45,6 +45,9 @@
   .lgcond{color:#6a3fb5;font-weight:800;flex:none}
   .lghatch{flex:none;display:inline-block;width:26px;height:14px;border:1px solid var(--line);border-radius:3px;
     background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.18) 0 5px,transparent 5px 10px)}
+  /* One flex child, not one per <b>: .lgitem is a flex row, so bold runs inside the prose
+     were being laid out as siblings of the swatch and the sentence broke into a column. */
+  .lgitem .lgtext{flex:1;min-width:0}
   .lgdonut .donut{flex:none;margin:0}
   .lgnote{display:block;color:var(--muted);font-size:11.5px;margin-top:5px;line-height:1.45}
   .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
@@ -127,12 +130,33 @@
   /* Per-cell donut: progress toward the rule-inherent ceiling. Sized to sit above the label
      without changing row height much; the number is the whole point, so the ring is thin and
      the digits carry the weight. */
+  /* Deva's-ask headline. Two bars in one track: today's fill over the ceiling fill, so the
+     gap between "what we have" and "what building everything buys" is one glance rather than
+     two numbers to subtract. The potential bar sits BEHIND, hence the source order. */
+  .devahead{margin:0 0 14px;padding:12px 14px;border:1px solid #dfe4ec;border-radius:10px;background:#f7f9fc}
+  .dhrow{display:flex;align-items:center;gap:14px}
+  .dhnum{flex:none;min-width:104px;line-height:1.15}
+  .dhnum b{display:block;font-size:22px;font-weight:800;color:var(--blue)}
+  .dhnum span{font-size:10.5px;color:#5b6472}
+  .dhnum.dhalt{text-align:right}
+  .dhnum.dhalt b{color:#8aa0bd;font-size:18px}
+  .dhbar{position:relative;flex:1;height:12px;border-radius:7px;background:#e6e9ef;overflow:hidden}
+  .dhfill{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--blue);z-index:2;
+          transition:width .35s ease}
+  .dhfill.dhpot{background:#c3d3e8;z-index:1}
+  .dhnote{margin:9px 0 0;font-size:11px;color:#4a5462;line-height:1.5}
   .donut{display:block;margin:0 auto 1px}
   .donut .dtrack{stroke:#e6e9ef}
   .donut .darc{stroke:currentColor;transition:stroke-dashoffset .3s ease}
   .donut .dnum{font-size:11px;font-weight:700;fill:currentColor;font-family:inherit}
   .donut.t4{color:var(--green)} .donut.t3{color:var(--blue)}
   .donut.t2{color:var(--orange)} .donut.t1{color:var(--red)}
+  /* No headroom: a flat grey ring with no arc at all. Deliberately not a full green ring —
+     a full ring is a claim about ACP, and this is a claim about the rule. The ring is drawn
+     one shade lighter than the numbered donuts' track so the two do not read as the same
+     unfilled state, and the N/A sits smaller than a percentage would to keep it quiet. */
+  .donut.dna .dtrack{stroke:#eceff4}
+  .donut.dna .dnanum{font-size:8px;font-weight:700;fill:#9aa3b0;letter-spacing:.2px}
   .cellbtn .clab{display:block;font-size:11px;line-height:1.25}
   /* Delta mode: today's level, then the gain. Muted and lighter so the eye still lands on
      today first — the arrow is the roadmap, not the status. */
@@ -501,6 +525,10 @@
         Cells the rule cannot apply to are excluded entirely, so no format is penalised for rules it
         was never subject to.</p>
     </div>
+    <!-- The one number Deva is actually asking for, stated before the rubric coverage below it.
+         Those two answer different questions and are easy to confuse: the bars measure ACP
+         against what any tool COULD do, this measures ACP against what HE ASKED FOR. -->
+    <div class="devahead" id="devaHead"></div>
     <div class="covgrid" id="covGrid"></div>
   </div>
   <!-- Legend. Boxed and grouped by AXIS, because the two axes use different level sets and the
@@ -528,11 +556,11 @@
       </div>
 
       <div class="legendcol">
-        <h4>The donut in each cell</h4>
-        <span class="lgitem lgdonut"><span id="lgDonutHi"></span> <b>At potential</b> — nothing more this rule allows</span>
-        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <b>Partway</b> — headroom remains for this cell</span>
-        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <b>0 — nothing yet</b> — the rule allows a fix (or an automated assessment) and ACP does not provide one today</span>
-        <span class="lgitem lgnote">The scale runs <b>0% &rarr; Potential (100%)</b>, where Potential is the <b>rule-inherent ceiling</b> — what any tool could achieve for this rule and format, not what ACP has committed to build. So <b>100% means finished, not perfect</b>: several cells top out at Human Assessment Required because the judgement genuinely isn't machine-decidable, and those read 100% because nothing more is available. Conversely a <b>0 does not mean impossible</b>: it means possible in principle, absent in ACP today. In the <b>Potential</b> view every donut is full by definition — that view <i>is</i> the ceiling.</span>
+        <h4>The donut in each cell &mdash; progress toward Deva&rsquo;s ask</h4>
+        <span class="lgitem lgdonut"><span id="lgDonutNA"></span> <span class="lgtext"><b>N/A</b> — either ACP already <b>meets Deva's ask</b> for this cell, or the cell is <b>outside his 14 codes</b> so there is nothing to measure against. Not a gap either way, and never a claim that ACP does nothing there.</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutMid"></span> <span class="lgtext"><b>Partway</b> — ACP delivers some of what he asked for, not all</span></span>
+        <span class="lgitem lgdonut"><span id="lgDonutLo"></span> <span class="lgtext"><b>0 — nothing yet</b> — he asked for something here and ACP delivers none of it today</span></span>
+        <span class="lgitem lgnote">Each donut is <b>% of Deva&rsquo;s FINAL ask for that cell</b> &mdash; his target is the 100%, not the rule&rsquo;s ceiling and not full automation. In <b>Potential</b> the numerator becomes the rule ceiling, so a donut that <i>stays</i> short there is a cell ACP <b>cannot</b> satisfy however much is built &mdash; 32 of them, and they need the ask revisited rather than more engineering. <b>This grey is the donut&rsquo;s only</b>: a greyed <i>cell</i> still means Not Applicable, as it always has.</span>
       </div>
 
     </div>
@@ -552,7 +580,7 @@
     <button type="button" class="vtbtn active" data-view="today" aria-pressed="true">Today</button>
     <button type="button" class="vtbtn" data-view="delta" aria-pressed="false">Today &rarr; Potential</button>
     <button type="button" class="vtbtn" data-view="potential" aria-pressed="false">Potential</button>
-    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.</span>
+    <span class="vthint" id="vtHint">Cells show ACP's shipped capability. Donuts show how far that is toward Deva's FINAL ask.</span>
   </div>
 
   <div class="tblscroll">
@@ -1790,7 +1818,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // a CI runner has no meaningful local zone; mixing the two makes the stamp jump non-monotonically.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.28.2351";
+const DOC_BUILD="2026.07.29.0004";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -1972,6 +2000,56 @@ const KEY_TECH_CROSSCUT=[
   tr.innerHTML=h;
 })();
 const tb=document.querySelector("#tbl tbody");
+
+// DEVA_TARGET = what Deva's FINAL tab ASKS FOR, per cell, on each axis. This is the only place
+// the page states a target rather than a fact, and it is his target, not ours.
+//
+// Three labels in his sheet map 1:1 onto this page's levels. The mapping is stated here rather
+// than inferred per read, because it is the whole basis of the "how close are we" number:
+//
+//     Fully Automated -> A4 / R4      the tool decides, or the tool edits
+//     AI First        -> A3 / R3      AI leads, a person confirms or approves
+//     Human First     -> A2 / R2      a person leads; for remediation ACP still guides
+//
+// "Human First" maps to R2 (Guided Remediation), NOT R1 (No Remediation). R1 means ACP offers
+// nothing at all, which is not what he is asking for — he is asking for the human to lead, and
+// guidance is how a tool serves that.
+//
+// 94 cells carry a target: 47 on each axis, across his 14 codes. The remaining cells of the
+// 20-SC grid have none, and their donuts read N/A because there is no ask to measure against —
+// not because ACP does nothing there.
+const DEVA_TARGET={
+ a:{
+ "1.1.1":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "1.3.1":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "1.3.2":{pptx:"A3",pdf:"A3"},
+ "1.4.1":{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},
+ "1.4.3":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "1.4.5":{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},
+ "2.1.1":{pptx:"A2",pdf:"A2"},
+ "2.4.2":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "2.4.3":{pptx:"A2",pdf:"A2"},
+ "2.4.4":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "2.4.6":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "3.1.1":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "3.1.2":{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},
+ "4.1.2":{pdf:"A4"}},
+ r:{
+ "1.1.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "1.3.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "1.3.2":{pptx:"R3",pdf:"R3"},
+ "1.4.1":{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
+ "1.4.3":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "1.4.5":{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
+ "2.1.1":{pptx:"R2",pdf:"R2"},
+ "2.4.2":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "2.4.3":{pptx:"R2",pdf:"R2"},
+ "2.4.4":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "2.4.6":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "3.1.1":{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R4"},
+ "3.1.2":{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R3"},
+ "4.1.2":{pdf:"R4"}}};
+
 // V5_APPLICABLE = Deva's IN-SCOPE grid, from the FINAL tab of
 // assessment-applicability-matrix-28JUL-Final.xlsx — his final word on scope, and the ONLY
 // checklist version this page cites. 14 WCAG codes, CELL-level rather than SC-level: several
@@ -2066,16 +2144,24 @@ function cellProgress(row,f,axis){
 
 // A compact donut. Inline SVG rather than a chart library: this renders 160 times on the page,
 // the whole file must stay dependency-free, and the shape is one arc.
+// The word shown in a donut that has no headroom to measure. One constant because it is a
+// judgement call that may well want reversing: see the note on donutPct.
+const DONUT_NONE="N/A";
+
+// pct===null means "there is no progress to draw here" — the cell is already as good as this
+// rule and format allow. That is drawn as a flat grey ring rather than a full green one, because
+// a full green ring is a claim about ACP and this is a claim about the rule.
 function donut(pct,{size=30,stroke=4,tone="",title=""}={}){
   const r=(size-stroke)/2, c=2*Math.PI*r;
-  const off=c*(1-Math.max(0,Math.min(100,pct))/100);
-  return `<svg class="donut ${tone}" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img"`
-    +` aria-label="${esc(title||pct+"% of potential")}">`
+  const none=pct==null;
+  const off=none?c:c*(1-Math.max(0,Math.min(100,pct))/100);
+  return `<svg class="donut ${none?"dna":tone}" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img"`
+    +` aria-label="${esc(title||(none?"no headroom — already at what this rule allows":pct+"% of potential"))}">`
     +`<circle class="dtrack" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"/>`
-    +`<circle class="darc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"`
+    +(none?"":`<circle class="darc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${stroke}"`
     +` stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"`
-    +` transform="rotate(-90 ${size/2} ${size/2})" stroke-linecap="round"/>`
-    +`<text class="dnum" x="50%" y="50%" dominant-baseline="central" text-anchor="middle">${pct}</text></svg>`;
+    +` transform="rotate(-90 ${size/2} ${size/2})" stroke-linecap="round"/>`)
+    +`<text class="dnum${none?" dnanum":""}" x="50%" y="50%" dominant-baseline="central" text-anchor="middle">${none?DONUT_NONE:pct}</text></svg>`;
 }
 const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
 
@@ -2094,12 +2180,66 @@ const progTone=p=>p>=100?"t4":p>=67?"t3":p>=34?"t2":"t1";
 // today's fill under a cell labelled with its ceiling level showed a number that contradicted
 // the label right next to it. The drawer already did this; the grid did not, and the grid is
 // where nearly everyone looks.
-function donutPct(pg){ return pg?(VIEW==="potential"?100:pg.pct):null; }
+// null when the cell has NO HEADROOM — today already equals the ceiling, so there is no
+// improvement to express as a percentage and the donut reads N/A instead of 100.
+//
+// This is not cosmetic. A green 100 conflates three different situations that were reading
+// identically: 20 cells where ACP fully assesses (ceiling A4, and it got there), 21 where the
+// ceiling is only Potential Issue, and 2 — 2.1.1 and 2.1.2 on PDF — where the ceiling is Human
+// Assessment Required and ACP therefore automates NOTHING. That last pair showed a full green
+// ring, which reads as "solved" and is close to the opposite of the truth.
+//
+// A cell that DOES have headroom still shows 100 in the Potential view: that view is where it
+// would get to, and it earns the full ring by moving.
+//
+// KNOWN TENSION, flagged rather than hidden: the legend promises "grey means one thing only:
+// Not Applicable", and this puts a grey N/A on 71 cells that ARE applicable. The whole cell is
+// deliberately left at full strength — only the donut greys — so the out-of-scope hatching and
+// the N/A level chips still mean what they always did. If the word turns out to mislead, change
+// DONUT_NONE to "Max"; nothing else needs to move.
+// How close ACP is to what DEVA ASKED FOR in this cell — not to the rule's ceiling.
+//
+// The denominator is his FINAL target, so the donut answers the question he will actually put:
+// "how much of what I asked for do I have?" Measuring against the rule ceiling answered a
+// different and more flattering question, because the ceiling is sometimes far below his ask
+// (2.4.6 assessment tops out at Potential Issue on every format; he asked for Fully Automated)
+// and sometimes far above it (he asked for Human First on 2.1.1, which ACP already meets).
+//
+// Returns null — drawn as N/A — in the two cases where a percentage would be meaningless:
+//   * no target: the cell is outside his 14 codes, so there is no ask to measure against. This
+//     is NOT "ACP does nothing here"; several of those cells are fully assessed today.
+//   * already met or exceeded: the gap is closed. 2 cells actually exceed his ask.
+//
+// In the Potential view the numerator becomes the rule ceiling instead of today, which is how
+// the 32 cells that CANNOT reach his target even at full build show up as short rather than
+// full — the single most important thing on this page for a scoping conversation.
+function targetProgress(row,f,axis){
+  const t=DEVA_TARGET[axis][row.sc]&&DEVA_TARGET[axis][row.sc][f];
+  if(!t)return null;
+  const W=axis==="a"?A_WEIGHT:R_WEIGHT;
+  const wT=W[t]??0;
+  const cur=row[axis][f];
+  const pg=cellProgress(row,f,axis);
+  const wCur=W[cur]??0;
+  const wCeil=pg?(W[pg.rubricCeiling]??wCur):wCur;
+  const num=VIEW==="potential"?Math.max(wCur,wCeil):wCur;
+  // A zero-weight target (he asked for Human First on an axis where that scores nothing) is met
+  // by definition — there is no value to deliver, so it cannot be short.
+  const met=wT===0||num>=wT;
+  return {target:t, current:cur, met, exceeds:wCur>wT,
+          reachable:Math.max(wCur,wCeil)>=wT,
+          pct:wT===0?100:Math.max(0,Math.min(100,Math.round((num/wT)*100)))};
+}
 
-function donutTip(pct,todayLabel,ceilLabel){
-  return VIEW==="potential"
-    ? `At the ceiling — ${ceilLabel} is as far as this cell can go. Today: ${todayLabel}.`
-    : `${pct}% of potential — today ${todayLabel}, potential ${ceilLabel}.`;
+function donutPct(tp){ return tp&&!tp.met?tp.pct:null; }
+
+function donutTip(tp,todayLabel,ceilLabel,LBL){
+  if(!tp)return `Outside Deva's FINAL checklist — no target for this cell. Today: ${todayLabel}.`;
+  if(tp.met)return `Meets Deva's FINAL ask (${LBL[tp.target]})${tp.exceeds?" — and exceeds it":""}. Today: ${todayLabel}.`;
+  const tail=tp.reachable
+    ? `The rule allows ${ceilLabel}, so this is reachable.`
+    : `The rule tops out at ${ceilLabel}, so this cannot reach his ask.`;
+  return `${tp.pct}% of Deva's ask — he wants ${LBL[tp.target]}, ACP is at ${todayLabel}. ${tail}`;
 }
 
 function codeChip(level){
@@ -2109,10 +2249,14 @@ function codeChip(level){
 
 // Legend donut samples, drawn with the same function the cells use so the key cannot drift
 // from the thing it explains — a hand-drawn legend swatch is exactly how a key goes stale.
+//
+// Three swatches, and each is a value the grid really contains: 112 cells read N/A (met, or
+// outside his codes), 25 read 0, and the partials land on 40/50/53/75.
 (function(){
-  for(const [id,pct] of [["lgDonutHi",100],["lgDonutMid",50],["lgDonutLo",0]]){
+  for(const [id,pct] of [["lgDonutNA",null],["lgDonutMid",75],["lgDonutLo",0]]){
     const el=document.getElementById(id);
-    if(el)el.innerHTML=donut(pct,{size:26,stroke:3.5,tone:progTone(pct),title:pct+"% of potential"});
+    if(el)el.innerHTML=donut(pct,{size:26,stroke:3.5,tone:pct==null?"":progTone(pct),
+      title:pct==null?"no headroom — already at what this rule allows":pct+"% of potential"});
   }
 })();
 
@@ -2173,9 +2317,12 @@ function buildTable(){
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|a`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
-    const dp=donutPct(pg);
-    const dot=pg?donut(dp,{tone:progTone(dp),title:donutTip(dp,AL[v],AL[pg.ceiling])}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${pg?`, ${dp}% of potential`:""}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
+    const tp=targetProgress(row,f,"a");
+    const dp=donutPct(tp);
+    // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
+    // the same thing twice, and the ring implied a measurement that does not exist.
+    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(tp,AL[v],pg?AL[pg.ceiling]:AL[v],AL)});
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
     const v5state=v5row&&v5row[f];
     const v5Cls=v5state?"":" v4-muted";
@@ -2183,9 +2330,12 @@ function buildTable(){
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|r`; next[key]=shown;
     const moved=prev&&prev[key]&&prev[key]!==shown?" justchanged":"";
-    const dp=donutPct(pg);
-    const dot=pg?donut(dp,{tone:progTone(dp),title:donutTip(dp,RL[v],RL[pg.ceiling])}):"";
-    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${pg?`, ${dp}% of potential`:""}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
+    const tp=targetProgress(row,f,"r");
+    const dp=donutPct(tp);
+    // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
+    // the same thing twice, and the ring implied a measurement that does not exist.
+    const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(tp,RL[v],pg?RL[pg.ceiling]:RL[v],RL)});
+    h+=`<td class="cell${v5Cls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
   // Per-row coverage: how much of what this criterion allows ACP delivers, across the formats
   // in scope. Both axes shown rather than one blended figure — the whole page turns on assess
   // and remediate being different questions, and averaging them here would undo that.
@@ -2255,9 +2405,9 @@ buildTable();
 (function(){
   const btns=[...document.querySelectorAll(".vtbtn")], hint=document.getElementById("vtHint");
   const HINT={
-    today:"Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.",
-    delta:"Cells show today and the gain available — the rule-inherent ceiling in grey beside it. Cells already at their ceiling show one value.",
-    potential:"Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it.",
+    today:"Cells show ACP's shipped capability. Donuts show how far that is toward Deva's FINAL ask.",
+    delta:"Cells show today and the gain available — the rule-inherent ceiling in grey beside it. Donuts stay on today's progress toward Deva's ask.",
+    potential:"Cells show the rule-inherent ceiling — what any tool could achieve. Donuts now measure THAT against Deva's ask, so a donut still short here is a cell no amount of building satisfies.",
   };
   for(const b of btns) b.addEventListener("click",()=>{
     VIEW=b.dataset.view;
@@ -2299,8 +2449,45 @@ buildTable();
 // The denominator is APPLICABLE cells only. A criterion that does not apply to a format is not
 // a gap and must not drag the percentage down — otherwise a format is punished for the rules it
 // was never subject to, and the number stops meaning anything comparable across formats.
+// Progress against DEVA'S FINAL ASK, weighted the same way as everything else on this page.
+//
+// Deliberately separate from the rubric coverage below it. That measures ACP against what any
+// tool could do; this measures ACP against what he wrote down. They disagree in both directions
+// and the disagreement is the conversation: some of his asks are below the ceiling and already
+// met, and 32 cells sit ABOVE the ceiling, meaning no amount of building gets there.
+//
+// A cell that over-delivers is capped at its target so that beating one ask cannot paper over
+// missing another — without the cap the total would drift upward on cells nobody asked about.
+function renderDevaHead(){
+  const el=document.getElementById("devaHead"); if(!el)return;
+  let wT=0,wToday=0,wCeil=0,met=0,short=0,unreachable=0,cells=0;
+  for(const row of ROWS)for(const ax of ["a","r"])for(const f of FM){
+    const tp=targetProgress(row,f,ax); if(!tp)continue;
+    const W=ax==="a"?A_WEIGHT:R_WEIGHT;
+    const t=W[tp.target]??0, cur=W[row[ax][f]]??0;
+    const pg=cellProgress(row,f,ax);
+    const ceil=Math.max(cur, pg?(W[pg.rubricCeiling]??cur):cur);
+    cells++; wT+=t; wToday+=Math.min(cur,t); wCeil+=Math.min(ceil,t);
+    if(cur>=t)met++; else {short++; if(ceil<t)unreachable++;}
+  }
+  const p=(n)=>wT?Math.round((n/wT)*1000)/10:0;
+  const today=p(wToday), pot=p(wCeil);
+  el.innerHTML=`<div class="dhrow">
+      <div class="dhnum"><b>${today}%</b><span>of Deva's FINAL ask, today</span></div>
+      <div class="dhbar" role="img" aria-label="${today}% of Deva's ask today, ${pot}% if everything the rules allow were built">
+        <span class="dhfill" style="width:${today}%"></span>
+        <span class="dhfill dhpot" style="width:${pot}%"></span>
+      </div>
+      <div class="dhnum dhalt"><b>${pot}%</b><span>if built to the rule ceiling</span></div>
+    </div>
+    <p class="dhnote"><b>${met}</b> of <b>${cells}</b> cells already meet his ask · <b>${short}</b> fall short,
+      of which <b>${unreachable}</b> cannot reach it even if ACP built everything the rule allows —
+      those need the ask revisited, not more engineering.</p>`;
+}
+
 function renderCoverage(){
   const grid=document.getElementById("covGrid"); if(!grid)return;
+  renderDevaHead();
   // SCOPE: Deva's V5 checklist only, when the filter above the table is on (its default).
   // Coverage previously counted all 80 cells regardless, so the headline described a rubric
   // wider than the checklist anyone is measured against — and it did not move when the filter
@@ -2321,7 +2508,6 @@ function renderCoverage(){
   function coverage(axis, fmts){
     let num=0, den=0, pnum=0;
     for(const row of ROWS) for(const f of fmts){
-      if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
       if(!inScope(row.sc,f))continue;          // outside Deva's V5 checklist
       const lvl=row[axis.key][f];
       if(!lvl||lvl==="NA")continue;            // not applicable — outside the denominator
@@ -2661,12 +2847,20 @@ function renderDrawer(sc,f,trigger){
     html+=`<div class="scorepanel">
       <div class="spgrid">
         <div class="spdonut">
-          ${(()=>{const v=isPot?100:(pgA?pgA.pct:null);
-             return v==null?"":donut(v,{size:84,stroke:9,tone:progTone(v),
-               title:isPot?"at the ceiling":`${v}% of potential`});})()}
+          ${(()=>{const tpA=targetProgress(row,f,"a");
+             const v=donutPct(tpA);
+             return donut(v,{size:84,stroke:9,tone:v==null?"":progTone(v),
+               title:donutTip(tpA,AL[row.a[f]],pgA?AL[pgA.ceiling]:AL[row.a[f]],AL)});})()}
           <div class="spdlabel">${esc(AL[aShown]||aShown)}</div>
-          <div class="spdsub">assessment · ${isPot?"at the ceiling"
-            :(pgA&&pgA.pct<100?`${100-pgA.pct}% headroom`:"at the ceiling")}</div>
+          <div class="spdsub">assessment · ${(()=>{
+            // The subtitle names DEVA'S ask, because that is now the donut's denominator. Saying
+            // "headroom" here would describe the rule ceiling while the ring beside it described
+            // his target — two scales, one panel, which is the confusion this page keeps hitting.
+            const tp=targetProgress(row,f,"a");
+            if(!tp)return "outside his checklist";
+            if(tp.met)return tp.exceeds?"exceeds his ask":"meets his ask";
+            return `${100-tp.pct}% short of ${esc(AL[tp.target])}${tp.reachable?"":" · unreachable"}`;
+          })()}</div>
           ${(()=>{
             // The percentage hides distance: A2->A3 and A2->A4 can both read 0. State the steps.
             // Nothing to climb in the Potential view — that view IS the top of the ladder.
@@ -2800,7 +2994,7 @@ panelBody.addEventListener("click",(e)=>{
       const hint=document.getElementById("vtHint");
       if(hint)hint.textContent=VIEW==="potential"
         ? "Cells show the rule-inherent ceiling — what any tool could achieve for this rule and format. Not a roadmap: nothing here is a commitment to build it."
-        : "Cells show ACP's shipped capability. Donuts show how far that is toward what the rule allows.";
+        : "Cells show ACP's shipped capability. Donuts show how far that is toward Deva's FINAL ask.";
       buildTable();
       renderDrawer(CURRENT_CELL.sc, CURRENT_CELL.f, lastTrigger);
       // Mark the panel so the changed regions animate in.
