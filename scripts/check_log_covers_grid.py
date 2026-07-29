@@ -10,7 +10,13 @@ A reader comparing "what the grid says" against "when did that change" got no an
 The rule is narrow and mechanical:
 
     if a commit changes ROWS[sc].a[fmt] or ROWS[sc].r[fmt],
+    or the RUBRIC ceiling (aClass/fClass) for that sc and format,
     the same diff must ADD a PROGRESS_LOG entry whose `scs` includes that sc
+
+Ceilings were missed by the first version and are just as much a public claim: raising
+1.4.3's PDF assessment ceiling changes what the page says is ACHIEVABLE, which is the number
+a customer plans against. It was caught by making exactly that change and watching the guard
+stay green.
 
 Not "an entry mentioning it exists somewhere" — a NEW one, added by this diff. An old entry
 about 1.4.3 does not explain why 1.4.3 changed again today, and accepting it would make the
@@ -35,6 +41,8 @@ FORMATS = ("docx", "xlsx", "pptx", "pdf")
 _ROW = re.compile(r'^\{sc:"(\d+\.\d+\.\d+)".*?\ba:\{([^}]*)\}.*?\br:\{([^}]*)\}', re.M)
 _CELL = re.compile(r'(\w+):"([^"]*)"')
 _ENTRY = re.compile(r'\{date:"[^"]*".*?hash:"([^"]*)".*?scs:\[([^\]]*)\]', re.S)
+_RULE = re.compile(r'"(\d+\.\d+\.\d+)":\{plain:')
+_CEIL = re.compile(r'(\w+):\{[^{}]*?(aClass|fClass):"(\w+)"', re.S)
 _SC = re.compile(r'"(\d+\.\d+\.\d+)"')
 
 
@@ -58,6 +66,28 @@ def grid(html: str) -> dict[tuple[str, str, str], str]:
                 if fmt in FORMATS:
                     cells[(sc, axis, fmt)] = lvl
     return cells
+
+
+def ceilings(html: str) -> dict[tuple[str, str, str], str]:
+    """(sc, axis-class, fmt) -> ceiling class, per rule block.
+
+    Parsed per RULE BLOCK rather than by scanning forward from a rule's name, because several
+    rules share one ceiling object across all four formats and others declare each format
+    separately — a forward scan runs past the owning rule and attributes the next rule's
+    ceilings to this one. That is not hypothetical: the same mistake, made by hand, wrote
+    3.1.2's rationale into 1.4.10's block earlier today.
+    """
+    i = html.find("const RUBRIC=")
+    if i < 0:
+        return {}
+    marks = [(i + m.start(), m.group(1)) for m in _RULE.finditer(html[i:])]
+    out: dict[tuple[str, str, str], str] = {}
+    for n, (pos, sc) in enumerate(marks):
+        end = marks[n + 1][0] if n + 1 < len(marks) else len(html)
+        for fmt, kind, cls in _CEIL.findall(html[pos:end]):
+            if fmt in FORMATS:
+                out[(sc, kind, fmt)] = cls
+    return out
 
 
 def entries(html: str) -> dict[str, set[str]]:
@@ -87,6 +117,13 @@ def main() -> int:
     g0, g1 = grid(before), grid(after)
 
     changed: dict[str, list[str]] = {}
+    c0, c1 = ceilings(before), ceilings(after)
+    for key, new in sorted(c1.items()):
+        old = c0.get(key)
+        if old is not None and old != new:
+            sc, kind, fmt = key
+            changed.setdefault(sc, []).append(
+                f"{fmt} {'assess' if kind == 'aClass' else 'fix'} CEILING {old}->{new}")
     for key, new in sorted(g1.items()):
         old = g0.get(key)
         if old is not None and old != new:

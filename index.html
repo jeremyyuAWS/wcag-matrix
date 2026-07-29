@@ -1819,7 +1819,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0041";
+const DOC_BUILD="2026.07.29.0042";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -1919,7 +1919,7 @@ const RUBRIC={
    fClass:"MECH",fWhy:"Same deterministic recolor as DOCX, applied through the cell style record instead of a run."},
   pptx:{aClass:"DET",aWhy:"Color resolves through a defined chain — run → placeholder → layout → master theme — against the effective slide background; once resolved, it's the same arithmetic. Text over a photo or gradient is correctly out of scope (the background isn't a computable color), not silently passed.",
    fClass:"MECH",fWhy:"Same deterministic recolor as DOCX/XLSX, scoped to runs with an explicit color over an explicit solid fill."},
-  pdf:{aClass:"MA",aWhy:"PDF has no structured \"run + background\" model — text and fills are independent paint operators in a content stream. Recovering which paint corresponds to foreground vs. background text requires sampling, not a resolvable property chain — a genuine format-level ceiling, not just an unbuilt feature.",
+  pdf:{aClass:"DET",aWhy:"Ceiling raised 2026-07-29 on evidence; the previous rationale \u2014 that PDF has no run+background model so recovering the background needs SAMPLING \u2014 does not survive a fixture. A ~30-line structural resolver (topmost fill rect in content-stream order whose bbox contains the glyph, else the default page background) got 11 of 12 fixtures exactly right, 100% of characters, including all three the shipping detector gets WRONG. Only text over an image genuinely needs pixels \u2014 and the sampling path that supposedly justified this ceiling abstained on 4 of 4 over-image fixtures (ambiguous_background), so it is the WEAKER path, not the stronger one. The codebase already does this class of rect-fill resolution in pdf_nontext_contrast_checks. NOTE: A4 is the ceiling, NOT today \u2014 the shipped detector thresholds text luma alone and is wrong in both directions (false SERIOUS on white-on-dark, silent on dark-on-dark, and every grey from #787878 to #9E9E9E is a real AA failure it never reports). Today stays at Potential Issue until that is fixed.",
    fClass:"MECH",fWhy:"Superseded by shipped code, and the earlier rationale \u2014 that rewriting colours inside a content stream is surgery on the page \u2014 turned out to be wrong. _fix_pdf_text_contrast (api/remediate_pdf.py:97) rewrites the text fill-colour operators in place, text-scoped, leaving shapes and backgrounds untouched. Verified 2026-07-29 on a fixture at ~#CCCCCC on white: one run rewritten, and the post-fix re-scan returned zero findings where it had returned PDF_LOW_CONTRAST_AA and _AAA. A ceiling is a judgement (ground rules 2 and 3), and this one was simply too conservative."}}},
 
 "1.4.11":{plain:"UI-style elements — icons, borders, form-control outlines, chart lines — need the same minimum contrast as text (3:1) against their background, so shapes and boundaries are perceivable, not just words.",
@@ -3109,6 +3109,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"01:34",tz:"PDT",hash:"c5bb47f",pr:17,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix: raise the 1.4.3 PDF assessment ceiling, and guard ceilings the way cells are guarded",
+ scs:["1.4.3"],formats:["pdf"],
+ summary:"The ceiling moves, not the cell. PDF contrast assessment could reach Fully Assessed — the reason recorded for why it could not is contradicted by a fixture — but today's detector does not deliver it, so today stays at Potential Issue and the headroom is now visible instead of denied.",
+ points:[
+  {label:"The old rationale was wrong",text:"It held that PDF has no run-and-background model, so recovering what sits behind a glyph needs pixel SAMPLING. A ~30-line structural resolver — topmost fill rect in content-stream order whose bbox contains the glyph, else the default page background — got 11 of 12 fixtures exactly right, every character, including all three the shipping detector gets wrong."},
+  {label:"Sampling is the weaker path, not the stronger",text:"The render-based measurement that supposedly justified the ceiling abstained on 4 of 4 over-image fixtures with ambiguous_background. Only text over an image genuinely needs pixels, and that is the one case the resolver also declines."},
+  {label:"Today is unchanged and that is deliberate",text:"The shipped detector thresholds text luma alone and is wrong in both directions: false SERIOUS on white-on-dark, silent on dark-on-dark, and every grey from #787878 to #9E9E9E is a real AA failure it never reports. Recording A4 today would be a claim the code does not support."},
+  {label:"Ceilings are now guarded like cells",text:"check_log_covers_grid.py only watched ROWS values, so a ceiling could move with no entry — and this very change proved it by passing green. It now diffs RUBRIC aClass/fClass too, parsed per rule block rather than by scanning forward, because a forward scan attributes the next rule's ceilings to this one."}]},
 {date:"2026-07-29",time:"01:05",tz:"PDT",hash:"88ca4e5",pr:16,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: apply the verified cell corrections from the eleven-cell sweep",
  scs:["1.1.1","1.3.1","1.3.2","3.1.2","1.4.3","2.4.4","4.1.2"],formats:["docx","pptx","pdf"],
