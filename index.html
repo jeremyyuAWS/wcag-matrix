@@ -727,7 +727,7 @@ const LEGACY_R={A:"R4",AP:"R4",AC:"R3",AI:"R3",M:"R2",N:"R1",NA:"NA"};
 
 // Each cell: b = argument bullets · c = concede-up-front bullets · x = counterargument it survives · ev = evidence · cat = catalog/drift note
 const ROWS=[
-{sc:"1.1.1",name:"Non-text Content",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R3"},
+{sc:"1.1.1",name:"Non-text Content",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R3"},
  ae:{
   docx:{b:["The .NET AltTextRule reads descr= on every wp:docPr — a deterministic XML attribute check, so pass/fail is machine-decidable, not a heuristic.","Smarter than a bare presence check: bare filenames ('image1.png') and generic auto-names count as missing.","The rubric only certifies files with a clean ANALYSED run (scripts/rubric.py): if any rule errored, the score is an upper bound and the file is not certifiable."],
       c:["Certifies alt PRESENCE, not alt QUALITY — description quality is a review-queue question and the spec says so explicitly.","OLE-embedded images and chart/SmartArt internals are out of scope by declaration, not omission.","Corrected 2026-07-17: the assessment rule does NOT check the OOXML decorative marker (extLst decorative val=\"1\") at all — a properly-marked decorative image with empty descr is currently flagged as a false positive. The FIX side (api/remediate_office.py) does honor the marker and correctly skips it; the detection side doesn't. Real gap, not a documentation error — see the FAQ."],
@@ -756,7 +756,7 @@ const ROWS=[
       c:["Untagged PDFs get no alt remediation — that work is gated behind tagging (1.3.1), which is human/re-export territory."],
       ev:["api/remediate_pdf.py:_fix_pdf_figure_alt / _render_page_png"]}}},
 
-{sc:"1.3.1",name:"Info and Relationships",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A4"},r:{docx:"R4",xlsx:"R4",pptx:"R2",pdf:"R3"},
+{sc:"1.3.1",name:"Info and Relationships",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"R4",xlsx:"R4",pptx:"R2",pdf:"R2"},
  ae:{
   docx:{b:["Two deterministic rules: TableHeaderRule — the first row of every table must carry w:tblHeader (exactly what AT uses to announce column labels) — and HeadingStructureRule — heading styles must not skip levels going down (H1→H3).","Both are structure reads on the document XML: no sampling, no thresholds, no model."],
       c:["Layout tables get flagged — Word has no reliable data-vs-layout marker, so every table is treated as data (declared).","'Fake headings' (bold 18pt body text) carry no outline level and are invisible to the heading rule (declared)."],
@@ -781,7 +781,7 @@ const ROWS=[
       x:"“Acrobat can auto-tag.” — Auto-tagging produces role and order errors that then fail 1.3.2 and 1.1.1; ACP refuses to generate defects it would immediately flag.",
       ev:["docs/rules/pdf.tagged.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.Tagged — guidance)"]}}},
 
-{sc:"1.3.2",name:"Meaningful Sequence",lvl:"A",flag:false,a:{docx:"NA",xlsx:"A4",pptx:"A3",pdf:"A3"},r:{docx:"NA",xlsx:"R4",pptx:"R4",pdf:"R3"},
+{sc:"1.3.2",name:"Meaningful Sequence",lvl:"A",flag:false,a:{docx:"NA",xlsx:"A4",pptx:"A3",pdf:"A3"},r:{docx:"NA",xlsx:"R4",pptx:"R4",pdf:"R2"},
  ae:{
   docx:{b:["Word body content is a single linear flow — the reading order of the main story cannot diverge from the visual order the way slide shapes and PDF tag trees can.","N/A by content model is a stronger position than an unbuilt check: there is nothing for a rule to disagree with."],
       c:["Floating text boxes / shapes are a theoretical edge — concede as potential future scope, not as a gap in this claim."],
@@ -817,7 +817,7 @@ const ROWS=[
    ev:["— (report-and-route only)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})()},
 
-{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R4",xlsx:"R1",pptx:"R4",pdf:"R3"},
+{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R4",xlsx:"R1",pptx:"R2",pdf:"R2"},
  ae:{
   docx:{b:["DOCX_HEADING_SKIP (office_structure) fires on Heading1→Heading3 style skips — deterministic for that narrow signal, and exactly the outline defect that breaks jump-by-heading navigation.","The SC verdict stays Guided because 2.4.6 asks whether headings DESCRIBE their topic — semantic, human-confirmed. The skip check is evidence toward the criterion, not the whole criterion."],
       ev:["api/office_structure.py:docx_checks (DOCX_HEADING_SKIP)"]},
@@ -857,7 +857,7 @@ const ROWS=[
   pdf:{b:["PdfLanguageFixer writes /Lang in stage 1 of the two-stage pipeline; the pikepdf→pypdf split exists precisely to make these writes reliable in a long-lived worker.","Applied to a copy; provenance-stamped in docinfo."],
       ev:["api/remediate_pdf.py (stage 1)","worker-python/remediation/fixers/pdf/language_fixer.py"]}}},
 
-{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R3",xlsx:"R2",pptx:"R3",pdf:"R3"},
+{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
  ae:{
   docx:{b:["Two independent detectors: (1) seeded langdetect over extracted text fires when ≥2 languages are confidently detected — ≥12-word segments, ≥0.90 confidence, thresholds chosen against false positives; DetectorFactory.seed=0 makes it reproducible run-to-run. (2) LanguageOfPartsRule flags long runs whose Unicode SCRIPT differs from the document's dominant script with no w:lang of their own — deliberately narrow after ADR 0012 killed the old false-positive flood (it used to flag every 20+ word run).","Guided because the hard call — foreign language vs proper noun vs quotation — is judgment; the spec says script detection 'drafts nothing safe enough to auto-apply'."],
       c:["Known drift to disclose before someone finds it: the .NET rule still reports under SC_3_1_1 (ADR 0012 defers separate 3.1.2 modelling). SC-keyed coverage queries under-report DOCX until the remap lands.","Latin-script switches (English→Spanish quote) pass the script detector; the langdetect check partially covers this at document level."],
@@ -1824,7 +1824,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0735";
+const DOC_BUILD="2026.07.29.0803";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3140,6 +3140,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"07:35",tz:"PDT",hash:"952ea73",pr:25,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix: adjudicate 14 over-claiming cells surfaced by the revived drift guard",
+ scs:["1.1.1","1.3.1","1.3.2","2.4.6","3.1.2"],formats:["docx","xlsx","pptx","pdf"],
+ summary:"The drift guard came back to life and immediately found 14 cells claiming more than the code supports. Twelve were upheld and lowered; two were rejected because acp's derivation was wrong, not the grid. Every one was decided on an observed run, not on the guard's say-so.",
+ points:[
+  {label:"1.1.1 assessment, all four formats",text:"A4 to A3. A clean scan resolves REVIEW, never PASS, so the criterion cannot certify a pass — which is what Fully Assessed asserts. The drawer already said it certifies alt PRESENCE rather than QUALITY; the tier had not followed."},
+  {label:"Seven remediation cells with no write-back",text:"1.3.1, 1.3.2, 2.4.6 and 3.1.2 are not referenced anywhere in the approval path. Approving a drafted value changes nothing on disk, so the honest tier is Guided, not a fix. Three of these were raised to AI Generated Fix earlier the same day on a reading of the reviewer UI — that was wrong, and the applier's absence is the fact that settles it."},
+  {label:"Rejected: 2.1.1 pptx",text:"The guard wanted A2. Left at A3 because acp contradicts itself here — its lane table says human while a clean scan returns PASS, with nothing in REVIEW_ASSESS_FORMATS to stop it. That is a pptx certifying a pass on a criterion it cannot judge, the same unsoundness fixed for docx 2.4.6 today, and it is an engine bug rather than a grid one."},
+  {label:"Rejected: 4.1.2 pdf remediation",text:"The guard wanted R1. Kept at R4 on a fixture: _fix_pdf_form_fields takes no ai_enabled and writes /TU from the field's own /T unattended, clearing three of five findings with AI off. The guard capped it using the ASSESSMENT registry's coverage=partial because REMEDIATION['pdf']['4.1.2'] is missing entirely — a cross-axis fallback, not a judgement about the fix."}]},
 {date:"2026-07-29",time:"07:35",tz:"PDT",hash:"944880a",pr:59,repo:"jeremyyuAWS/acp",
  title:"feat(charts): resolve docx/pptx chart values from the embedded data workbook (#59)",
  scs:["1.1.1"],formats:["docx","pptx"],
