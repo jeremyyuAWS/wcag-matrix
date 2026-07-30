@@ -1836,7 +1836,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.1720";
+const DOC_BUILD="2026.07.29.1833";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3234,6 +3234,10 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"18:32",tz:"PDT",hash:"42866ee",pr:88,repo:"jeremyyuAWS/acp",
+ title:"fix(api): read .rels attributes by name, not by position (#88)",
+ scs:["2.4.4"],formats:["xlsx"],
+ summary:"XLSX link-purpose detection and link-text proposals now work on workbooks written by openpyxl. Nothing about the rules changed — the relationship parser required Id to be the first attribute of <Relationship>, which openpyxl writes last, so every hyperlink in such a workbook was invisible to the detector and the proposer alike. Docx and pptx were unaffected in practice: Word and PowerPoint both emit Id first."},
 {date:"2026-07-29",time:"17:19",tz:"PDT",hash:"f44e227",pr:85,repo:"jeremyyuAWS/acp",
  title:"fix(ai): name the source of an endpoint setting, and stop a save reporting success it did not have (#85)",
  scs:["1.1.1"],formats:["docx","xlsx","pptx"],
