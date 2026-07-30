@@ -1836,7 +1836,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.07.29.0824";
+const DOC_BUILD="2026.07.29.1720";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3234,6 +3234,13 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-07-29",time:"17:19",tz:"PDT",hash:"f44e227",pr:85,repo:"jeremyyuAWS/acp",
+ title:"fix(ai): name the source of an endpoint setting, and stop a save reporting success it did not have (#85)",
+ scs:["1.1.1"],formats:["docx","xlsx","pptx"],
+ summary:"1.1.1 alt text for an IMAGE OF TEXT in an Office document is now the image's own text, transcribed verbatim from OCR, instead of a vision model's paraphrase of it. Measured against the demo fixture with the deployed model (moondream), the paraphrase got the year wrong in 5/5 runs, invented a chart that was not present, and described the filename as visible content — all while flagged grounded/High and eligible for unattended auto-apply. The coverage cell is unchanged; what changed is the accuracy of what gets written into the document.",
+ points:[
+  {text:"Charts are unaffected: they are still described, because their OCR yield is axis and legend fragments and transcribing those would be worse than a paraphrase."},
+  {text:"PDF is unaffected: that path OCRs a render of the whole page, so it never transcribes. ---------"}]},
 {date:"2026-07-29",time:"07:35",tz:"PDT",hash:"952ea73",pr:25,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix: adjudicate 14 over-claiming cells surfaced by the revived drift guard",
  scs:["1.1.1","1.3.1","1.3.2","2.4.6","3.1.2"],formats:["docx","xlsx","pptx","pdf"],
