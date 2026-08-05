@@ -69,6 +69,20 @@ jobs:
       - name: Compare against the grid
         id: check
         run: |
+          # `set +e` is LOAD-BEARING, and must come first.
+          #
+          # GitHub runs every `run:` block as `bash -e {0}` — errexit is already ON before the
+          # first line, and `set -uo pipefail` does NOT clear it (it only adds -u and pipefail).
+          # check_grid_drift.py exits 1 to mean "drift found", which is the expected, non-error
+          # outcome this whole job exists to handle. Under errexit that exit killed the step on
+          # the line below: `rc=$?` never ran, `drift=yes` was never written, and the PR step
+          # was skipped — so the guard signalled drift ONLY by turning the build red, and the
+          # pull request it exists to open was never opened. Six consecutive runs failed that
+          # way (2026-07-30 x4, 08-01, 08-03) while one real over-claim sat unreported.
+          #
+          # Same class of failure as #24 ("revive the grid-drift guard, dead since the two-axis
+          # model landed"): the guard kept running and kept looking like it worked.
+          set +e
           set -uo pipefail
           python3 scripts/check_grid_drift.py /tmp/coverage.json --markdown > /tmp/body.md
           rc=$?
