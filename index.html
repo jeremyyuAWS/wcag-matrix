@@ -3257,7 +3257,7 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
-{date:"2026-08-05",time:"05:12",tz:"PDT",hash:"a11a5d3",pr:33,repo:"jeremyyuAWS/wcag-matrix",
+{date:"2026-08-05",time:"05:12",tz:"PDT",hash:"b499c46",pr:33,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix(1.3.1): pptx table headers are automatic — the cell said manual because the fixer moved",
  scs:["1.3.1"],formats:["pptx"],
  summary:"PPTX 1.3.1 remediation moves R2 (Guided Remediation) to R4 (Automatically Fixed). No acp code changed for this — the capability was already shipped and the grid had not caught up. The cell's own notes argued the only pptx table-header fixer lived in an undeployed, gitignored partner tree; it is now api/remediate_office.py, tracked and in the deploy image, wired into _remediate_pptx_slides and round-trip proven by the capability suite. Verified against acp main 4754309 before the change, per ground rule 1.",
