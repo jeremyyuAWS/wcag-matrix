@@ -768,7 +768,7 @@ const ROWS=[
       c:["Untagged PDFs get no alt remediation — that work is gated behind tagging (1.3.1), which is human/re-export territory."],
       ev:["api/remediate_pdf.py:_fix_pdf_figure_alt / _render_page_png"]}}},
 
-{sc:"1.3.1",name:"Info and Relationships",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"R4",xlsx:"R4",pptx:"R2",pdf:"R2"},
+{sc:"1.3.1",name:"Info and Relationships",lvl:"A",flag:false,a:{docx:"A4",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"R4",xlsx:"R4",pptx:"R4",pdf:"R2"},
  ae:{
   docx:{b:["Two deterministic rules: TableHeaderRule — the first row of every table must carry w:tblHeader (exactly what AT uses to announce column labels) — and HeadingStructureRule — heading styles must not skip levels going down (H1→H3).","Both are structure reads on the document XML: no sampling, no thresholds, no model."],
       c:["Layout tables get flagged — Word has no reliable data-vs-layout marker, so every table is treated as data (declared).","'Fake headings' (bold 18pt body text) carry no outline level and are invisible to the heading rule (declared)."],
@@ -786,9 +786,10 @@ const ROWS=[
       ev:["api/remediate_office.py:_remediate_docx_structure"]},
   xlsx:{b:["headerRowCount 0→1 on every table-definition part — the same toggle Excel's 'My table has headers' flips.","Deterministic, additive, provenance-stamped."],
       ev:["api/remediate_office.py:_remediate_xlsx_structure"]},
-  pptx:{b:["Manual — and the reason is the layer rule, not difficulty: the only pptx table-header fixer (PptxTableHeaderFix) lives in the undeployed partner tree (digital-accessibility/, gitignored, absent from the deploy image). The honest cell is what ships.","The finding carries concrete author guidance: Table Design → enable Header Row.","The path out is cheap — write firstRow=\"1\", same pattern as the docx fixer. Say 'small, unbuilt', never show it as built."],
-      x:"“But the fixer exists in the repo tree.” — In a gitignored partner clone that the deploy image never copies. Quoting it as capability is exactly how the mixed analyses happened.",
-      ev:["RuleMetadataRegistry.cs (PptxRuleIds.TableHeaders — guidance)","deploy/public/Dockerfile (what actually ships)"]},
+  pptx:{b:["Automatic for the table-header slice: _pptx_mark_table_headers writes firstRow=\"1\" onto every multi-row a:tbl that lacks it, the same mechanical pattern as the docx fixer. Deterministic — an XML attribute, no model in the path.","Round-trip proven, not merely present: the capability suite plants a multi-row table with no header mark, remediates, and re-scans until TableHeaderRule stops firing.","The finding still carries author guidance (Table Design → enable Header Row) for the cases the fixer does not reach."],
+      c:["Table headers are one slice of 1.3.1. Pseudo-heading promotion and reading order are separate concerns on this format and are not what this R4 claims."],
+      x:"“Isn't the pptx fixer in an undeployed partner tree?” — It was, and this cell said so until 2026-08-05. It is now api/remediate_office.py, tracked and in the deploy image; the fixer wired into _remediate_pptx_slides is the one that ships.",
+      ev:["api/remediate_office.py:666 (_pptx_mark_table_headers)","api/remediate_office.py:795 (wired into _remediate_pptx_slides)","api/remediation_capability.py:159 (pptx 1.3.1 = AUTO, round-trip proven)","tests/test_pptx_table_headers.py"]},
   pdf:{b:["No fixer, and that is the industry-honest position: synthesising a semantically correct tag tree requires understanding layout and reading order — the correct fix is re-export from source (Word/InDesign/LaTeX) with tag export enabled, which is exactly the guidance ACP emits."],
       x:"“Acrobat can auto-tag.” — Auto-tagging produces role and order errors that then fail 1.3.2 and 1.1.1; ACP refuses to generate defects it would immediately flag.",
       ev:["docs/rules/pdf.tagged.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.Tagged — guidance)"]}}},
@@ -1079,7 +1080,7 @@ const QUOTE={
 // between "ACP today" (§5) and the rule-inherent ceiling (§§2-4) — drawn from ROWS.ae/re content already on file.
 const UPGRADE={
 "1.1.1":{"*":"Already at ceiling where a faithful source or the vision model is reachable — the remaining gap is coverage (budget/timeout limits), not new engineering."},
-"1.3.1":{"pptx":"The header-row fixer exists but lives in the gitignored partner tree, not the deployed image — porting that one function is the cheapest win on this list.","pdf":"PDF stays re-authoring regardless of investment."},
+"1.3.1":{"pptx":"Closed 2026-08-05 — the header-row fixer ships (_pptx_mark_table_headers, round-trip proven), so the cell moved to Automatically Fixed. Pseudo-heading promotion and reading order remain the open parts of this criterion here.","pdf":"PDF stays re-authoring regardless of investment."},
 "1.3.2":{"xlsx":"No safe mechanical path exists for unmerging by design.","pptx":"Already at the assess ceiling (heuristic detectors shipped) — nothing cheap left to build here.","pdf":"Already at the assess ceiling (heuristic detectors shipped) — nothing cheap left to build here."},
 "1.3.3":{"*":"Was mischaracterized as a missing draft-and-approve lane — the AI-draft rewrite lane for sensory-instruction fixes was already built; the real bug was a stale test stub causing 3 false failures. Fixed 2026-07-23 (jeremyyuAWS/acp PR #4)."},
 "2.4.6":{"xlsx":"Detector coverage now includes cross-sheet name-duplication (SheetNameUniquenessRule, PR #6) alongside the earlier default-name-pattern detector (SheetNameRule, PR #4).","pdf":"Bookmark-descriptiveness heuristic remains unbuilt — the larger, separate half of this gap."},
@@ -3256,6 +3257,14 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-05",time:"05:12",tz:"PDT",hash:"a11a5d3",pr:33,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix(1.3.1): pptx table headers are automatic — the cell said manual because the fixer moved",
+ scs:["1.3.1"],formats:["pptx"],
+ summary:"PPTX 1.3.1 remediation moves R2 (Guided Remediation) to R4 (Automatically Fixed). No acp code changed for this — the capability was already shipped and the grid had not caught up. The cell's own notes argued the only pptx table-header fixer lived in an undeployed, gitignored partner tree; it is now api/remediate_office.py, tracked and in the deploy image, wired into _remediate_pptx_slides and round-trip proven by the capability suite. Verified against acp main 4754309 before the change, per ground rule 1.",
+ points:[
+  {label:"Evidence",text:"_pptx_mark_table_headers at api/remediate_office.py:666, called at :795; api/remediation_capability.py:159 records pptx 1.3.1 as AUTO with round-trip proof; tests/test_pptx_table_headers.py carries nine direct assertions."},
+  {label:"Scope",text:"This claims the table-header slice only. Pseudo-heading promotion and reading order are separate concerns on pptx and stay open — the drawer says so, and RANK's scope note covers the same distinction elsewhere."},
+  {label:"Why it was invisible",text:"grid-drift flags over-claims only; a cell claiming LESS than acp supports is left alone because an under-claim can be a deliberate ground-rule-3 downgrade. Eleven such under-claims exist today and none of them can be surfaced automatically."}]},
 {date:"2026-07-29",time:"18:32",tz:"PDT",hash:"42866ee",pr:88,repo:"jeremyyuAWS/acp",
  title:"fix(api): read .rels attributes by name, not by position (#88)",
  scs:["2.4.4"],formats:["xlsx"],
