@@ -112,7 +112,15 @@ jobs:
               if(c==="[")d++;else if(c==="]"){d--;if(d===0)break}}
             const R=eval(h.slice(i,j+1));
             const F=["docx","xlsx","pptx","pdf"];
-            const A=["NA","H","Q","C"], RR=["NA","N","M","AI","AP","AC","A"];
+            // The two-axis vocabulary standardised 2026-07-28 (see CLAUDE.md). These lists were
+            // never migrated off the legacy labels (A=NA/H/Q/C, RR=NA/N/M/AI/AP/AC/A), so this
+            // gate called 18 of 20 rows "malformed" against a grid that is perfectly valid.
+            // It went unnoticed because this step only runs when drift == "yes", and the step
+            // BEFORE it was aborting on that same condition — so it never once reached this line.
+            // NB: no single quotes anywhere in here — the whole block is inside node -e "..."
+            // quoted with a single quote at the shell level, so one apostrophe ends the script.
+            // Ordinal within each axis; keep ascending, matching the table in CLAUDE.md.
+            const A=["NA","A2","A3","A4"], RR=["NA","R1","R2","R3","R4"];
             const bad=R.filter(r=>!r.sc||!r.a||!r.r||
               F.some(f=>!A.includes(r.a[f])||!RR.includes(r.r[f])));
             if(bad.length){console.error("malformed rows:",bad.map(b=>b.sc).join(", "));process.exit(1)}
