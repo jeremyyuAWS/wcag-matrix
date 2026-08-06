@@ -819,18 +819,18 @@ const ROWS=[
   pdf:{b:["Manual by the spec's own rationale: automated re-ordering 'can silently destroy meaning' — sidebars, pull quotes and captions are editorial intent.","The finding ships with concrete guidance: verify and correct in Acrobat's Order panel; may require re-tagging."],
       ev:["docs/rules/pdf.reading-order.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.ReadingOrder)"]}}},
 
-{sc:"1.3.3",name:"Sensory Characteristics",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.3.3",name:"Sensory Characteristics",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
  ae:(function(){const common={
    b:["textchecks.detect_sensory runs a deliberately tight regex — an instruction verb within 45 characters of a shape-only or position-only reference ('click the round button', 'see the box on the right') — over text extracted from every format the scanner reads (pii.extract_text covers docx/pptx/xlsx/pdf/html).","The posture is stated in the module docstring: deterministic and reproducible (no LLM — an audit tool must return the same findings for the same file every run), detect-and-route, NEVER auto-passed. That is the definition of Guided.","One finding per document by design: the reviewer inspects the phrasing; per-sentence hits would be queue noise, not coverage.","Why not Certified: absence of a regex match cannot prove instructions don't rely on sensory cues — a PASS is not machine-certifiable for a semantic criterion."],
    c:["Size- and colour-only references were consciously excluded as too noisy (they overlap other SCs) — the anchor is shape + position, the two strongest sensory-only signals."],
    ev:["api/textchecks.py:detect_sensory / _SENSORY_RE","api/scanner.py (wired into every scan path)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const common={
-   b:["No fixer, on principle: the fix is rewriting instructions ('click Submit — the round button on the right'), and any auto-rewrite would put words in the author's mouth.","The finding routes to review with the matched phrasing, so the reviewer lands directly on the sentence to fix."],
+   b:["Guided, not automatic, on principle: the fix is rewriting instructions ('click Submit — the round button on the right'), and any auto-rewrite would put words in the author's mouth. No fixer writes the file.","The finding routes to review with the matched phrasing, so the reviewer lands directly on the sentence to fix."],
    ev:["— (report-and-route only)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})()},
 
-{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R4",xlsx:"R1",pptx:"R2",pdf:"R2"},
+{sc:"2.4.6",name:"Headings and Labels",lvl:"AA",flag:true,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R4",xlsx:"R2",pptx:"R2",pdf:"R2"},
  ae:{
   docx:{b:["DOCX_HEADING_SKIP (office_structure) fires on Heading1→Heading3 style skips — deterministic for that narrow signal, and exactly the outline defect that breaks jump-by-heading navigation.","The SC verdict stays Guided because 2.4.6 asks whether headings DESCRIBE their topic — semantic, human-confirmed. The skip check is evidence toward the criterion, not the whole criterion."],
       ev:["api/office_structure.py:docx_checks (DOCX_HEADING_SKIP)"]},
@@ -845,7 +845,7 @@ const ROWS=[
  re:{
   docx:{b:["The fixer is live and cites this SC in its own change log: skipped heading levels are clamped to prev+1 — 'Closed N skipped heading level(s) so the outline has no gaps · 2.4.6'.","It runs after the 1.3.1 outline normalisation and re-derives levels from the possibly-rewritten style ids — the two fixes compose deliberately.","The July-14 poster shows None here — understated against code."],
       ev:["api/remediate_office.py:_remediate_docx_structure (skip_fixed block)"]},
-  xlsx:{b:["None — nothing detected, nothing fixed. Keep the cell honest until a detector exists."],ev:["—"]},
+  xlsx:{b:["Guided: detectors now exist and route findings to a reviewer — XLSX_DEFAULT_LABELS (api/office_structure.py:458) for default sheet names, plus SheetNameRule and SheetNameUniquenessRule for cross-sheet duplication. No fixer writes the workbook, so renaming stays the reviewer's call."],ev:["—"]},
   pptx:{b:["Automatic via the slide-title insertion: _remediate_pptx_slides fills the empty title placeholder from the slide's most prominent text, which clears PPTX_TITLE_EMPTY as a direct effect.","Poster shows None — understated against code."],
       ev:["api/remediate_office.py:_remediate_pptx_slides (title insertion)"]},
   pdf:{b:["None."],ev:["—"]}}},
@@ -895,13 +895,13 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None — nothing detected, nothing fixed."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.5",name:"Images of Text",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.4.5",name:"Images of Text",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
  ae:(function(){const mk=(src)=>({
    b:["Real OCR, not markup guessing: tesseract runs over the rasters actually embedded in the file ("+src+"), flagging any image carrying a meaningful amount of text.","Tuned against false positives at the AA bar: ≥10 real words, ≥20k pixels (skips icons/bullets), ≤30 images/file, giant scans downscaled — so logos and one-word badges don't fire.","Why Guided: the rule cannot judge WCAG's 'essential' exception (logotypes, screenshots where exact presentation matters) — findings are 'detected automatically and routed to review — never auto-passed' (module docstring).","Operationally safe: self-gates to zero findings when tesseract is unavailable, and never raises — OCR can't fail a scan."],
    c:["1.4.9 (AAA) runs as a stricter-threshold superset of the same signal — modelled honestly as lower floors, not a copy-paste rule."],
    ev:["api/ocr.py:images_of_text / is_available","deploy/public/Dockerfile (tesseract-ocr installed for this check)"]});
    return {docx:mk("word/media"),xlsx:mk("xl/media"),pptx:mk("ppt/media"),pdf:mk("pikepdf page images")};})(),
- re:(function(){const c={b:["None, on principle: the remedy is re-authoring the image as real text — human/AI-assisted authoring work, so the finding is detected and routed, never auto-passed or auto-fixed."],ev:["api/ocr.py (module docstring states the posture)"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
+ re:(function(){const c={b:["Guided, on principle: the remedy is re-authoring the image as real text — human/AI-assisted authoring work, so the finding is detected and routed to a reviewer, never auto-passed or auto-fixed. No fixer writes the file, and none should."],ev:["api/ocr.py (module docstring states the posture)"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
 {sc:"1.4.10",name:"Reflow",lvl:"AA",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"A2"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"R1"},
  ae:{
@@ -3266,6 +3266,15 @@ const PROGRESS_LOG=[
   {label:"1.4.11 DOCX",text:"The cell said \"No engine measures UI-component or graphical-object contrast in documents\". DOCX_NONTEXT_LOW_CONTRAST does, at api/office_structure.py:1955 — shapes and outlines, not chart internals."},
   {label:"4.1.2 DOCX",text:"The cell said form fields are checked only under 3.3.2. DOCX_FORM_FIELD_NO_TAG (api/office_structure.py:388) and OFFICE_INTERACTIVE_CONTROL_NAME_ROLE (:1800) file under 4.1.2 itself. Its aClass is DET, so A3 does not reach ceiling and the pair stays open."},
   {label:"Effect",text:"docx goes 18/26 to 20/26 pairs at ceiling (69% to 77%); 1.4.1 and 1.4.11 close, 4.1.2 improves. The same pattern affects six more assess cells on xlsx, pptx and pdf."}]},
+{date:"2026-08-05",time:"11:40",tz:"PDT",hash:"5020edf",pr:34,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix(under-claims): nine cells said \"No Remediation\" for findings acp routes to review",
+ scs:["1.3.3","1.4.5","2.4.6"],formats:["docx","xlsx","pptx","pdf"],
+ summary:"R1 (No Remediation) to R2 (Guided Remediation) on 1.3.3 across all four formats, 1.4.5 across all four, and 2.4.6 xlsx. No acp code changed — acp already routes these findings to a reviewer and the grid had not caught up. Seven of the nine cells already described R2 behaviour in their own prose while the tier said R1; 2.4.6 xlsx was simply stale, claiming nothing was detected when XLSX_DEFAULT_LABELS and the two sheet-name rules exist. Verified against acp main 4754309.",
+ points:[
+  {label:"1.3.3",text:"The cell said \"the finding routes to review with the matched phrasing, so the reviewer lands directly on the sentence to fix\" — detected, routed and landed on is guided remediation, not none."},
+  {label:"1.4.5",text:"Same shape: \"detected and routed, never auto-passed or auto-fixed\". Its UPGRADE note about no safe mechanical fix is about R4/R3 and stays true — REAUTH's at-ceiling set is R4/R3/R2."},
+  {label:"2.4.6 XLSX",text:"Prose rewritten, not just the tier: XLSX_DEFAULT_LABELS (api/office_structure.py:458), SheetNameRule and SheetNameUniquenessRule all ship. No fixer writes the workbook, so renaming stays the reviewer's call."},
+  {label:"Why hand-found",text:"grid-drift flags over-claims only, so an under-claim never surfaces. These nine were 9 of 11 found by computing the grid against acp's code-derived ceiling by hand."}]},
 {date:"2026-08-05",time:"05:12",tz:"PDT",hash:"b499c46",pr:33,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix(1.3.1): pptx table headers are automatic — the cell said manual because the fixer moved",
  scs:["1.3.1"],formats:["pptx"],
