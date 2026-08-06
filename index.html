@@ -918,9 +918,9 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.1",name:"Use of Color",lvl:"A",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.4.1",name:"Use of Color",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
-   b:["Nothing inspects colour-as-the-only-signal in documents — the sole 1.4.1 implementation is the HTML link check (colour-styled links without underline) and its fixer.","Evidence the space was considered, not overlooked: 1.3.3's design consciously EXCLUDED colour references from its sensory regex as too noisy — a deliberate deferral you can cite."],
+   b:["DOCX_COLOR_ONLY_LINK (api/office_structure.py:1843) flags colour-styled links with no non-colour cue, so colour-as-the-only-signal is inspected here — narrowly. It is links only; colour-coded table cells, chart series and shape fills are not examined, which is why this reads Potential Issue and never certifies a pass.","Evidence the space was considered, not overlooked: 1.3.3's design consciously EXCLUDED colour references from its sensory regex as too noisy — a deliberate deferral you can cite."],
    ev:["api/remediate.py:_fix_use_of_color (HTML only)","api/textchecks.py (design note excluding colour)"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
@@ -950,9 +950,9 @@ const ROWS=[
   pdf:{b:["FIXED 2026-07-29 (acp#22). This cell was briefly recorded as a clean automatic fix on the strength of a white-background fixture, which hid a defect on both sides: the detector never computed a ratio (it thresholded the text colour's luma and ignored the background) and the fixer inherited the same assumption. On a white page the two errors cancel; off it they compound \u2014 white-on-black measured 21:1 and was rewritten to 3.66:1, an AA failure the fixer CREATED, unattended. Both halves now resolve the background structurally. It is an honest PARTIAL rather than a clean sweep: text over an image, or over fills that pull opposite ways, is left alone and stays a finding for a human.","None: rewriting colours inside PDF content streams is high-risk surgery on the page-painting program itself. Report-and-review is the defensible ceiling today."],
       ev:["—"]}}},
 
-{sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
-   b:["No engine measures UI-component or graphical-object contrast in documents — the text-contrast rules (1.4.3) deliberately don't stretch to cover shapes, chart elements, or form-control borders.","Nothing claimed, nothing to defend; the build here would be a shape-fill vs adjacent-colour analysis — well-defined future work."],
+   b:["DOCX_NONTEXT_LOW_CONTRAST (api/office_structure.py:1955) measures shape and outline contrast, so graphical-object contrast is examined here — the same detector xlsx picked up by porting. Chart internals and form-control borders are still outside it, so the finding is evidence for a reviewer, never a certified pass.","Nothing claimed, nothing to defend; the build here would be a shape-fill vs adjacent-colour analysis — well-defined future work."],
    ev:["—"]};
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
@@ -1030,9 +1030,9 @@ const ROWS=[
   pdf:{b:["The exception that proves the rule: PDF CAN embed JavaScript and form logic that traps focus. Nothing checks it → Human, honestly."],ev:["—"]}},
  re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A2",xlsx:"NA",pptx:"NA",pdf:"A3"},r:{docx:"R1",xlsx:"NA",pptx:"NA",pdf:"R4"},
+{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A3",xlsx:"NA",pptx:"NA",pdf:"A3"},r:{docx:"R1",xlsx:"NA",pptx:"NA",pdf:"R4"},
  ae:{
-  docx:{b:["This SC targets UI components; in documents it bites on form controls. What exists nearby: docx content-control fields (checkbox, date, dropdown…) ARE checked for labels — but under 3.3.2, not 4.1.2 (DOCX_FORM_FIELD_NO_LABEL).","Watch the demo-catalog trap: wcagCatalog.js marks 4.1.2 'Shipped (demo)' — that's HTML axe coverage for web pages. Quoting it for documents is exactly the layer-mixing this brief exists to stop."],
+  docx:{b:["This SC targets UI components; in documents it bites on form controls. Two detectors now file under 4.1.2 itself, not only under 3.3.2: DOCX_FORM_FIELD_NO_TAG (api/office_structure.py:388) for the programmatic identifier, and OFFICE_INTERACTIVE_CONTROL_NAME_ROLE (api/office_structure.py:1800). The older label check (DOCX_FORM_FIELD_NO_LABEL) still files under 3.3.2 — the two are deliberately separate.","Watch the demo-catalog trap: wcagCatalog.js marks 4.1.2 'Shipped (demo)' — that's HTML axe coverage for web pages. Quoting it for documents is exactly the layer-mixing this brief exists to stop."],
       ev:["api/office_structure.py (3.3.2 form-field check — adjacent)","frontend/src/wcagCatalog.js (HTML-only 'Shipped' marker)"]},
   xlsx:{b:["No check; form controls in workbooks are unexamined."],ev:["—"]},
   pptx:{b:["No check."],ev:["—"]},
@@ -3257,6 +3257,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-06",time:"09:06",tz:"PDT",hash:"44669ce",pr:35,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix(docx): three cells said nothing inspects what acp has detectors for",
+ scs:["1.4.1","1.4.11","4.1.2"],formats:["docx"],
+ summary:"DOCX assessment A2 (Human Assessment Required) to A3 (Potential Issue) on 1.4.1, 1.4.11 and 4.1.2. No acp code changed. All three were read as out of scope because acp's coverage reports in_scope=False, which means only \"absent from remediation_capability.py\" — store.REVIEW_FORMATS admits every one of them as a review lane, which is ceiling_a = Guided. Verified against acp main 4754309.",
+ points:[
+  {label:"1.4.1 DOCX",text:"The cell said \"Nothing inspects colour-as-the-only-signal in documents\". DOCX_COLOR_ONLY_LINK does, at api/office_structure.py:1843 — links only, which is why it stops at Potential Issue."},
+  {label:"1.4.11 DOCX",text:"The cell said \"No engine measures UI-component or graphical-object contrast in documents\". DOCX_NONTEXT_LOW_CONTRAST does, at api/office_structure.py:1955 — shapes and outlines, not chart internals."},
+  {label:"4.1.2 DOCX",text:"The cell said form fields are checked only under 3.3.2. DOCX_FORM_FIELD_NO_TAG (api/office_structure.py:388) and OFFICE_INTERACTIVE_CONTROL_NAME_ROLE (:1800) file under 4.1.2 itself. Its aClass is DET, so A3 does not reach ceiling and the pair stays open."},
+  {label:"Effect",text:"docx goes 18/26 to 20/26 pairs at ceiling (69% to 77%); 1.4.1 and 1.4.11 close, 4.1.2 improves. The same pattern affects six more assess cells on xlsx, pptx and pdf."}]},
 {date:"2026-08-05",time:"05:12",tz:"PDT",hash:"b499c46",pr:33,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix(1.3.1): pptx table headers are automatic — the cell said manual because the fixer moved",
  scs:["1.3.1"],formats:["pptx"],
