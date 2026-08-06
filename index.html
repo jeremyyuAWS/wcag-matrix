@@ -2145,8 +2145,25 @@ const MOVA_OUT_REASON={
 //
 // Rule-inherent N/A is a separate question again (RUBRIC aClass/fClass === "NAx") and is handled
 // by the callers, which never count an NAx cell in any denominator.
+// Cells where column G's "unconditional across formats" is taken to WIN over V5's narrower grid.
+// Deliberately a short, explicit, reasoned list rather than a rule: every entry is an editorial
+// act resolving a disagreement between two artifacts, and it should cost something to add one.
+//
+// 4.1.2 DOCX — V5 FINAL dropped DOCX to make 4.1.2 PDF-only (it had been a conditional "(X)" on
+// the earlier Applicability Matrix tab). Column G tracks 4.1.2 and its Summary calls Direct
+// Coverage "Unconditional — applies to every document as per formats", and acp ships real DOCX
+// capability here: w:tag, the programmatic identifier, is checked alongside w:alias under its own
+// SC_4_1_2 key (acp PR #6, 2026-07-24). Counting it as untracked would have hidden shipped,
+// verified work from the Phase 1 list that exists to surface exactly that. Resolved 2026-08-06
+// in column G's favour, on the customer's instruction.
+const MOVA_CELL_OVERRIDE={
+ "4.1.2":{docx:true},
+};
+
 function cellTracked(sc,f){
   if(!MOVA_SCOPE.has(sc))return false;              // column G says we don't track this rule
+  const ov=MOVA_CELL_OVERRIDE[sc];
+  if(ov&&ov[f]!==undefined)return ov[f];            // explicit resolution of an artifact conflict
   const v5=V5_APPLICABLE[sc];
   return v5?!!v5[f]:true;                           // cell-level where V5 graded it, else all formats
 }
