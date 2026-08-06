@@ -119,7 +119,7 @@
     border:1px solid var(--line);margin:1px 3px 1px 0;white-space:nowrap}
   .rmchip.assess{background:#fdf1e3;color:#8a4b12;border-color:#f0d6b8}
   .rmchip.fix{background:#eef1f8;color:var(--navy);border-color:#d3dcef}
-  /* ROADMAP_FOCUS chips. A ring plus a leading marker, NOT a colour swap: the assess/fix hue
+  /* PHASE_1 chips. A ring plus a leading marker, NOT a colour swap: the assess/fix hue
      already carries meaning here, so tinting the focus format would overload one channel with two
      facts. This page demos 1.4.1 Use of Color, and a colour-only distinction in its own UI would
      be a bad look — same reasoning as the DEVA corner badges. The ring reads at a glance; the
@@ -130,6 +130,9 @@
      places, plus the text marker. Not dimmed, and the chips keep full colour — the row is real
      capability data that simply is not being counted. */
   tr.rmout td{background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.09) 0 5px,transparent 5px 10px)}
+  /* An uncounted chip: dashed outline, normal colour. Real headroom the tracked scope excludes,
+     so it must stay legible — the dash says "not counted", the hue keeps saying assess-vs-fix. */
+  .rmchip.rmuncounted{border-style:dashed;opacity:.85}
   .rmoutmark{color:var(--muted);font-weight:800}
   .rmnone{color:var(--muted);padding:10px 0}
   .logshipped{margin:0 0 4px;font-size:15px}
@@ -381,8 +384,10 @@
   /* Scope is a ROW property now (MOVA_SCOPE, column G of Mova iO's coverage file), so the hatch
      moved from the cell to the row. The treatment itself is unchanged and stays that way for the
      reason recorded above: hatch, never dim. */
+  table.v4-mute-on td.cell.v4-muted,
   table.v4-mute-on tr.scope-out td.cell{
     background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.09) 0 5px,transparent 5px 10px)}
+  table.v4-mute-on td.cell.v4-muted .cellbtn,
   table.v4-mute-on tr.scope-out td.cell .cellbtn{opacity:1}
   /* The row label carries the state in TEXT too, so "not tracked" survives greyscale and does not
      depend on noticing a background texture — the hatch alone would be a purely visual signal. */
@@ -670,10 +675,10 @@
         <div class="rmlegend">
           <span class="rmchip assess">assess</span> can't yet judge it
           <span class="rmchip fix">fix</span> can't yet repair it
-          <span class="rmchip fix rmfocus">DOCX fix</span> priority format
+          <span class="rmchip fix rmfocus">DOCX fix</span> Phase 1
         </div>
       </div>
-      <p class="sub" style="margin:0 0 10px">The distance between what <b>acp</b> ships today and what the rule itself would allow at best — not a schedule, and not a wishlist. A cell is open when the shipped tier hasn't reached that cell's <b>rule-inherent ceiling</b>; criteria already at ceiling in every format don't appear at all. <b>DOCX leads</b> — the format being driven to completion — and within that group, and the one below it, closest to done comes first so the cheapest wins still read from the top. Rules Mova iO doesn't track (column G) sort last, hatched, and stay out of the totals — shown, with their reason, rather than quietly dropped.</p>
+      <p class="sub" style="margin:0 0 10px">The distance between what <b>acp</b> ships today and what the rule itself would allow at best — not a schedule, and not a wishlist. A cell is open when the shipped tier hasn't reached that cell's <b>rule-inherent ceiling</b>; criteria already at ceiling in every format don't appear at all. <b>Phase&nbsp;1 is DOCX</b> — the format being driven to completion first — and within that group, and the one below it, closest to done comes first so the cheapest wins still read from the top. Rules Mova iO doesn't track (column G) sort last, hatched, and stay out of the totals — shown, with their reason, rather than quietly dropped.</p>
       <table class="rmtable"><thead><tr>
         <th scope="col">Criterion</th><th scope="col">Open cells</th><th scope="col">What would close it</th>
       </tr></thead><tbody id="roadmapBody"></tbody></table>
@@ -1869,15 +1874,6 @@ const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // definition so a change to what "at ceiling" means can't land in three of the four.
 const AT_CEILING_A={DET:["A4"],MA:["A4","A3"],HUM:["A4","A3","A2"]};
 const AT_CEILING_F={MECH:["R4"],GEN:["R4","R3"],REAUTH:["R4","R3","R2"]};
-// The format the roadmap leads with. DOCX is the one being driven to completion, and a pure
-// cheapest-first sort hid it completely: its four remaining criteria are all multi-format rows
-// (4-7 open cells each), so they sorted below every PDF-only row carrying a single cell. The
-// table's whole job is to say what to build next, and the format actually being built next was
-// the one thing never visible at the top of it.
-// Change this one string to re-point the roadmap at another format; "" restores the old
-// cheapest-first-only order. It is deliberately NOT a per-cell judgment — ordering is the only
-// thing it touches, so no tier, ceiling or count changes with it (ground rule 1 is untouched).
-const ROADMAP_FOCUS="docx";
 const RUBRIC={
 "1.1.1":{plain:"Every image, icon, or chart needs a text description that conveys the same information it visually communicates — without one, a screen-reader user hears nothing where a sighted reader sees a photo, a diagram, or a chart.",
  formats:{
@@ -2134,6 +2130,31 @@ const MOVA_OUT_REASON={
  "1.4.10":"Reflow at a narrow viewport is a responsive-renderer behaviour.",
  "1.4.12":"Requires a user's own stylesheet override, which a document cannot carry."};
 
+// Scope is asked at TWO levels, and both are load-bearing:
+//
+//   SC level   — column G. Does Mova iO track this rule at all? 17 yes, 3 no.
+//   cell level — Deva's V5 grid. Within a tracked rule, which FORMATS carry an item?
+//                (1.3.2 has no DOCX/XLSX item; 2.1.1 and 2.4.3 are PPTX+PDF only.)
+//
+// They come from different artifacts because neither one answers both questions. The coverage
+// file has no per-format column at all — column F reads "Yes" for all 17 and its Summary tab
+// defines Direct Coverage as "Unconditional — applies to every document as per formats". So for
+// the three rules column G tracks that V5 never graded (1.3.3, 1.4.11, 2.1.2) the honest reading
+// is "every applicable format", and that is the fallback below. Inventing narrower per-format
+// detail for them would be asserting something no artifact says.
+//
+// Rule-inherent N/A is a separate question again (RUBRIC aClass/fClass === "NAx") and is handled
+// by the callers, which never count an NAx cell in any denominator.
+function cellTracked(sc,f){
+  if(!MOVA_SCOPE.has(sc))return false;              // column G says we don't track this rule
+  const v5=V5_APPLICABLE[sc];
+  return v5?!!v5[f]:true;                           // cell-level where V5 graded it, else all formats
+}
+
+// PHASE_1 — the format being driven to completion first. Ordering and emphasis only: it changes
+// nothing about what is tracked or counted, so a phase can be re-pointed without touching scope.
+const PHASE_1="docx";
+
 // V5_APPLICABLE = Deva's IN-SCOPE grid, from the FINAL tab of
 // assessment-applicability-matrix-28JUL-Final.xlsx — his final word on scope, and the ONLY
 // checklist version this page cites. 14 WCAG codes, CELL-level rather than SC-level: several
@@ -2382,7 +2403,7 @@ let PREV_LEVELS=null;
 // reading as a per-cell question, and so restoring a cell-level artifact later is a one-line change.
 function inScopeRow(sc,f){
   const onlyMova=!!(document.getElementById("v3only")||{}).checked;
-  return !onlyMova || MOVA_SCOPE.has(sc);
+  return !onlyMova || cellTracked(sc,f);
 }
 
 // Hover/focus summary for a cell: both axes, the remaining human effort, and the nudge to
@@ -2422,11 +2443,16 @@ function buildTable(){
     // (CSS class names below stay "v4-muted"/"v4cond" — internal styling hooks, not a citation, not
     // worth the churn of renaming; the visible text and JS variable names are what say "V5" now.)
     const v5state=v5row&&v5row[f];
-    // Scope muting moved to the ROW (MOVA_SCOPE / column G), so the cell carries no mute class.
-    // v5state survives only for Deva's "cond" marker — an annotation about HIS checklist, not a
-    // statement about what we track, which is why the two no longer share a visual channel.
+    // TWO scope levels, one visual language. The ROW hatches when column G doesn't track the rule
+    // at all; the CELL hatches when the rule IS tracked but this format carries no item in Deva's
+    // grid. Both mean the same thing to a reader — real status, shown, not counted — so both get
+    // the same hatch rather than inventing a second texture for a distinction nobody is asking
+    // the table to make. Which level applied is still recoverable from the aria-label below.
+    const cellCls=cellTracked(row.sc,f)?"":" v4-muted";
     const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
-    const v5Aria=MOVA_SCOPE.has(row.sc)?"":" Outside Mova iO's tracked scope — real status shown, not counted.";
+    const v5Aria=!MOVA_SCOPE.has(row.sc)
+      ?" Rule not tracked by Mova iO — real status shown, not counted."
+      :(cellTracked(row.sc,f)?"":" Tracked rule, but no item for this format — real status shown, not counted.");
     const pg=cellProgress(row,f,"a");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|a`; next[key]=shown;
@@ -2436,8 +2462,9 @@ function buildTable(){
     // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
     // the same thing twice, and the ring implied a measurement that does not exist.
     const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(pg,tp,AL[v],AL)});
-    h+=`<td class="cell"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
+    h+=`<td class="cell${cellCls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="a" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, assessment: ${v==="NA"?"Not applicable":AL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}.${v5Aria} Open details.">${dot}<span class="clab">${SHORT_A[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_A[pg.ceiling]}</span>`:""}</span>${condHtml}</button></td>`;}
   for(const f of FM){const v=row.r[f];
+    const cellCls=cellTracked(row.sc,f)?"":" v4-muted";
     const pg=cellProgress(row,f,"r");
     const shown=VIEW==="potential"&&pg?pg.ceiling:v;   // delta keeps today; the arrow carries the ceiling
     const key=`${row.sc}|${f}|r`; next[key]=shown;
@@ -2447,7 +2474,7 @@ function buildTable(){
     // No donut at all where the rule cannot apply — an N/A ring above an N/A label said
     // the same thing twice, and the ring implied a measurement that does not exist.
     const dot=v==="NA"?"":donut(dp,{tone:dp==null?"":progTone(dp),title:donutTip(pg,tp,RL[v],RL)});
-    h+=`<td class="cell"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
+    h+=`<td class="cell${cellCls}"><button type="button" class="cellbtn ${shown==="NA"?"NAx":shown}${moved}" data-sc="${row.sc}" data-f="${f}" data-k="r" title="${esc(cellTip(row,f))}" aria-label="${row.sc} ${row.name}, ${f.toUpperCase()}, remediation: ${v==="NA"?"Not applicable":RL[v]}${dp==null?(tp?", meets Deva's ask":", outside Deva's checklist"):`, ${dp}% of Deva's ask`}. Open details.">${dot}<span class="clab">${SHORT_R[shown]}${VIEW==="delta"&&pg&&pg.ceiling!==v?`<span class="cdelta">&rarr; ${SHORT_R[pg.ceiling]}</span>`:""}</span></button></td>`;}
   // Per-row coverage: how much of what this criterion allows ACP delivers, across the formats
   // in scope. Both axes shown rather than one blended figure — the whole page turns on assess
   // and remediate being different questions, and averaging them here would undo that.
@@ -2624,7 +2651,7 @@ function renderCoverage(){
   // wider than the checklist anyone is measured against — and it did not move when the filter
   // did. Following the checkbox keeps the number and the table describing one population.
   const onlyMova=!!(document.getElementById("v3only")||{}).checked;
-  const inScope=(sc,f)=>!onlyMova || MOVA_SCOPE.has(sc);
+  const inScope=(sc,f)=>!onlyMova || cellTracked(sc,f);
   const AXES=[
     {key:"a", label:"Assessment", weight:A_WEIGHT, cls:{A4:"A4",A3:"A3",A2:"A2"}},
     {key:"r", label:"Remediation", weight:R_WEIGHT, cls:{R4:"R4",R3:"R3",R2:"R2",R1:"R1"}},
@@ -3586,21 +3613,25 @@ const PROGRESS_LOG=[
       const gaps=[];
       for(const f of FM){
         const rf=rub.formats[f]; if(!rf)continue;
-        const isFocus=f===ROADMAP_FOCUS;
+        const isFocus=f===PHASE_1;
+        // Counted only when BOTH scope levels admit the cell: column G tracks the rule AND Deva's
+        // grid has an item for this format. A gap outside that still becomes a chip — it is real
+        // headroom — it just carries `counts:false` and stays out of every denominator.
+        const counts=cellTracked(row.sc,f);
         // NAx = the rule doesn't apply to this format at all. Not a gap, and not a denominator.
-        if(rf.aClass!=="NAx"){if(tracked){cells++; if(isFocus)fCells++;} if(!(AT_CEILING_A[rf.aClass]||[]).includes(row.a[f]))gaps.push({f,axis:"assess"});}
-        if(rf.fClass!=="NAx"){if(tracked){cells++; if(isFocus)fCells++;} if(!(AT_CEILING_F[rf.fClass]||[]).includes(row.r[f]))gaps.push({f,axis:"fix"});}
+        if(rf.aClass!=="NAx"){if(counts){cells++; if(isFocus)fCells++;} if(!(AT_CEILING_A[rf.aClass]||[]).includes(row.a[f]))gaps.push({f,axis:"assess",counts});}
+        if(rf.fClass!=="NAx"){if(counts){cells++; if(isFocus)fCells++;} if(!(AT_CEILING_F[rf.fClass]||[]).includes(row.r[f]))gaps.push({f,axis:"fix",counts});}
       }
-      if(gaps.length){if(tracked)open+=gaps.length; rows.push({row,gaps,tracked});}
+      if(gaps.length){open+=gaps.filter(g=>g.counts).length; rows.push({row,gaps,tracked});}
     }
-    // ROADMAP_FOCUS first, then fewest gaps: a criterion one cell from its ceiling is the cheapest
+    // PHASE_1 first, then fewest gaps: a criterion one cell from its ceiling is the cheapest
     // thing on the list, and UPGRADE's own prose ("porting that one function is the cheapest win")
     // reads that way too — so cheapest-first still governs, it just governs WITHIN each group now
     // rather than across the whole table. Both groups keep the old ordering exactly, which is why
     // this is a re-sort and not a filter: nothing is hidden, and the all-format totals still add up.
     // Three bands: tracked-with-DOCX-work, tracked, then untracked. Cheapest-first still orders
     // WITHIN each band, so the old reading survives everywhere it still applies.
-    const band=r=>!r.tracked?2:(r.gaps.some(g=>g.f===ROADMAP_FOCUS)?0:1);
+    const band=r=>!r.tracked?2:(r.gaps.some(g=>g.f===PHASE_1&&g.counts)?0:1);
     rows.sort((a,b)=>
       band(a)-band(b)
       ||a.gaps.length-b.gaps.length
@@ -3613,13 +3644,14 @@ const PROGRESS_LOG=[
     // not the number anyone driving DOCX to completion is tracking, and reading it off the row
     // chips by hand is exactly the arithmetic this table exists to do for you.
     const tracked=rows.filter(r=>r.tracked), untracked=rows.filter(r=>!r.tracked);
-    const fOpen=tracked.reduce((n,r)=>n+r.gaps.filter(g=>g.f===ROADMAP_FOCUS).length,0);
-    const focusPart=ROADMAP_FOCUS&&fCells
-      ? `— ${FMT_LABEL[ROADMAP_FOCUS]} ${fOpen} of ${fCells} open · ` : "— ";
+    const fOpen=tracked.reduce((n,r)=>n+r.gaps.filter(g=>g.f===PHASE_1&&g.counts).length,0);
+    const focusPart=PHASE_1&&fCells
+      ? `— ${FMT_LABEL[PHASE_1]} ${fOpen} of ${fCells} open · ` : "— ";
     // The untracked tail is stated, never silently omitted: a count that quietly dropped rows
     // would be indistinguishable from a count that had nothing to drop.
-    const outPart=untracked.length
-      ? ` · ${untracked.reduce((n,r)=>n+r.gaps.length,0)} more in ${untracked.length} rule${untracked.length>1?"s":""} Mova iO doesn't track` : "";
+    const outCells=rows.reduce((n,r)=>n+r.gaps.filter(g=>!g.counts).length,0);
+    const outPart=outCells
+      ? ` · ${outCells} more outside tracked scope` : "";
     if(countEl)countEl.textContent=rows.length
       ? `${focusPart}${open} of ${cells} across all formats, in ${tracked.length} of ${MOVA_SCOPE.size} tracked criteria${outPart}`
       : "— nothing open";
@@ -3630,8 +3662,8 @@ const PROGRESS_LOG=[
     body.innerHTML=rows.map(({row,gaps,tracked})=>{
       // Focus-format chips lead the cell, for the same reason the rows do. Array#sort is stable,
       // so every other format keeps its FM order underneath rather than being reshuffled.
-      const ordered=[...gaps].sort((x,y)=>(y.f===ROADMAP_FOCUS?1:0)-(x.f===ROADMAP_FOCUS?1:0));
-      const chips=ordered.map(g=>`<span class="rmchip ${g.axis}${g.f===ROADMAP_FOCUS?" rmfocus":""}">${FMT_LABEL[g.f]} ${g.axis}</span>`).join("");
+      const ordered=[...gaps].sort((x,y)=>(y.f===PHASE_1&&y.counts?1:0)-(x.f===PHASE_1&&x.counts?1:0));
+      const chips=ordered.map(g=>`<span class="rmchip ${g.axis}${g.f===PHASE_1&&g.counts?" rmfocus":""}${g.counts?"":" rmuncounted"}" ${g.counts?"":'title="Outside tracked scope — real headroom, not counted."'}>${FMT_LABEL[g.f]} ${g.axis}</span>`).join("");
       // Only the notes for the cells this row actually has open. A row can be open on PDF while
       // its XLSX note describes work that already landed, and printing both made the roadmap read
       // as if the closed one were still outstanding. Deduped, because one note can cover two
