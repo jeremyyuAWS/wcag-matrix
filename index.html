@@ -133,6 +133,11 @@
   /* An uncounted chip: dashed outline, normal colour. Real headroom the tracked scope excludes,
      so it must stay legible — the dash says "not counted", the hue keeps saying assess-vs-fix. */
   .rmchip.rmuncounted{border-style:dashed;opacity:.85}
+  /* Tracked-rule marker. A glyph, not a tint — its presence/absence is the signal, so it survives
+     greyscale and print, and it pairs with the "· not tracked" WORDS on the three excluded rows so
+     the distinction is never carried by appearance alone. Same discipline as the DEVA badges. */
+  table.v4-mute-on tr.scope-in td.sc::before{content:"\258E";color:var(--navy);font-weight:700;margin-right:5px}
+  .trackkey::before{content:"\258E";color:var(--navy);font-weight:700}
   .rmoutmark{color:var(--muted);font-weight:800}
   .rmnone{color:var(--muted);padding:10px 0}
   .logshipped{margin:0 0 4px;font-size:15px}
@@ -286,6 +291,22 @@
     font-style:italic;color:var(--navy);font-size:13px;line-height:1.5}
   #panel blockquote.dq cite{display:block;margin-top:4px;font-style:normal;font-size:10.5px;color:var(--muted)}
   #panel .dqmeta{font-size:12px;color:var(--muted);margin:2px 0 6px;line-height:1.45}
+  /* ACP-derived detail. Same anatomy as .devaquote so it reads as a peer, but deliberately NOT
+     the same surface: a dashed border and a left rule in a different weight, so a reader can tell
+     at a glance that this block is derived from acp's code rather than quoted from Deva's
+     workbook. The distinction is structural (border style, the cite line, the explicit "Evidence"
+     file:line), never colour alone. */
+  #panel .acpquote{margin:10px 0;padding:10px 12px;background:#fbfaf7;
+    border:1px dashed var(--line);border-radius:8px}
+  #panel .acpsrc{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+    font-weight:700;margin-bottom:8px}
+  #panel .acpsrc code{text-transform:none;letter-spacing:0;font-size:11px}
+  #panel .acpwhy{display:block;text-transform:none;letter-spacing:0;font-weight:500;font-size:11px;
+    color:var(--muted);margin-top:3px}
+  #panel blockquote.aq{margin:8px 0 4px;padding:6px 0 6px 12px;border-left:3px double var(--gray);
+    font-style:normal;color:var(--navy);font-size:13px;line-height:1.5;font-weight:600}
+  #panel blockquote.aq cite{display:block;margin-top:4px;font-style:normal;font-size:10.5px;color:var(--muted);font-weight:400}
+  #panel .dqmeta code{font-size:11px}
   .covgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   .covaxis h4{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   /* The third column holds "66.7% → 70.8%" on ONE line. At 44px only the current figure
@@ -611,7 +632,7 @@
 
   <div class="filterbar">
     <label><input type="checkbox" id="v3only" checked> Count only the rules Mova iO tracks — column G (<span id="v3count"></span>)</label>
-    <span class="filterbar-note">On (default) = just what V5's applicability matrix actually checks — cells outside it get a hatched background rather than disappearing, so real ACP status is never hidden or dimmed. Grey text means one thing only: Not Applicable. ▲ marks a row corrected against the July-14 infographic. Off = ACP's full 20-SC rubric. † marks a cell that applies only if the feature is present (DOCX 4.1.2).</span>
+    <span class="filterbar-note">On (default) = the rules Mova iO tracks, at two levels: column G decides whether a <b>rule</b> is tracked, Deva's V5 matrix decides which <b>formats</b> within it carry an item. Anything outside gets a hatched background rather than disappearing, so real ACP status is never hidden or dimmed. <span class="trackkey" aria-hidden="true"></span> marks a tracked rule; the three Mova iO doesn't track say so in words beside the name. Grey text means one thing only: Not Applicable. ▲ marks a row corrected against the July-14 infographic. Off = ACP's full 20-SC rubric.</span>
   </div>
 
   <!-- Today vs Potential, placed directly above the table it controls. "Potential" is RUBRIC's
@@ -1161,6 +1182,67 @@ const OPENQ={
 // for completeness but not added as new rows (adding a RUBRIC ceiling and ACP-today status for a
 // criterion this matrix has never tracked needs real capability verification against the engine
 // code first, not a plausible-sounding guess).
+// ACP_DETAIL = the same kind of per-cell detail V5_DETAIL carries, but sourced from ACP'S OWN
+// SHIPPED CODE rather than from Deva's checklist — for the criteria column G tracks that Deva
+// never graded. It is deliberately a SEPARATE structure with a separate visual treatment: mixing
+// these into V5_DETAIL would put words in Deva's mouth that his workbook does not contain, and
+// this page's whole discipline is that a citation must be checkable against the artifact named.
+//
+// Why it exists: switching the scope filter to column G brought 1.3.3, 1.4.11 and 2.1.2 into the
+// tracked set. 1.4.11 already had V5 assertions; 1.3.3 and 2.1.2 had none, so two of the seventeen
+// tracked criteria rendered with an empty §3 while the other fifteen were fully detailed — the
+// gap read as an oversight rather than as "Deva's checklist doesn't cover this".
+//
+// Every `ev` is a file:line into jeremyyuAWS/acp at origin/main, read 2026-08-06. Ground rule 1
+// applies here exactly as it does to a tier: nothing below is claimed from a catalog label or a
+// commit message, only from the code that runs.
+const ACP_DETAIL={
+"1.3.3":{
+ // textchecks runs on pii.extract_text output, so every format the scanner reads is covered by
+ // the same detector — hence identical assertions across all four rather than per-format ones.
+ _all:[
+  {a:"Instructions that rely on shape or visual location alone are flagged",
+   appr:"A single regex pairs an instruction verb (click, select, press, tap, choose, see, refer to, go to, use the, find the) with a shape-only or location-only reference occurring within 45 characters, in the same sentence — shapes such as round/circular/square/rectangular/triangular/oval/diamond-shaped, and positions such as “on the left”, “top-right”, “right-hand”, “above/below”. Size and colour are deliberately NOT matched: they are noisier and overlap other criteria, so the detector anchors on the two strongest sensory-only signals.",
+   ev:"api/textchecks.py:23-34"},
+  {a:"Each finding carries the sentence a reviewer needs to act on it",
+   appr:"_sentence_around() returns the whitespace-normalised, length-capped sentence containing the match, so a reviewer can judge the instruction without reopening the document. Duplicate sentences are collapsed, and _SENSORY_MAX caps the document at 10 findings so a pathological file cannot flood the review queue.",
+   ev:"api/textchecks.py:37-63"},
+  {a:"Never auto-passed — detect-and-route only",
+   appr:"The module is explicitly detect-and-route: a finding is raised automatically and sent to human review, and the check never resolves the criterion to PASS on its own. A clean scan is therefore the absence of a match, not a verified pass.",
+   ev:"api/textchecks.py:1-17"},
+  {a:"Remediation is an AI-drafted rewrite a human approves",
+   appr:"Every format is ASSISTED in the round-trip-proven capability table: a local text model drafts a rewritten instruction that names the target rather than its shape or position, and the draft goes to the approval queue rather than being written back unattended.",
+   ev:"api/remediation_capability.py:123 (docx) · :143 (xlsx) · :162 (pptx) · :189 (pdf)"}
+ ]},
+"2.1.2":{
+ // Control-gated, and Office-only: assessment_policy limits the applicable formats to the three
+ // Office formats, so PDF has no lane here at all rather than a lane that always passes.
+ _office:[
+  {a:"A document that embeds interactive controls is routed for keyboard review",
+   appr:"OFFICE_INTERACTIVE_CONTROL_KEYBOARD raises a REVIEW finding when the file embeds ActiveX or OLE controls, form fields, or worksheet form controls — any of which can trap keyboard focus. The same inspection feeds 4.1.2, since the identical embedded control raises both a name/role/value question and a focus-trap question.",
+   ev:"api/office_structure.py:1714-1796"},
+  {a:"No pass/fail validator exists on any format, by design",
+   appr:"assessment_policy carries an EMPTY validator set for 2.1.2, so the criterion is review-lane only on every format and cannot be auto-passed. Judging whether focus can actually escape a control means executing it, which a static document scan does not do — so the honest output is a routed review, not a verdict.",
+   ev:"api/assessment_policy.py:95-99"},
+  {a:"Control-gated: no controls means no finding, not a pass",
+   appr:"Applicability is limited to docx, pptx and xlsx, and only where controls are present. A document with no embedded controls resolves without a finding rather than claiming the criterion passed — which is why it is absent from the remediation capability table rather than listed there as unsupported.",
+   ev:"api/assessment_policy.py:151 · api/remediation_capability.py:281"},
+  {a:"Remediation is human-only, and correctly so",
+   appr:"fix_mode is human-only, and the finding routes to the “navigation” review category with the reviewer-facing note “Embedded control may trap keyboard focus”. There is no bounded automatic technique for making an arbitrary embedded control keyboard-escapable without changing what it does.",
+   ev:"api/assessment_policy.py:57 · api/human_categories.py:69"}
+ ]}
+};
+// Resolve an ACP_DETAIL entry for one cell. `_all` applies to every format; `_office` to the three
+// Office formats only. Returns [] when this page has no ACP-sourced detail for the cell, which is
+// the normal case — most criteria are covered by Deva's own assertions instead.
+function acpDetailFor(sc,f){
+  const e=ACP_DETAIL[sc]; if(!e)return [];
+  if(e[f])return e[f];
+  if(e._all)return e._all;
+  if(e._office&&f!=="pdf")return e._office;
+  return [];
+}
+
 const V5_DETAIL={
 "1.1.1": {
 "docx": [
@@ -2466,6 +2548,10 @@ function buildTable(){
     // the same hatch rather than inventing a second texture for a distinction nobody is asking
     // the table to make. Which level applied is still recoverable from the aria-label below.
     const cellCls=cellTracked(row.sc,f)?"":" v4-muted";
+    // NB: V5_APPLICABLE currently contains NO "cond" cells, so this marker never renders. The
+    // legend used to document it ("† … DOCX 4.1.2") long after V5 FINAL made 4.1.2 PDF-only —
+    // a legend entry for a marker that could not appear. Legend corrected; the code stays because
+    // a future V5 revision may reintroduce "cond", and it explains itself via its own title.
     const condHtml=v5state==="cond"?` <b class="v4cond" title="Deva's checklist: applies only if the feature is present">†</b>`:"";
     const v5Aria=!MOVA_SCOPE.has(row.sc)
       ?" Rule not tracked by Mova iO — real status shown, not counted."
@@ -2598,8 +2684,14 @@ buildTable();
     // rules are different: they are rules this page has real, verified capability data for, and
     // Mova iO's position is "we don't track this", not "this doesn't exist". So they stay on
     // screen, hatched like any out-of-scope cell, clickable, with their status intact.
-    for(const tr of tb.querySelectorAll("tr"))
-      tr.classList.toggle("scope-out", cb.checked && !MOVA_SCOPE.has(tr.dataset.sc));
+    for(const tr of tb.querySelectorAll("tr")){
+      const tracked=MOVA_SCOPE.has(tr.dataset.sc);
+      tr.classList.toggle("scope-out", cb.checked && !tracked);
+      // Positive marker as well as the negative one: without it a reader has to infer the 17 by
+      // noticing which rows AREN'T hatched, and "absence of a texture" is a poor way to carry a
+      // fact somebody is being measured against.
+      tr.classList.toggle("scope-in", cb.checked && tracked);
+    }
     tb.closest("table").classList.toggle("v4-mute-on", cb.checked);
   }
   cb.addEventListener("change",apply);
@@ -3234,6 +3326,26 @@ function renderDrawer(sc,f,trigger){
           <cite>— Deva's checklist, ${f.toUpperCase()} tab, &ldquo;Validation assertion&rdquo;</cite></blockquote>
          <div class="dqmeta"><b>His recommended technical approach:</b> ${esc(x.appr)}</div>
          <div class="dqmeta"><b>His stated automation level:</b> ${esc(x.auto)}</div>`).join("")
+        +`</div>`;
+    }
+  }
+
+  // ACP-derived detail, for criteria column G tracks that Deva's checklist never graded. Rendered
+  // in the same slot as his assertions but visually and textually distinct, and attributed to
+  // acp's code with a file:line rather than to a workbook — so the two can never be mistaken for
+  // one another, and neither is presented as evidence for the other.
+  {
+    const acpitems=acpDetailFor(row.sc,f);
+    if(acpitems.length){
+      html+=`<div class="acpquote">`
+        +`<div class="acpsrc">Source: <b>acp's shipped code</b> &middot; <code>jeremyyuAWS/acp@main</code>`
+        +` &middot; ${acpitems.length} assertion${acpitems.length>1?"s":""} for ${row.sc}`
+        +`<span class="acpwhy">Deva's checklist has no item for ${row.sc}; this is derived from the engine instead.</span></div>`
+        + acpitems.map(x=>
+        `<blockquote class="aq">${esc(x.a)}
+          <cite>— derived from acp's code, not from a checklist</cite></blockquote>
+         <div class="dqmeta"><b>How acp actually does it:</b> ${esc(x.appr)}</div>
+         <div class="dqmeta"><b>Evidence:</b> <code>${esc(x.ev)}</code></div>`).join("")
         +`</div>`;
     }
   }
