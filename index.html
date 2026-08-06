@@ -3257,6 +3257,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-06",time:"09:06",tz:"PDT",hash:"44669ce",pr:35,repo:"jeremyyuAWS/wcag-matrix",
+ title:"fix(docx): three cells said nothing inspects what acp has detectors for",
+ scs:["1.4.1","1.4.11","4.1.2"],formats:["docx"],
+ summary:"DOCX assessment A2 (Human Assessment Required) to A3 (Potential Issue) on 1.4.1, 1.4.11 and 4.1.2. No acp code changed. All three were read as out of scope because acp's coverage reports in_scope=False, which means only \"absent from remediation_capability.py\" — store.REVIEW_FORMATS admits every one of them as a review lane, which is ceiling_a = Guided. Verified against acp main 4754309.",
+ points:[
+  {label:"1.4.1 DOCX",text:"The cell said \"Nothing inspects colour-as-the-only-signal in documents\". DOCX_COLOR_ONLY_LINK does, at api/office_structure.py:1843 — links only, which is why it stops at Potential Issue."},
+  {label:"1.4.11 DOCX",text:"The cell said \"No engine measures UI-component or graphical-object contrast in documents\". DOCX_NONTEXT_LOW_CONTRAST does, at api/office_structure.py:1955 — shapes and outlines, not chart internals."},
+  {label:"4.1.2 DOCX",text:"The cell said form fields are checked only under 3.3.2. DOCX_FORM_FIELD_NO_TAG (api/office_structure.py:388) and OFFICE_INTERACTIVE_CONTROL_NAME_ROLE (:1800) file under 4.1.2 itself. Its aClass is DET, so A3 does not reach ceiling and the pair stays open."},
+  {label:"Effect",text:"docx goes 18/26 to 20/26 pairs at ceiling (69% to 77%); 1.4.1 and 1.4.11 close, 4.1.2 improves. The same pattern affects six more assess cells on xlsx, pptx and pdf."}]},
 {date:"2026-08-05",time:"05:12",tz:"PDT",hash:"b499c46",pr:33,repo:"jeremyyuAWS/wcag-matrix",
  title:"fix(1.3.1): pptx table headers are automatic — the cell said manual because the fixer moved",
  scs:["1.3.1"],formats:["pptx"],
