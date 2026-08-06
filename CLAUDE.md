@@ -1,7 +1,13 @@
 # wcag-matrix — project context for Claude Code
 
 ## What this is
-Interactive WCAG 2.1 AA assessment & remediation matrix for document formats (DOCX/XLSX/PPTX/PDF), built for the ACP (Accessibility Compliance Platform) GTM conversation with Deva. Single self-contained `index.html` (no build step) + methodology docs in `docs/`. Live at https://fabulous-crisp-14e424.netlify.app/ (Netlify Drop; redeploy by drag or `netlify deploy --prod --dir .`).
+Interactive WCAG 2.1 AA assessment & remediation matrix for document formats (DOCX/XLSX/PPTX/PDF), built for the ACP (Accessibility Compliance Platform) GTM conversation with Deva. Single self-contained `index.html` (no build step) + methodology docs in `docs/`. Live at https://wcag-matrix.mova-io.app/ (also reachable at https://fabulous-crisp-14e424.netlify.app/).
+
+**Deploy is automatic — do NOT run `netlify deploy` by hand.** The Netlify site is connected to
+this repo: a merge to `main` publishes, and pull requests get a deploy-preview check. Confirmed
+2026-08-06 by merging #36 and finding the live page byte-identical (sha256 `91da533ae17c0825`,
+333,967 bytes) to the merged `index.html` with no manual step. A hand `--prod` deploy would push
+whatever is in your working tree, which on a shared checkout is not necessarily `main`.
 
 ## Deva's checklist — current artifact
 `~/Downloads/assessment-applicability-matrix-v5-28JUL.xlsx` — the canonical name. It briefly existed as `...-v5-29JUL.xlsx`; renamed back so the filename and the version label agree, because a citation whose filename does not exist is not a citation.
@@ -46,6 +52,37 @@ Legacy maps live in `LEGACY_A`/`LEGACY_R` — drawer prose and the Deva tabs sti
 - `~/Downloads/accessibility-checklist-automation V3.xlsx` (Deva's checklist #3, **the canonical source as of 2026-07-21**, not committed — a Downloads file) — an automation-tier classification of the same 44 items as checklist #2 (5 sheets: Coverage, Assessment, Remediation, Local Models, Gaps vs WCAG). Re-read in full 2026-07-21 after the file was re-saved (size/mtime changed) — content confirmed byte-identical to the earlier read, so no verdict needed re-deriving from spec-text drift, only from ACP's own code changes. Column D ("Deterministic library + call") carries falsifiable technical claims (exact XML attributes, format-specific formula differences, common implementation mistakes), audited item-by-item in `docs/deva-assessment-grid-comparison.md` (superseding the earlier 11-item `docs/deva-detector-audit.md` first pass) and cross-validated tier-by-tier against `RUBRIC` in `docs/deva-automation-tier-reconciliation.md`. Its "Gaps vs WCAG" sheet is the authority on what the checklist does and doesn't attempt to cover — it explicitly disclaims 1.3.3, 1.4.1, 1.4.11, 3.1.2, and 2.1.2 ("missing from checklist"), which is why `DEVA` has no entry for those 5 SCs even though jeremy.xlsx used to.
 
 ## index.html data model
+
+> **Parts of this section are STALE (noted 2026-08-06).** `ASSESS_SPEC`, `REMEDIATION_SPEC`,
+> `CHECKLIST2` and `DEVA` no longer exist in `index.html` — the page consolidated onto `V5_DETAIL`
+> (Deva's 28JUL-Final workbook, the only checklist artifact it now cites) plus `DEVA_TARGET`.
+> Verify a structure exists before relying on a bullet below. The entries for `ROWS`, `RUBRIC`,
+> `UPGRADE`, `MATURITY`, `PROGRESS_LOG` and the roadmap were re-checked and are current.
+
+**Scope is asked at two levels** (2026-08-06, PR #36):
+- `MOVA_SCOPE` — column G "Mova iO" of `~/Downloads/Copy of WCAG Code Coverage - Mova iO
+  AccessOps.xlsx`. 17 `Yes` of 50 rows; **the SC-level authority on what we track**, and what the
+  filter toggle, the coverage card and the roadmap all count. All 17 were already among the 20.
+- `V5_APPLICABLE` — Deva's grid, still the **cell-level** authority: within a tracked rule, which
+  formats carry an item. `cellTracked(sc,f)` combines them, falling back to "all formats" for the
+  three rules column G tracks that V5 never graded (1.3.3, 1.4.11, 2.1.2) — the coverage file has
+  no per-format column at all, and its Summary calls Direct Coverage "Unconditional".
+- `MOVA_CELL_OVERRIDE` — the short, explicit list where column G wins over V5. One entry:
+  4.1.2/docx, because V5 FINAL made 4.1.2 PDF-only while acp ships real DOCX capability there.
+  Each entry is an editorial act resolving an artifact conflict; adding one should cost something.
+- The three column-G `No` rules (1.4.4, 1.4.10, 1.4.12) are **muted, never hidden** — hatched, with
+  `· not tracked` beside the name. `tr.v3-hidden{display:none}` is retired: a filter must not make
+  a row of real capability data vanish.
+- `ACP_DETAIL` + `acpDetailFor(sc,f)` — per-cell detail for criteria column G tracks that **Deva
+  never graded** (currently 1.3.3 and 2.1.2), sourced from acp's shipped code with a `file:line` in
+  every `ev`. Deliberately a separate structure with a dashed-border treatment: folding it into
+  `V5_DETAIL` would put words in Deva's mouth his workbook does not contain. `_all` applies to
+  every format, `_office` to docx/pptx/xlsx only (2.1.2 has no PDF lane —
+  `api/assessment_policy.py:151`).
+- **`V5_APPLICABLE` contains no `"cond"` cells**, so the `†` marker never renders. The legend
+  documented it (`"† … DOCX 4.1.2"`) long after V5 FINAL made 4.1.2 PDF-only — corrected; the code
+  stays in case a future V5 reintroduces `cond`.
+
 All content lives in one `<script>` block:
 - `ROWS` — 20 SC rows; per row: `a`/`r` = ACP's shipped assessment/remediation tier per format (C/Q/H/NA · A/AC/AP/AI/M/N/NA) — drives the table's cell colors/labels, the §2 "Today" chip (assessment), and the §4 "Current" card (remediation, via `RTIER_HOW`). `ae`/`re` = per-format mechanism detail (`b` argument bullets, `c` concessions, `x` counterargument, `ev` evidence paths, `cat` drift note) — bullets + evidence render in drawer §6 (collapsed "Technical notes"); concessions/counterargument/drift render in §5 (FAQ) instead. **`ROWS.a`/`ROWS.r` are a SEPARATE data structure from `ASSESS_SPEC`/`DEVA`/`REMEDIATION_SPEC`** — updating one does not update the other; this was a real gap caught 2026-07-21, when `ROWS` was found still showing pre-merge tiers for 3 cells (XLSX 1.4.3 `Q`→`C`, XLSX 2.4.4 `H`→`Q` + `r.xlsx` `N`→`AI`, PDF 4.1.2 `H`→`Q` + `r.pdf` `N`→`AC`) despite the underlying PRs having merged and `ASSESS_SPEC`/`DEVA` already reflecting them — the Deva-comparison work that session never touched `ROWS` itself. **Whenever a merge changes a verdict in `ASSESS_SPEC`/`DEVA`/`REMEDIATION_SPEC`, check whether `ROWS.a`/`ROWS.r` for that SC×format needs the same update** — don't assume flipping one flips the other. XLSX 1.4.3's fix is the clean case: its `Q`→`C` closed the exact blind spot ground rule 3 names as its own canonical example (theme-color skipping) — a good template for judging whether a newly-closed gap should move a cell's tier, versus a merge that only improves accuracy without closing a **common** blind spot (which stays at its current tier, ground rule 3's whole point).
 - `MATURITY` — the **Detection maturity** table in `#tab-log`: `{sc: {fmt: {c, conf, why}}}`, where `c` is acp's declared coverage on the ordered scale `unsupported < declared < heuristic < partial < full`. Answers a question `ROWS` cannot: a *tier* says where acp lands on a cell, *coverage* says how much of the criterion was examined to get there. Only `full` may certify a pass, which is why a `partial` cell's clean scan is a Review. Spliced by `scripts/apply_maturity.py` between `// <<<MATURITY:BEGIN/END>>>` markers from acp's `gen_matrix_coverage.py --> maturity`. **Unlike `PROGRESS_LOG`, this is a full REPLACE, not a prepend** — it is a current-state snapshot, so a pair that improves must overwrite and a pair whose registration is removed must disappear; hand-edits are overwritten on the next sync, and coverage is declared in acp beside the detector where it can't drift. **A criterion/format absent from `MATURITY` has not been migrated to acp's registry yet — that is NOT `unsupported`** (migrated, and the format genuinely can't express it); the table renders absent as a dash and never as a claim. It syncs through `progress-log.yml` (pushed to main) rather than `grid-drift.yml` (which opens a PR) because coverage is a derived fact about acp, not a claim this repo is making.
@@ -117,6 +154,6 @@ for (const row of ROWS) { const r = RUBRIC[row.sc]; if (!r) console.error(row.sc
 - **Known tooling gap, not a page bug:** this repo's dev-session browser-preview tool has a reproducible viewport desync at narrow widths — `window.innerWidth` reports a stale wide value (differs from `outerWidth`/`screen.width`) after `resize_window` to a mobile preset, and screenshots taken in that state show clipped/scrolled-looking text even though every computed style and `scrollLeft` checks out correct. Verify mobile CSS via `getComputedStyle()`/`matchMedia()` assertions (as done for this change), not by trusting narrow-viewport screenshot pixels in this environment — cross-check against a real device or a different browser tool if a pixel-level check is ever needed.
 
 ## Outstanding / next tasks
-- Repo already has a GitHub remote (`jeremyyuAWS/wcag-matrix`) and Netlify site (`fabulous-crisp-14e424`, Netlify Drop) — connect them for push-to-deploy if wanted; currently deploy is manual (`netlify deploy --prod --dir .`)
+- ~~Connect the GitHub remote to Netlify for push-to-deploy~~ — **done.** `jeremyyuAWS/wcag-matrix` → Netlify `fabulous-crisp-14e424` publishes on merge to `main`, PRs get a deploy-preview check (see the deploy note at the top)
 - Table cells still show ACP's shipped status only (not the RUBRIC ceiling) — the ceiling lives in the drawer + the tiles above the table. Consider adding a small ceiling-class indicator per table cell if the two views need to be visible without opening the drawer.
 - Optional matrix improvements: resolve the 4 catalog-drift items in the acp repo itself (retag or build fixers — PPTX table-header fixer already landed on acp `main`, see acp memory `pptx-131-table-header-parity`)
