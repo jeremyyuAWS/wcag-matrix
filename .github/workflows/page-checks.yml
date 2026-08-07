@@ -63,3 +63,10 @@ jobs:
       # something about that cell.
       - name: Upgrade notes are scoped to their own cell
         run: python3 scripts/check_upgrade_scope.py
+
+      # The workflows drive these scripts by command line and every call is followed by
+      # `|| true`, so argparse's "unrecognized arguments" exit is swallowed and the step
+      # produces nothing, greenly. This is the only thing checking the caller and the callee
+      # still speak the same language.
+      - name: Workflow flags match the scripts they call
+        run: python3 scripts/check_workflow_flags.py
