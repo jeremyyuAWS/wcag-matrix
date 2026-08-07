@@ -10,14 +10,23 @@ and reports the STRONGEST tier each of the 80 cells could honestly claim.
     python scripts/check_grid_drift.py coverage.json --apply    # also rewrite the cells
     python scripts/check_grid_drift.py coverage.json --markdown # PR-body report
 
-ONLY OVER-CLAIMS COUNT AS DRIFT
--------------------------------
+ONLY OVER-CLAIMS ARE DRIFT. UNDER-CLAIMS ARE REPORTED.
+------------------------------------------------------
 A cell may always claim LESS than the code supports. Ground rule 3's honest-partial rule makes
 a deliberate downgrade an editorial act — "XLSX contrast skips theme colours, so call it Guided
-even though the lane says auto" is the matrix working correctly, not a defect. So this compares
-RANKS and complains in one direction only: a cell claiming MORE automation or more certainty
-than shipped code supports. That is the failure ground rule 4 keeps finding by hand, and the
-only half of the comparison a machine can settle.
+even though the lane says auto" is the matrix working correctly, not a defect. So an over-claim
+is DRIFT: rewritten to the ceiling and proposed in a PR. An under-claim is not, and is never
+rewritten by this script.
+
+But "not a defect" was being read as "not worth mentioning", and those are different. An
+under-claiming cell means shipped capability is invisible in the coverage percentages, with
+nothing anywhere reporting that it is waiting to be claimed. On 2026-08-07 six cells lagged
+through three acp merges — 1.3.3 and 3.1.2 write-backs and a docx 4.1.2 applier — and the
+headline coverage figure did not move all day. They were found by a person going looking,
+which is exactly the manual check the rest of this file exists to replace.
+
+So under-claims are now LISTED — in the report, in the PR body, and as job annotations — and
+still never applied. The judgment stays with a human; only the silence goes away.
 
 WHY THIS OPENS A PR RATHER THAN PUSHING
 ---------------------------------------
@@ -164,6 +173,57 @@ def find_drift(rows: list[dict], cov: dict) -> list[dict]:
     return out
 
 
+def find_lag(rows: list[dict], cov: dict) -> list[dict]:
+    """(weaker-tier cells, cells claiming N/A where a detector emits).
+
+    The mirror of find_drift, and deliberately NOT fed to apply(): a downgrade can be a
+    considered editorial act, so raising one automatically would overwrite a judgment with a
+    bound. This only makes the gap sayable — and it separates the two gaps, because "this tier
+    is lower than the code supports" and "this rule is marked inapplicable but something
+    detects it" are different claims a reader answers differently.
+    """
+    a_rank, r_rank = _rank_maps(cov)
+    cells = cov["cells"]
+    out: list[dict] = []
+    na_out: list[dict] = []
+    for row in rows:
+        derived = cells.get(row["sc"])
+        if derived is None:
+            continue                      # already noted by find_drift; do not double-report
+        for fmt in FORMATS:
+            for axis, rank, label in (("a", a_rank, A_LABEL), ("r", r_rank, R_LABEL)):
+                claimed = row[axis].get(fmt)
+                raw = derived[fmt]["ceiling_a" if axis == "a" else "ceiling_r"]
+                if claimed is None or raw is None:
+                    continue
+                bridge = FROM_LEGACY_A if axis == "a" else FROM_LEGACY_R
+                # Unknown vocabulary is find_drift's error to raise, with its full message.
+                # Skipping here keeps this function from failing the run on the same fault twice.
+                if raw not in bridge or claimed not in rank:
+                    continue
+                ceiling = bridge[raw]
+                if rank[claimed] < rank[ceiling]:
+                    # A cell claiming NA is not claiming a weak TIER — it is claiming the rule
+                    # cannot be broken in this format at all. That is an applicability judgment,
+                    # and acp's ceiling says nothing about applicability: it reports what a
+                    # detector could establish IF the rule applied. Ranking NA below A2 and
+                    # calling the gap an under-claim is a category error, and a loud one — it
+                    # buried the 7 real tier lags under 23 NA rows on the first run.
+                    #
+                    # Still surfaced, because it is a real question and one that has bitten:
+                    # docx 1.3.2 / 1.4.10 / 1.4.12 sat NA on this page while shipped detectors
+                    # emitted for them. Just asked separately, as "is this really inapplicable?"
+                    # rather than "is this tier too low?".
+                    (na_out if claimed == "NA" else out).append({
+                        "sc": row["sc"], "name": row["name"], "fmt": fmt, "axis": axis,
+                        "claimed": claimed, "ceiling": ceiling,
+                        "claimed_label": label.get(claimed, claimed),
+                        "ceiling_label": label.get(ceiling, ceiling),
+                        "cell": derived[fmt],
+                    })
+    return out, na_out
+
+
 def apply(html: str, rows: list[dict], drift: list[dict]) -> str:
     """Rewrite only the drifted tier literals, right-to-left so earlier spans stay valid."""
     by_row = {(d["sc"], d["axis"]): [] for d in drift}
@@ -204,6 +264,31 @@ def why(d: dict) -> str:
     return f"acp's round-trip-proven lane for this pair is `{lane}`"
 
 
+def report_lag(lag: list[dict], na_lag: list[dict]) -> None:
+    """Under-claims, on stdout and as GitHub annotations. Never fatal."""
+    if na_lag:
+        print(f"\n{len(na_lag)} cell(s) are marked N/A on the grid while acp has a detector "
+              f"that emits for them — an applicability question, not a tier one:\n")
+        for d in na_lag:
+            axis = "assessment" if d["axis"] == "a" else "remediation"
+            print(f"  {d['sc']} {d['fmt']} {axis}: N/A on the grid, "
+                  f"code supports {d['ceiling']} ({d['ceiling_label']})")
+    if not lag:
+        print("\nno lag — no cell claims a weaker tier than acp's code supports")
+        return
+    print(f"\n{len(lag)} cell(s) claim LESS than acp's shipped code supports "
+          f"(not drift — reported, never rewritten):\n")
+    for d in lag:
+        axis = "assessment" if d["axis"] == "a" else "remediation"
+        line = (f"{d['sc']} {d['fmt']} {axis}: {d['claimed']} ({d['claimed_label']}) "
+                f"but code supports {d['ceiling']} ({d['ceiling_label']})")
+        print(f"  {line}")
+        # ::notice:: so a green run still surfaces it on the summary rather than only in a log
+        # nobody opens. The same reason the acp generator annotates its skips.
+        print(f"::notice::grid lag — {line}", file=sys.stderr)
+    print()
+
+
 def report(drift: list[dict]) -> None:
     if not drift:
         print("no drift — every cell is at or below acp's code-derived ceiling")
@@ -221,6 +306,50 @@ def report(drift: list[dict]) -> None:
         print()
 
 
+def markdown_lag(lag: list[dict], na_lag: list[dict]) -> str:
+    """The under-claim section. Informational — nothing in the PR changes these cells."""
+    if not lag and not na_lag:
+        return ""
+    out = [
+        "",
+        "---",
+        "",
+        f"## Cells claiming LESS than the code supports ({len(lag)})",
+        "",
+        "**Nothing in this PR changes these.** An under-claim is not drift — ground rule 3 makes "
+        "a deliberate downgrade an editorial act — so they are listed, never rewritten.",
+        "",
+        "They are listed because the alternative was silence: an under-claiming cell means "
+        "shipped capability is missing from the coverage percentages, and until now nothing said "
+        "so. Raise one only if the lower tier was not a deliberate call.",
+        "",
+        "| SC | Format | Axis | Claimed | Code supports |",
+        "|---|---|---|---|---|",
+    ]
+    for d in lag:
+        axis = "assessment" if d["axis"] == "a" else "remediation"
+        out.append(f"| {d['sc']} | {d['fmt']} | {axis} | `{d['claimed']}` {d['claimed_label']} "
+                   f"| `{d['ceiling']}` {d['ceiling_label']} |")
+    if na_lag:
+        out += [
+            "",
+            f"### Marked N/A, but a detector emits ({len(na_lag)})",
+            "",
+            "A different question from the table above: not \"is this tier too low\" but \"is "
+            "this rule really inapplicable to this format\". The ceiling cannot settle it — it "
+            "reports what a detector could establish IF the rule applied — so these are listed "
+            "for a human to confirm, never changed.",
+            "",
+            "| SC | Format | Axis | Code supports |",
+            "|---|---|---|---|",
+        ]
+        for d in na_lag:
+            axis = "assessment" if d["axis"] == "a" else "remediation"
+            out.append(f"| {d['sc']} | {d['fmt']} | {axis} | "
+                       f"`{d['ceiling']}` {d['ceiling_label']} |")
+    return "\n".join(out) + "\n"
+
+
 def markdown(drift: list[dict]) -> str:
     if not drift:
         return "No drift — every cell is at or below acp's code-derived ceiling.\n"
@@ -230,8 +359,9 @@ def markdown(drift: list[dict]) -> str:
         f"`scripts/check_grid_drift.py` compared all 80 cells against the ceiling derived by "
         f"acp's `scripts/gen_matrix_coverage.py` and found **{len(drift)}** over-claim(s).",
         "",
-        "Only over-claims appear here. A cell claiming *less* than the ceiling is left alone — "
-        "ground rule 3 makes a deliberate downgrade an editorial act, not a defect.",
+        "Only over-claims are rewritten. A cell claiming *less* than the ceiling is left alone "
+        "— ground rule 3 makes a deliberate downgrade an editorial act, not a defect — but it is "
+        "now LISTED below rather than passed over in silence.",
         "",
         "| SC | Format | Axis | Claimed | Proposed ceiling | Why |",
         "|---|---|---|---|---|---|",
@@ -274,16 +404,23 @@ def main() -> int:
     html = INDEX.read_text()
     rows = parse_rows(html)
     drift = find_drift(rows, cov)
+    lag, na_lag = find_lag(rows, cov)
 
     if args.markdown:
         sys.stdout.write(markdown(drift))
+        sys.stdout.write(markdown_lag(lag, na_lag))
     else:
         report(drift)
+        report_lag(lag, na_lag)
 
     if drift and args.apply:
         INDEX.write_text(apply(html, rows, drift))
         print(f"rewrote {len(drift)} cell(s) in {INDEX.name}", file=sys.stderr)
 
+    # Exit code is unchanged ON PURPOSE: 1 means DRIFT, and grid-drift.yml keys its whole
+    # PR-opening path off that. A lag is not a defect and must not turn a run red or open a PR
+    # that changes nothing — it travels as output (stdout, ::notice::, the markdown section),
+    # not as status. Making a lag exit 1 would have been the easy change and the wrong one.
     return 1 if drift else 0
 
 
