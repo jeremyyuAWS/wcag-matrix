@@ -1957,7 +1957,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.07.0628";
+const DOC_BUILD="2026.08.07.0936";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3500,7 +3500,7 @@ const MATURITY={
  "1.4.11":{xlsx:{c:"partial",conf:"medium",why:"solid outline-on-fill DrawingML shapes are measured with the true WCAG contrast ratio; theme-coloured shapes, gradients, images and control affordances are not examined, and whether a shape conveys meaning is left to a human"}},
  "2.4.3":{pdf:{c:"heuristic",conf:"medium",why:"pages with form widgets are checked for /Tabs = /S, a proxy for tab order following reading order; actually comparing the widget order to the structure order needs a /StructTreeRoot walk that is not built"}},
  "3.1.1":{html:{c:"full",conf:"high",why:"a valid lang attribute on the root element is exactly what 3.1.1 asks for, so this covers the criterion completely; whether the declared language is the CORRECT one is a content question 3.1.1 does not ask"}},
- "4.1.2":{pdf:{c:"partial",conf:"high",why:"interactive AcroForm fields are checked exactly (/TU name, /FT role, /V value); components expressed through the tagged-structure tree are not examined, which needs a /StructTreeRoot walker this codebase does not have yet"}}};
+ "4.1.2":{docx:{c:"partial",conf:"high",why:"interactive content controls are checked exactly for a Title (w:alias), the attribute Word exposes to assistive technology as the accessible name; ActiveX controls, embedded OLE objects and other form content are not examined, which would need reading each control's own implementation"},pdf:{c:"partial",conf:"high",why:"interactive AcroForm fields are checked exactly (/TU name, /FT role, /V value); components expressed through the tagged-structure tree are not examined, which needs a /StructTreeRoot walker this codebase does not have yet"}}};
 // <<<MATURITY:END>>>
 
 // <<<PROGRESS_LOG:BEGIN — entries below are spliced by scripts/apply_progress_log.py
@@ -3508,6 +3508,13 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-07",time:"09:35",tz:"PDT",hash:"cab1d11",pr:149,repo:"jeremyyuAWS/acp",
+ title:"fix(assess): a clean Word file no longer reports \"we did not look\" for 4.1.2 (#149)",
+ scs:["4.1.2"],formats:["docx"],
+ summary:"A clean Word file now reports Potential Issue for Name, Role, Value instead of saying nothing — the check had been running and its result was being discarded.",
+ points:[
+  {label:"DOCX 4.1.2 assessment",text:"migrated to the capability registry with partial coverage. A file whose content controls are all named reads Review rather than \"not evaluated\", which is what actually happened: the technique ran and covered part of the criterion."},
+  {text:"It is deliberately not a pass. ActiveX controls and embedded OLE objects are not examined, and certifying the criterion would mean claiming every interactive component exposes a name and a role. When a detector for those lands, the coverage moves to full and clean scans start certifying, with no further change."}]},
 {date:"2026-08-07",time:"06:45",tz:"PDT",hash:"grid-sync",pr:null,repo:"jeremyyuAWS/wcag-matrix",
  title:"grid: six remediation cells raised to the ceiling acp already ships",
  scs:["1.3.3","3.1.2","4.1.2"],formats:["docx","xlsx","pptx"],
