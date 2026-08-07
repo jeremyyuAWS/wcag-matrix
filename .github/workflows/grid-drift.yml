@@ -102,9 +102,10 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          python3 scripts/check_grid_drift.py /tmp/coverage.json --markdown > /tmp/full.md || true
-          # Only the lag half — the drift half is already the PR body.
-          awk '/^## Cells claiming LESS/{f=1} f' /tmp/full.md >> "$GITHUB_STEP_SUMMARY" || true
+          # --lag-markdown emits only the under-claim sections; the drift half is already the
+          # PR body. No slicing here: the script owns where its own report starts and ends.
+          python3 scripts/check_grid_drift.py /tmp/coverage.json --lag-markdown \
+            >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Rewrite the drifted cells
         if: steps.check.outputs.drift == 'yes'

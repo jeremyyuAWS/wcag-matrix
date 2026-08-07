@@ -396,6 +396,13 @@ def main() -> int:
     ap.add_argument("coverage", help="coverage JSON from acp's gen_matrix_coverage.py ('-' for stdin)")
     ap.add_argument("--apply", action="store_true", help="rewrite drifted tiers to the ceiling")
     ap.add_argument("--markdown", action="store_true", help="emit a PR-body report on stdout")
+    # Its own flag rather than leaving the caller to slice --markdown's output. grid-drift.yml
+    # used to cut the lag half out with `awk '/^## Cells claiming LESS/{f=1} f'`, which made a
+    # heading in this file load-bearing for a pattern in that one, with nothing asserting the
+    # two agreed. Rewording the heading would have emptied the job summary silently — the exact
+    # failure the lag report exists to prevent. The boundary belongs here, where the text is.
+    ap.add_argument("--lag-markdown", action="store_true",
+                    help="emit ONLY the under-claim sections (for the job summary)")
     args = ap.parse_args()
 
     raw = sys.stdin.read() if args.coverage == "-" else Path(args.coverage).read_text()
@@ -406,7 +413,9 @@ def main() -> int:
     drift = find_drift(rows, cov)
     lag, na_lag = find_lag(rows, cov)
 
-    if args.markdown:
+    if args.lag_markdown:
+        sys.stdout.write(markdown_lag(lag, na_lag))
+    elif args.markdown:
         sys.stdout.write(markdown(drift))
         sys.stdout.write(markdown_lag(lag, na_lag))
     else:
