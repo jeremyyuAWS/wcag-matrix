@@ -1946,7 +1946,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.07.0611";
+const DOC_BUILD="2026.08.07.0628";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3486,6 +3486,13 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-07",time:"06:27",tz:"PDT",hash:"7927743",pr:147,repo:"jeremyyuAWS/acp",
+ title:"fix(capability): xlsx 3.1.2 is explain-only — a proposal nobody can write is not an assisted lane (#147)",
+ scs:["3.1.2"],formats:["xlsx"],
+ summary:"Excel's Language of Parts moves from AI Generated Fix to Guided — a correction to an over-claim, not a capability that regressed. Nothing was removed: no write ever existed, because SpreadsheetML has no per-run language element to write into.",
+ points:[
+  {label:"XLSX 3.1.2",text:"the langdetect proposal still reaches the review queue and the criterion is still detected and explained. What changes is the promise: there is no one-click write, and a reviewer re-authors the passage instead of approving a value that could never land."},
+  {text:"The assessment axis is unchanged (still Review) — detection is unaffected, and only the remedy was over-claimed."}]},
 {date:"2026-08-07",time:"06:10",tz:"PDT",hash:"95bae71",pr:146,repo:"jeremyyuAWS/acp",
  title:"feat(remediate): approved 1.3.3 rewrites and 3.1.2 language marks reach the file — and clear (#146)",
  scs:["1.3.3","3.1.2","1.4.1","1.4.11"],formats:["docx","xlsx","pptx"],
