@@ -853,7 +853,7 @@ const ROWS=[
       x:"“Acrobat can auto-tag.” — Auto-tagging produces role and order errors that then fail 1.3.2 and 1.1.1; ACP refuses to generate defects it would immediately flag.",
       ev:["docs/rules/pdf.tagged.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.Tagged — guidance)"]}}},
 
-{sc:"1.3.2",name:"Meaningful Sequence",lvl:"A",flag:false,a:{docx:"NA",xlsx:"A4",pptx:"A3",pdf:"A3"},r:{docx:"NA",xlsx:"R4",pptx:"R4",pdf:"R2"},
+{sc:"1.3.2",name:"Meaningful Sequence",lvl:"A",flag:false,a:{docx:"NA",xlsx:"A4",pptx:"A4",pdf:"A3"},r:{docx:"NA",xlsx:"R4",pptx:"R4",pdf:"R2"},
  ae:{
   docx:{b:["Word body content is a single linear flow — the reading order of the main story cannot diverge from the visual order the way slide shapes and PDF tag trees can.","N/A by content model is a stronger position than an unbuilt check: there is nothing for a rule to disagree with."],
       c:["Floating text boxes / shapes are a theoretical edge — concede as potential future scope, not as a gap in this claim."],
@@ -977,7 +977,7 @@ const ROWS=[
    return {docx:common,xlsx:common,pptx:common,pdf:common};})(),
  re:(function(){const c={b:["None."],ev:["—"]};return {docx:c,xlsx:c,pptx:c,pdf:c};})()},
 
-{sc:"1.4.1",name:"Use of Color",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.4.1",name:"Use of Color",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A2",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["DOCX_COLOR_ONLY_LINK (api/office_structure.py:1843) flags colour-styled links with no non-colour cue, so colour-as-the-only-signal is inspected here — narrowly. It is links only; colour-coded table cells, chart series and shape fills are not examined, which is why this reads Potential Issue and never certifies a pass.","Evidence the space was considered, not overlooked: 1.3.3's design consciously EXCLUDED colour references from its sensory regex as too noisy — a deliberate deferral you can cite."],
    ev:["api/remediate.py:_fix_use_of_color (HTML only)","api/textchecks.py (design note excluding colour)"]};
@@ -1009,7 +1009,7 @@ const ROWS=[
   pdf:{b:["FIXED 2026-07-29 (acp#22). This cell was briefly recorded as a clean automatic fix on the strength of a white-background fixture, which hid a defect on both sides: the detector never computed a ratio (it thresholded the text colour's luma and ignored the background) and the fixer inherited the same assumption. On a white page the two errors cancel; off it they compound \u2014 white-on-black measured 21:1 and was rewritten to 3.66:1, an AA failure the fixer CREATED, unattended. Both halves now resolve the background structurally. It is an honest PARTIAL rather than a clean sweep: text over an image, or over fills that pull opposite ways, is left alone and stays a finding for a human.","None: rewriting colours inside PDF content streams is high-risk surgery on the page-painting program itself. Report-and-review is the defensible ceiling today."],
       ev:["—"]}}},
 
-{sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
+{sc:"1.4.11",name:"Non-text Contrast",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:(function(){const common={
    b:["DOCX_NONTEXT_LOW_CONTRAST (api/office_structure.py:1955) measures shape and outline contrast, so graphical-object contrast is examined here — the same detector xlsx picked up by porting. Chart internals and form-control borders are still outside it, so the finding is evidence for a reviewer, never a certified pass.","Nothing claimed, nothing to defend; the build here would be a shape-fill vs adjacent-colour analysis — well-defined future work."],
    ev:["—"]};
@@ -1041,7 +1041,7 @@ const ROWS=[
   pdf:{b:["Live: /Title (filename-derived; existing titles preserved through the two-stage save) + /DisplayDocTitle boolean.","The bookmark gap is ONE integration away: PdfBookmarksFixer (pdfplumber heading extraction, page-level fallback) exists and is registered in the vendored worker — remediate_pdf.py just never invokes it. The cheapest capability upgrade on the board."],
       ev:["api/remediate_pdf.py (stages 1–2)","worker-python/remediation/fixers/pdf/bookmarks_fixer.py (built, unwired)","worker-python/remediation/fixer_registry.py"]}}},
 
-{sc:"2.4.3",name:"Focus Order",lvl:"A",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"A2"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"R1"},
+{sc:"2.4.3",name:"Focus Order",lvl:"A",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"A3"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"R1"},
  ae:(function(){const common={
    b:["Focus order is an interaction property; the only implemented check is HTML positive-tabindex (with its reset-to-0 fixer).","For slides, shape tab order — the nearest document analogue — is already detected AND remediated under 1.3.2. Cite the adjacency; don't double-claim it here."],
    ev:["api/remediate.py:_fix_focus_order (HTML only)","see 1.3.2 PPTX for the adjacent coverage"]};
@@ -3508,6 +3508,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-07",time:"10:05",tz:"PDT",hash:"lag-sweep",pr:null,repo:"jeremyyuAWS/wcag-matrix",
+ title:"grid: seven assessment cells raised to the ceiling acp already ships",
+ scs:["1.3.2","1.4.1","1.4.11","2.4.3"],formats:["xlsx","pptx","pdf"],
+ summary:"The under-claim report added earlier today found seven assessment cells claiming less than the code supports. Each was checked against its own drawer prose before changing — a lower tier can be a deliberate editorial act — and in all seven the prose already described the higher tier's behaviour, so they were lagging rather than conservative. No new capability; the grid now matches the code-derived ceiling in both directions.",
+ points:[
+  {label:"1.4.11 xlsx/pptx/pdf",text:"A2 to A3. The drawer prose is shared across all four formats and says the detector measures shape and outline contrast and is evidence for a reviewer, never a certified pass — which is A3 in words. DOCX already claimed it; the other three were left behind when the detector was ported."},
+  {label:"1.4.1 xlsx/pdf",text:"A2 to A3. Same shape — shared prose says this reads Potential Issue, and office_color_only_checks covers xlsx while pdf_use_of_color_checks covers pdf. PPTX is deliberately NOT raised: no pptx detector exists and the ceiling agrees, which is a useful sign the derivation is real rather than blanket."},
+  {label:"2.4.3 pdf",text:"A2 to A3. pdf_focus_order_checks ships and is registered in acp's capability registry as heuristic. A2 claims not reliably automatable; a shipped heuristic that surfaces evidence for a human is exactly A3."},
+  {label:"1.3.2 pptx",text:"A3 to A4, the only one raising to a certified pass and so held to the higher bar. acp's round-trip-proven lane table derives assessment=auto, and the sibling XLSX cell already claimed A4 on that same derivation — so A3 was inconsistent with the row beside it. ReadingOrderRule compares XML order against shape bounding boxes: when they agree the order genuinely is correct, which is what makes a pass certifiable rather than merely unflagged."}]},
 {date:"2026-08-07",time:"09:35",tz:"PDT",hash:"cab1d11",pr:149,repo:"jeremyyuAWS/acp",
  title:"fix(assess): a clean Word file no longer reports \"we did not look\" for 4.1.2 (#149)",
  scs:["4.1.2"],formats:["docx"],
