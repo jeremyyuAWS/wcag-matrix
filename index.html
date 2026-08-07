@@ -404,7 +404,9 @@
      colour and its donut, whether or not it is on his checklist. */
   /* Scope is a ROW property now (MOVA_SCOPE, column G of Mova iO's coverage file), so the hatch
      moved from the cell to the row. The treatment itself is unchanged and stays that way for the
-     reason recorded above: hatch, never dim. */
+     reason recorded above: hatch, never dim — for out-of-scope CELLS. Whole untracked ROWS
+     are hidden while the toggle is on (see the display:none below); the hatch is what they
+     wear when the toggle is off. */
   table.v4-mute-on td.cell.v4-muted,
   table.v4-mute-on tr.scope-out td.cell{
     background-image:repeating-linear-gradient(45deg,rgba(120,132,158,.09) 0 5px,transparent 5px 10px)}
@@ -414,6 +416,15 @@
      depend on noticing a background texture — the hatch alone would be a purely visual signal. */
   table.v4-mute-on tr.scope-out td.name::after{
     content:" · not tracked";color:var(--muted);font-weight:600;font-size:11px;white-space:nowrap}
+  /* Untracked rules are HIDDEN while the scope toggle is on, not hatched. Changed on request:
+     the tracked 17 are what this table is read against, and three greyed rows in the middle of
+     it were reading as "ACP has a gap here" rather than "Mova iO doesn't track this".
+     The rules above (hatch, the "· not tracked" suffix, full-colour cells) are deliberately
+     KEPT rather than deleted: they still apply to out-of-scope CELLS within a tracked row, and
+     they are what the rows look like the moment the toggle goes off. Nothing is destroyed —
+     switching the toggle off restores all 20 with their status intact, which is the property
+     the earlier "muted, never hidden" rule existed to protect. */
+  table.v4-mute-on tr.scope-out{display:none}
   .v4cond{color:var(--gray);font-weight:800;margin-left:2px;cursor:help}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
   table{border-collapse:collapse;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -632,7 +643,7 @@
 
   <div class="filterbar">
     <label><input type="checkbox" id="v3only" checked> Count only the rules Mova iO tracks — column G (<span id="v3count"></span>)</label>
-    <span class="filterbar-note">On (default) = the rules Mova iO tracks, at two levels: column G decides whether a <b>rule</b> is tracked, Deva's V5 matrix decides which <b>formats</b> within it carry an item. Anything outside gets a hatched background rather than disappearing, so real ACP status is never hidden or dimmed. <span class="trackkey" aria-hidden="true"></span> marks a tracked rule; the three Mova iO doesn't track say so in words beside the name. Grey text means one thing only: Not Applicable. ▲ marks a row corrected against the July-14 infographic. Off = ACP's full 20-SC rubric.</span>
+    <span class="filterbar-note">On (default) = the rules Mova iO tracks, at two levels: column G decides whether a <b>rule</b> is tracked, Deva's V5 matrix decides which <b>formats</b> within it carry an item. Anything outside is hidden while this is on — switch it off to see all 20 rows, unhatched, with their ACP status intact. Out-of-scope <b>cells</b> inside a tracked rule are still hatched rather than dropped. <span class="trackkey" aria-hidden="true"></span> marks a tracked rule; the three Mova iO doesn't track say so in words beside the name. Grey text means one thing only: Not Applicable. ▲ marks a row corrected against the July-14 infographic. Off = ACP's full 20-SC rubric.</span>
   </div>
 
   <!-- Today vs Potential, placed directly above the table it controls. "Potential" is RUBRIC's
@@ -2205,8 +2216,9 @@ const MOVA_SCOPE=new Set(["1.1.1","1.3.1","1.3.2","1.3.3","1.4.1","1.4.3","1.4.5
   "2.1.1","2.1.2","2.4.2","2.4.3","2.4.4","2.4.6","3.1.1","3.1.2","4.1.2"]);
 // The three this page tracks that column G marks "No" — each a viewer/renderer behaviour rather
 // than a property of a static document, which is the conclusion DEVA reached independently from
-// V3's own Gaps sheet. MUTED, never dropped: the real ACP status stays in the DOM and stays
-// clickable (this page's standing rule), it just leaves the counts and the roadmap's priority half.
+// V3's own Gaps sheet. HIDDEN while the scope toggle is on (it is on by default) and fully
+// restored when it is off — their ACP status is never deleted, only filtered out of the default
+// view, and they stay out of the counts and the roadmap's priority half either way.
 const MOVA_OUT_REASON={
  "1.4.4":"Resizing text to 200% is a behaviour of the viewer, not a property of the document.",
  "1.4.10":"Reflow at a narrow viewport is a responsive-renderer behaviour.",
@@ -2678,12 +2690,22 @@ buildTable();
   const cb=document.getElementById("v3only"), countEl=document.getElementById("v3count");
   countEl.textContent=`${MOVA_SCOPE.size} of ${ROWS.length}`;
   function apply(){
-    // MUTED, never hidden — and this is a behaviour change worth being explicit about. The old
-    // V5 filter took non-covered rows out of the layout entirely (tr.v3-hidden{display:none}),
-    // which was defensible when a whole SC had no checklist item at all. Column G's three "No"
-    // rules are different: they are rules this page has real, verified capability data for, and
-    // Mova iO's position is "we don't track this", not "this doesn't exist". So they stay on
-    // screen, hatched like any out-of-scope cell, clickable, with their status intact.
+    // HIDDEN while the toggle is on — reversing the "muted, never hidden" rule this block used
+    // to carry, on request, and worth recording honestly rather than quietly.
+    //
+    // That rule existed for a good reason and the reason has not gone away: column G's three
+    // "No" rules are ones this page has real, verified capability data for (DOCX 1.4.10 and
+    // 1.4.12 both have shipped, emitting detectors), and Mova iO's position is "we don't track
+    // this", not "this doesn't exist". Hiding them does make that data invisible.
+    //
+    // What makes it acceptable here is that the toggle is the whole point: it is ON by default
+    // and OFF shows all 20 rows, unhatched, with every cell and drawer intact. So the data is
+    // one click away rather than deleted, and the default view answers the question this table
+    // is actually read for — "how does ACP do on the rules Mova iO tracks?" — without three
+    // greyed rows in the middle of it reading as ACP gaps.
+    //
+    // The class is still toggled the same way, so scope-out remains queryable and the hatch
+    // rules still apply the moment the toggle goes off.
     for(const tr of tb.querySelectorAll("tr")){
       const tracked=MOVA_SCOPE.has(tr.dataset.sc);
       tr.classList.toggle("scope-out", cb.checked && !tracked);
