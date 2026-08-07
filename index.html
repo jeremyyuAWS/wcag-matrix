@@ -878,7 +878,7 @@ const ROWS=[
   pdf:{b:["Manual by the spec's own rationale: automated re-ordering 'can silently destroy meaning' — sidebars, pull quotes and captions are editorial intent.","The finding ships with concrete guidance: verify and correct in Acrobat's Order panel; may require re-tagging."],
       ev:["docs/rules/pdf.reading-order.md (fix-mode rationale)","RuleMetadataRegistry.cs (PdfRuleIds.ReadingOrder)"]}}},
 
-{sc:"1.3.3",name:"Sensory Characteristics",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
+{sc:"1.3.3",name:"Sensory Characteristics",lvl:"A",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R3",xlsx:"R3",pptx:"R3",pdf:"R2"},
  ae:(function(){const common={
    b:["textchecks.detect_sensory runs a deliberately tight regex — an instruction verb within 45 characters of a shape-only or position-only reference ('click the round button', 'see the box on the right') — over text extracted from every format the scanner reads (pii.extract_text covers docx/pptx/xlsx/pdf/html).","The posture is stated in the module docstring: deterministic and reproducible (no LLM — an audit tool must return the same findings for the same file every run), detect-and-route, NEVER auto-passed. That is the definition of Guided.","One finding per document by design: the reviewer inspects the phrasing; per-sentence hits would be queue noise, not coverage.","Why not Certified: absence of a regex match cannot prove instructions don't rely on sensory cues — a PASS is not machine-certifiable for a semantic criterion."],
    c:["Size- and colour-only references were consciously excluded as too noisy (they overlap other SCs) — the anchor is shape + position, the two strongest sensory-only signals."],
@@ -929,7 +929,7 @@ const ROWS=[
   pdf:{b:["PdfLanguageFixer writes /Lang in stage 1 of the two-stage pipeline; the pikepdf→pypdf split exists precisely to make these writes reliable in a long-lived worker.","Applied to a copy; provenance-stamped in docinfo."],
       ev:["api/remediate_pdf.py (stage 1)","worker-python/remediation/fixers/pdf/language_fixer.py"]}}},
 
-{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R2",xlsx:"R2",pptx:"R2",pdf:"R2"},
+{sc:"3.1.2",name:"Language of Parts",lvl:"AA",flag:false,a:{docx:"A3",xlsx:"A3",pptx:"A3",pdf:"A3"},r:{docx:"R3",xlsx:"R2",pptx:"R3",pdf:"R2"},
  ae:{
   docx:{b:["Two independent detectors: (1) seeded langdetect over extracted text fires when ≥2 languages are confidently detected — ≥12-word segments, ≥0.90 confidence, thresholds chosen against false positives; DetectorFactory.seed=0 makes it reproducible run-to-run. (2) LanguageOfPartsRule flags long runs whose Unicode SCRIPT differs from the document's dominant script with no w:lang of their own — deliberately narrow after ADR 0012 killed the old false-positive flood (it used to flag every 20+ word run).","Guided because the hard call — foreign language vs proper noun vs quotation — is judgment; the spec says script detection 'drafts nothing safe enough to auto-apply'."],
       c:["Known drift to disclose before someone finds it: the .NET rule still reports under SC_3_1_1 (ADR 0012 defers separate 3.1.2 modelling). SC-keyed coverage queries under-report DOCX until the remap lands.","Latin-script switches (English→Spanish quote) pass the script detector; the langdetect check partially covers this at document level."],
@@ -1089,7 +1089,7 @@ const ROWS=[
   pdf:{b:["The exception that proves the rule: PDF CAN embed JavaScript and form logic that traps focus. Nothing checks it → Human, honestly."],ev:["—"]}},
  re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A3",xlsx:"NA",pptx:"NA",pdf:"A3"},r:{docx:"R1",xlsx:"NA",pptx:"NA",pdf:"R4"},
+{sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A3",xlsx:"NA",pptx:"NA",pdf:"A3"},r:{docx:"R3",xlsx:"NA",pptx:"NA",pdf:"R4"},
  ae:{
   docx:{b:["This SC targets UI components; in documents it bites on form controls. Two detectors now file under 4.1.2 itself, not only under 3.3.2: DOCX_FORM_FIELD_NO_TAG (api/office_structure.py:388) for the programmatic identifier, and OFFICE_INTERACTIVE_CONTROL_NAME_ROLE (api/office_structure.py:1800). The older label check (DOCX_FORM_FIELD_NO_LABEL) still files under 3.3.2 — the two are deliberately separate.","Watch the demo-catalog trap: wcagCatalog.js marks 4.1.2 'Shipped (demo)' — that's HTML axe coverage for web pages. Quoting it for documents is exactly the layer-mixing this brief exists to stop."],
       ev:["api/office_structure.py (3.3.2 form-field check — adjacent)","frontend/src/wcagCatalog.js (HTML-only 'Shipped' marker)"]},
@@ -3508,6 +3508,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-07",time:"06:45",tz:"PDT",hash:"grid-sync",pr:null,repo:"jeremyyuAWS/wcag-matrix",
+ title:"grid: six remediation cells raised to the ceiling acp already ships",
+ scs:["1.3.3","3.1.2","4.1.2"],formats:["docx","xlsx","pptx"],
+ summary:"The grid catches up to write-backs that shipped earlier today. No new capability — these cells were claiming less than the code supports, which the drift guard deliberately never flags, so shipped work stayed invisible in the coverage percentages until someone looked.",
+ points:[
+  {label:"1.3.3 docx/xlsx/pptx",text:"R2 to R3. apply_text_values writes an approved sensory rewrite into the file (acp #146), so the lane is a drafted-then-approved fix rather than guidance."},
+  {label:"3.1.2 docx/pptx",text:"R2 to R3. The same module writes the language mark and the detector now honours it, so the write actually clears the criterion. XLSX stays R2 — SpreadsheetML has no per-run language element, corrected in acp #147."},
+  {label:"4.1.2 docx",text:"R1 to R3. apply_field_name writes an approved w:alias onto a content control (acp #144), where the cell previously claimed no remediation at all."},
+  {text:"PDF is unchanged on 1.3.3 and 3.1.2: the lane is assisted but no write-back applier exists, which is the distinction acp's own ceiling derivation draws."}]},
 {date:"2026-08-07",time:"06:27",tz:"PDT",hash:"7927743",pr:147,repo:"jeremyyuAWS/acp",
  title:"fix(capability): xlsx 3.1.2 is explain-only — a proposal nobody can write is not an assisted lane (#147)",
  scs:["3.1.2"],formats:["xlsx"],
