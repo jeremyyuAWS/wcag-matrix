@@ -50,9 +50,55 @@ def load_upgrade() -> dict:
     return json.loads(out.stdout)
 
 
+def duplicate_format_keys() -> list[str]:
+    """A format key repeated inside one criterion's object.
+
+    Must read the RAW TEXT, not load_upgrade()'s parsed dict: JS object literals silently keep
+    the LAST duplicate, and `JSON.stringify` has already collapsed them by the time the dict
+    exists — so the parsed view cannot see this class of error at all.
+
+    Why it earns a check. On 2026-08-06 a rewrite inserted new "pptx"/"pdf" notes at the FRONT of
+    1.4.11's object while the stale ones were still at the back. Both cells kept rendering
+    "Already covered before this round." — the old text won, silently, and every guard passed:
+    the JS parsed, the scope check saw one key per format, and only rendering the page and
+    reading the notes back caught it. An edit that appears to land and does not is exactly the
+    failure this repo keeps writing guards for.
+    """
+    src = HTML.read_text(encoding="utf-8")
+    start = src.index("const UPGRADE=")
+    i = src.index("{", start)
+    depth, quote, end = 0, None, i
+    for end in range(i, len(src)):
+        c = src[end]
+        if quote:
+            if c == "\\":
+                continue
+            if c == quote:
+                quote = None
+            continue
+        if c in "\"'`":
+            quote = c
+            continue
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                break
+    literal = src[i:end + 1]
+    out = []
+    for m in re.finditer(r'"(\d+\.\d+\.\d+)":\{([^{}]*)\}', literal):
+        keys = re.findall(r'"(docx|xlsx|pptx|pdf|\*)":', m.group(2))
+        dupes = sorted({k for k in keys if keys.count(k) > 1})
+        if dupes:
+            out.append(f"{m.group(1)}: duplicate key(s) {'/'.join(dupes)} — JS keeps the LAST "
+                       f"one, so an earlier note is silently dead. Merge them into one key.")
+    return out
+
+
 def main() -> int:
     upgrade = load_upgrade()
-    problems: list[str] = []
+    problems: list[str] = duplicate_format_keys()
     cells = 0
 
     for sc, val in upgrade.items():
