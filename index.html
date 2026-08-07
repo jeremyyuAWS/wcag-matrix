@@ -1946,7 +1946,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.07.0552";
+const DOC_BUILD="2026.08.07.0611";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3486,6 +3486,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-07",time:"06:10",tz:"PDT",hash:"95bae71",pr:146,repo:"jeremyyuAWS/acp",
+ title:"feat(remediate): approved 1.3.3 rewrites and 3.1.2 language marks reach the file — and clear (#146)",
+ scs:["1.3.3","3.1.2","1.4.1","1.4.11"],formats:["docx","xlsx","pptx"],
+ summary:"Approving a sensory rewrite or a language-of-parts mark now reaches the file and clears the criterion, across Word, PowerPoint and Excel — the proposers had shipped all along, the write had not, and for 3.1.2 the detector could not see the write either.",
+ points:[
+  {label:"DOCX/PPTX/XLSX 1.3.3",text:"an approved non-sensory rewrite replaces the sentence it was drafted for, everywhere that sentence appears, splitting any run it only partly covers so no unapproved text is rewritten."},
+  {label:"DOCX/PPTX 3.1.2",text:"an approved language code is written as the format's own language mark, and the detector now honours it. A default en-US stamped across every run still does not excuse an unmarked French passage."},
+  {label:"XLSX 3.1.2",text:"recorded as structurally impossible, not unbuilt: SpreadsheetML has no per-run language element, so no write can ever clear it."},
+  {label:"DOCX/XLSX 1.4.1 and 1.4.11",text:"the review cards now carry the measured contrast ratio, its 3:1 target, and how many colour-only links or rules there are to check, matching what the PDF and PowerPoint cards already showed. Neither criterion gains a remediation lane, and that is not a gap: both are review-lane only on Office formats, so a guided card IS the ceiling."}]},
 {date:"2026-08-07",time:"05:51",tz:"PDT",hash:"2ca4876",pr:144,repo:"jeremyyuAWS/acp",
  title:"feat(forms): docx 4.1.2 keys on the Title assistive tech announces, and approvals reach the file (#144)",
  scs:["4.1.2"],formats:["docx"],
