@@ -1087,13 +1087,16 @@ const ROWS=[
       ev:["RuleMetadataRegistry.cs (PptxRuleIds.AnimationOrder)"]},
   pdf:{b:["None."],ev:["—"]}}},
 
-{sc:"2.1.2",name:"No Keyboard Trap",lvl:"A",flag:false,a:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"A2"},r:{docx:"NA",xlsx:"NA",pptx:"NA",pdf:"R1"},
+{sc:"2.1.2",name:"No Keyboard Trap",lvl:"A",flag:false,a:{docx:"A2",xlsx:"A2",pptx:"A2",pdf:"A2"},r:{docx:"R1",xlsx:"R1",pptx:"R1",pdf:"R1"},
  ae:{
-  docx:{b:["Static OOXML content cannot capture and hold focus — a trap requires executable interaction, which lives in the viewer. N/A by content model."],ev:["—"]},
-  xlsx:{b:["Same — N/A by content model."],ev:["—"]},
-  pptx:{b:["Same — N/A by content model."],ev:["—"]},
+  docx:{b:["This cell read N/A by content model until 2026-08-07, on the argument that static OOXML content cannot capture and hold focus because a trap requires executable interaction, which lives in the viewer. For genuinely static content that is still true.","It was withdrawn because the page argued both sides of one premise. The 2.1.1 cell beside it reads Human Assessment Required precisely because \u201cembedded ActiveX/macro content could in principle create keyboard issues\u201d \u2014 and .docm and .xlsm carry macros exactly as .pptm does. Same premise, opposite conclusion, adjacent criteria; N/A was the side that had to give, because it is the stronger claim (the legend reads it as \u201cthe rule can\u2019t be broken in this format\u201d).","acp agrees in code: office_control_review_checks files OFFICE_INTERACTIVE_CONTROL_KEYBOARD under 2.1.2 when a document embeds interactive controls, asking a reviewer to verify focus can move away from every one of them.","Held at Human Assessment rather than Potential Issue on purpose, and below the A3 the code would support. That card fires only when controls are actually present \u2014 acp\u2019s own docstring says the criteria stay N/A for a static document \u2014 so calling every document a likely violation would overstate it. This is a considered floor, not a lag."],
+      c:["What a control does once focused is viewer behaviour and cannot be read out of the file. The finding names the controls; the trap itself is confirmed by a person."],
+      ev:["api/office_structure.py:office_control_review_checks","OFFICE_INTERACTIVE_CONTROL_KEYBOARD"]},
+  xlsx:{b:["Same reasoning as docx, and the macro surface is if anything larger: .xlsm workbooks routinely carry form controls and VBA."],ev:["api/office_structure.py:office_control_review_checks"]},
+  pptx:{b:["Same reasoning as docx. This is also the format whose 2.1.1 cell made the argument in the first place, so the two now agree."],ev:["api/office_structure.py:office_control_review_checks"]},
   pdf:{b:["The exception that proves the rule: PDF CAN embed JavaScript and form logic that traps focus. Nothing checks it → Human, honestly."],ev:["—"]}},
- re:{docx:{b:["N/A."],ev:["—"]},xlsx:{b:["N/A."],ev:["—"]},pptx:{b:["N/A."],ev:["—"]},pdf:{b:["None."],ev:["—"]}}},
+ re:(function(){const none={b:["No meaningful fix ACP can offer, which is R1 rather than N/A: whether a control traps focus is a property of how it behaves in the viewer, not of anything in the file that could be rewritten. Removing or re-authoring the control is an authoring decision.","Matches the PDF cell in this row, which has been R1 on the same reasoning all along."],ev:["— (report-and-route only)"]};
+   return {docx:none,xlsx:none,pptx:none,pdf:{b:["None."],ev:["—"]}};})()},
 
 {sc:"4.1.2",name:"Name, Role, Value",lvl:"A",flag:false,a:{docx:"A3",xlsx:"NA",pptx:"NA",pdf:"A3"},r:{docx:"R3",xlsx:"NA",pptx:"NA",pdf:"R4"},
  ae:{
@@ -3514,6 +3517,15 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-07",time:"16:40",tz:"PDT",hash:"212-a2",pr:null,repo:"jeremyyuAWS/wcag-matrix",
+ title:"grid: 2.1.2 is Human Assessment on OOXML, not Not Applicable",
+ scs:["2.1.2"],formats:["docx","xlsx","pptx"],
+ summary:"Settles the inconsistency this log recorded earlier today rather than patching. The page argued both sides of one premise: 2.1.1 pptx reads Human Assessment Required because \u201cembedded ActiveX/macro content could in principle create keyboard issues; Human keeps the door honest\u201d, while 2.1.2 read Not Applicable by content model across all three OOXML formats on that same premise \u2014 and .docm and .xlsm carry macros exactly as .pptm does. N/A was the side that gave, because the legend reads it as the strongest claim on the page: the rule cannot be broken in this format.",
+ points:[
+  {label:"2.1.2 docx/xlsx/pptx \u2014 assessment",text:"Not Applicable to Human Assessment Required. acp already agreed in code: office_control_review_checks files OFFICE_INTERACTIVE_CONTROL_KEYBOARD under 2.1.2 when a document embeds interactive controls, asking a reviewer to verify focus can move away from each one. The original reasoning is kept in the drawer rather than deleted \u2014 for genuinely static content it still holds, and it is why this is Human Assessment and not a detected fault."},
+  {label:"2.1.2 docx/xlsx/pptx \u2014 remediation",text:"Not Applicable to No Remediation. This had to move with the assessment axis, not as a separate judgement: by the page\u2019s own legend N/A means the rule cannot be broken in this format while R1 means there is no meaningful fix ACP can offer. Holding A2 with N/A would assert that the rule applies and cannot apply at once. The PDF cell in this row has been A2/R1 on exactly this reasoning all along, so the row is now internally consistent."},
+  {label:"deliberately A2, not A3",text:"The code-derived ceiling for these three cells is Potential Issue, and this stops one rung short of it on purpose. The review card fires only when interactive controls are actually present \u2014 acp\u2019s own docstring says the criteria stay N/A for a static document \u2014 so calling every document a likely violation would overstate it. Recorded here because the under-claim report will now list these three: that entry is this decision, not drift."},
+  {label:"measurement note",text:"N/A cells are excluded from the coverage denominator, so clearing one adds it to both numerator and denominator and can LOWER a percentage even though the grid got more accurate. Verified for this change rather than assumed, the same way it was for the three cells raised this morning."}]},
 {date:"2026-08-07",time:"14:20",tz:"PDT",hash:"na-sweep",pr:null,repo:"jeremyyuAWS/wcag-matrix",
  title:"grid: three N/A cells whose stated reason was overtaken by shipped code",
  scs:["1.3.2","2.4.3"],formats:["docx","pptx","pdf"],
