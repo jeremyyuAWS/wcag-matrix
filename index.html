@@ -1974,7 +1974,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.07.0936";
+const DOC_BUILD="2026.08.08.2121";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3525,6 +3525,10 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-08",time:"21:21",tz:"PDT",hash:"bbeebec",pr:199,repo:"jeremyyuAWS/acp",
+ title:"fix(1.1.1): the detector could not read the decorative marker we write, plus a labelled capability benchmark (#199)",
+ scs:["2.4.4","1.3.3","3.1.2","1.4.5","1.3.2","1.1.1","2.4.6"],formats:["docx","xlsx","pptx","pdf"],
+ summary:".docx 2.4.4, 1.3.3 and 3.1.2 move from producing nothing during remediation to producing an AI-drafted PROPOSAL for human approval. The assessment and remediation LANES are unchanged — these stay `assisted`, nothing is auto-applied — so no capability cell changes value. What changes is that the assisted lane now delivers on its name on .docx. .docx 1.4.5 moves from producing nothing during remediation to proposing its OCR transcription; 1.3.2 gains an explain-only card. Both remain assisted and nothing is auto-applied, so no capability cell changes value. A decorative image marked by ACP's own remediator is no longer re-reported as missing alt text. The 1.1.1 detector and remediator now share one predicate for the OOXML decorative marker instead of two that disagreed on inline namespace declarations, so the criterion can actually be cleared on a document containing a decorative image. Detection coverage is unchanged; this removes a false positive that was unclearable. An Office image carrying the OOXML decorative marker is no longer routed to human review for alt text by the remediator. This was the third of three predicates for the same question and the last one still disagreeing; detection coverage is unchanged, and what goes away is a review item that could never be cleared. The rest of this commit is progress reporting and touches no rule, threshold or lane. A document holding more embedded images than the OCR cap now reports that the images past the cap were not examined, as an advisory review item. No detection threshold or lane changed and no new image is checked — what changes is that the criterion no longer reports a complete-looking result on a document it only partly examined. .docx headings with no text are now detected under 2.4.6. Previously an empty heading matched no check at all — it sits in the outline, breaks no level sequence and has no runs — so it was reported as conformant. This adds detection; no existing threshold, lane or remediation behaviour changed, and there is no auto-fix (only the author knows what the heading was meant to say)."},
 {date:"2026-08-08",time:"11:20",tz:"PDT",hash:"94ad1af",pr:178,repo:"jeremyyuAWS/acp",
  title:"ACP Core 17 becomes a named scope, and what a clean scan can claim gets counted",
  scs:[],formats:[],
