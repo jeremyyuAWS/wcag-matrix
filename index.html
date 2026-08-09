@@ -1974,7 +1974,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.09.0723";
+const DOC_BUILD="2026.08.09.0759";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3526,6 +3526,10 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-09",time:"07:58",tz:"PDT",hash:"0639483",pr:203,repo:"jeremyyuAWS/acp",
+ title:"feat(docx): prefilled cards for 1.4.1 and 1.4.11, so both lanes become assisted (#203)",
+ scs:["1.4.1","1.4.11"],formats:["docx"],
+ summary:"docx 1.4.1 and 1.4.11 move from a human remediation lane to an assisted one. Each now emits a prefilled, deterministic card a reviewer approves with one click — restore the removed underline; change the outline to the named shade that reaches 3:1 — rather than guidance alone. No change to detection, and no change to assessment: both remain review-lane and neither can certify a pass."},
 {date:"2026-08-09",time:"07:22",tz:"PDT",hash:"f566cdc",pr:202,repo:"jeremyyuAWS/acp",
  title:"feat(docx): declare 1.4.1 and 1.4.11, and give them the guided lane they were missing (#202)",
  scs:["1.4.1","1.4.11"],formats:["docx"],
