@@ -1974,7 +1974,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.09.1052";
+const DOC_BUILD="2026.08.09.1239";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3527,6 +3527,10 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-09",time:"12:38",tz:"PDT",hash:"a38da38",pr:208,repo:"jeremyyuAWS/acp",
+ title:"feat(docx): 4.1.2 was already being fixed deterministically — declare the lane it had (#208)",
+ scs:["4.1.2"],formats:["docx"],
+ summary:"DOCX 4.1.2 form-field accessible names move to the deterministic lane. The fix was already running — the label a screen reader announces is borrowed from the text already beside the field and written to w:alias, no model and no approval — but it was credited only to 3.3.2 and skipped when a scan was scoped to 4.1.2 alone. The assessment axis deliberately stays review: the check covers interactive content controls and cannot see ActiveX or embedded OLE, so a clean re-scan means the fields are named, not that the criterion is met. A field with no adjacent text to borrow is still never named automatically; it routes to a reviewer."},
 {date:"2026-08-09",time:"10:51",tz:"PDT",hash:"79d5b17",pr:206,repo:"jeremyyuAWS/acp",
  title:"feat(docx): declare 2.1.2 — the last Core-17 criterion with no .docx lane (#206)",
  scs:["2.1.2"],formats:["docx"],
