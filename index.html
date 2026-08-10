@@ -1974,7 +1974,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.09.1847";
+const DOC_BUILD="2026.08.09.2056";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3514,11 +3514,14 @@ document.addEventListener("keydown",(e)=>{
 // gen_matrix_coverage.py. Unlike PROGRESS_LOG this is a CURRENT-STATE snapshot, not a history:
 // hand-edits here are overwritten on the next sync. Change coverage in acp, beside the detector.>>>
 const MATURITY={
+ "1.1.1":{docx:{c:"partial",conf:"high",why:"embedded images (inline and floating, body and running header/footer) are checked for a non-junk descr or a decorative marker; charts, SmartArt, grouped shapes and embedded OLE objects are non-text content this walk does not reach, and whether a descr that is present actually describes its image is a judgement not made"}},
  "1.4.1":{docx:{c:"partial",conf:"high",why:"hyperlinks are checked exactly for an explicitly removed underline, which leaves colour as the only thing setting a link apart from body text; colour used as the sole carrier of meaning anywhere else — shaded table rows, coloured glyphs, chart series keyed by hue — is not examined"}},
  "1.4.11":{docx:{c:"partial",conf:"high",why:"shapes with a solid outline on a solid fill are measured exactly, by the same WCAG contrast formula used for text; gradient or image fills, theme-colour indirection, and non-shape non-text elements such as focus indicators and control borders are not examined"},xlsx:{c:"partial",conf:"medium",why:"solid outline-on-fill DrawingML shapes are measured with the true WCAG contrast ratio; theme-coloured shapes, gradients, images and control affordances are not examined, and whether a shape conveys meaning is left to a human"}},
  "2.1.2":{docx:{c:"partial",conf:"high",why:"the document is read for embedded interactive controls and each one is named for a reviewer to try with a keyboard; whether focus can actually move away from a control is runtime behaviour that depends on the control's own implementation and is not examined, because it is not recorded in the file"}},
  "2.4.3":{pdf:{c:"heuristic",conf:"medium",why:"pages with form widgets are checked for /Tabs = /S, a proxy for tab order following reading order; actually comparing the widget order to the structure order needs a /StructTreeRoot walk that is not built"}},
+ "2.4.4":{docx:{c:"partial",conf:"high",why:"hyperlink display text is checked exactly for generic filler ('click here', a bare URL); whether otherwise-descriptive text actually names THIS destination — a link reading 'Annual Report' that points at the wrong document — is a content judgement not examined, because the target's meaning is not recorded in the file"}},
  "3.1.1":{html:{c:"full",conf:"high",why:"a valid lang attribute on the root element is exactly what 3.1.1 asks for, so this covers the criterion completely; whether the declared language is the CORRECT one is a content question 3.1.1 does not ask"}},
+ "3.1.2":{docx:{c:"partial",conf:"high",why:"passages of at least 12 words in a language other than the document's own are flagged when they carry no w:lang mark; a shorter foreign phrase or a single borrowed word is under the length floor langdetect needs to be trusted, and is not flagged"}},
  "4.1.2":{docx:{c:"partial",conf:"high",why:"interactive content controls are checked exactly for a Title (w:alias), the attribute Word exposes to assistive technology as the accessible name; ActiveX controls, embedded OLE objects and other form content are not examined, which would need reading each control's own implementation"},pdf:{c:"partial",conf:"high",why:"interactive AcroForm fields are checked exactly (/TU name, /FT role, /V value); components expressed through the tagged-structure tree are not examined, which needs a /StructTreeRoot walker this codebase does not have yet"}}};
 // <<<MATURITY:END>>>
 
@@ -3527,6 +3530,10 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-09",time:"20:55",tz:"PDT",hash:"78e9909",pr:219,repo:"jeremyyuAWS/acp",
+ title:"refactor(docx): migrate 1.1.1, 2.4.4 and 3.1.2 to the capability registry (ADR 0031) (#219)",
+ scs:["2.4.4","3.1.2","1.1.1"],formats:["docx"],
+ summary:"docx 2.4.4 and 3.1.2 move from the RULE_FORMATS + _certify path to the capability registry's coverage gate (coverage=PARTIAL). No (criterion, format) cell changes — both stay REVIEW on a clean scan and FAIL on a defect, verified verdict-for-verdict. This is a mechanism consolidation (ADR 0031), not a capability change: what ACP checks and concludes is identical; the declaration for these two now lives beside the detector instead of in a shared table. docx 1.1.1 moves from RULE_FORMATS + _certify to the registry's coverage gate (coverage=PARTIAL), adding Capability.IMAGES to the docx baseline. No (criterion, format) cell changes — 1.1.1 stays REVIEW on a clean scan and FAIL on an alt-less image, verified verdict-for-verdict. Mechanism consolidation (ADR 0031), not a capability change: what ACP checks and concludes is identical; the declaration now lives beside the detector."},
 {date:"2026-08-09",time:"18:47",tz:"PDT",hash:"3c934ad",pr:214,repo:"jeremyyuAWS/acp",
  title:"fix(docx): link purpose is judged in headers, footers and notes, not just the body (#214)",
  scs:["2.4.4"],formats:["docx"],
