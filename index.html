@@ -1974,7 +1974,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.09.2056";
+const DOC_BUILD="2026.08.10.0641";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3530,6 +3530,10 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-10",time:"06:41",tz:"PDT",hash:"a09e090",pr:229,repo:"jeremyyuAWS/acp",
+ title:"fix(docx): form controls in a header are judged like the body's — 2.1.2, 3.3.2, 4.1.2 (#229)",
+ scs:["2.1.2","4.1.2"],formats:["docx"],
+ summary:"DOCX form-control checks (2.1.2 keyboard trap, 3.3.2 labels, 4.1.2 name/role/value; 3.3.2 is not a matrix-tracked SC so it carries no WCAG: line, but it moves with the same fix) now read w:sdt content controls and w:ffData legacy fields from the running header/footer and foot/endnote parts, not only word/document.xml. No (criterion, format) cell changes — all three were already evaluated on docx — so this is a recall improvement within existing coverage: an unlabelled date/checkbox field in a running header used to be silent and now fails as it would in the body. Verdict-neutral for body-only documents."},
 {date:"2026-08-09",time:"20:55",tz:"PDT",hash:"78e9909",pr:219,repo:"jeremyyuAWS/acp",
  title:"refactor(docx): migrate 1.1.1, 2.4.4 and 3.1.2 to the capability registry (ADR 0031) (#219)",
  scs:["2.4.4","3.1.2","1.1.1"],formats:["docx"],
