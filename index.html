@@ -1974,7 +1974,7 @@ const FCLASS={MECH:"Rules-based",GEN:"AI-assisted",REAUTH:"Human-assisted",NAx:"
 // stale. The zone is America/Los_Angeles, so it stays correct across a DST boundary.
 // Bump via scripts/bump_build.py — the sync does it automatically after splicing.
 // Rendered into every .docbuild span, so adding another stamp needs no second edit here.
-const DOC_BUILD="2026.08.10.0641";
+const DOC_BUILD="2026.08.10.0731";
 
 const RTIER_HOW={R4:"DET",R3:"MA",R2:"HUM",R1:"HUM",NA:"NAx"};
 // Which shipped tiers count as having REACHED a given rule-inherent ceiling. Read as: a cell whose
@@ -3530,6 +3530,14 @@ const MATURITY={
 // them survive (the splice only PREPENDS entries whose hash is not already present), but
 // prefer fixing the trailer in acp so the two stay in agreement.>>>
 const PROGRESS_LOG=[
+{date:"2026-08-10",time:"07:31",tz:"PDT",hash:"92e7328",pr:227,repo:"jeremyyuAWS/acp",
+ title:"fix(docx): 1.4.1 sees a colour-only link in a footer, not only in the body (#227)",
+ scs:["1.4.1"],formats:["docx"],
+ summary:"DOCX use-of-color (1.4.1) now counts underline-removed hyperlinks in the running header/footer and foot/endnote parts, not only word/document.xml. No (criterion, format) cell changes — 1.4.1 docx was and remains a review lane — so this is a recall improvement within existing coverage: a colour-only link in a footer used to be silent and now raises the same 1.4.1 review it would in the body. The xlsx conditional-formatting branch is unchanged."},
+{date:"2026-08-10",time:"07:30",tz:"PDT",hash:"f68db0c",pr:226,repo:"jeremyyuAWS/acp",
+ title:"fix(docx): 3.1.2 reads a header's language mark where the header's text is read (#226)",
+ scs:["3.1.2"],formats:["docx"],
+ summary:"DOCX language-of-parts (3.1.2) now reads w:lang marks from the running header/footer and foot/endnote parts, not only word/document.xml, matching where its text is already read. No (criterion, format) cell changes — 3.1.2 docx was and remains assisted/review under PARTIAL coverage — so this is a precision improvement within existing coverage: a correctly marked foreign passage in a header used to raise a false 3.1.2 and no longer does, while an unmarked one still fails as it would in the body. pptx and the (unbuilt) pdf path are untouched."},
 {date:"2026-08-10",time:"06:41",tz:"PDT",hash:"a09e090",pr:229,repo:"jeremyyuAWS/acp",
  title:"fix(docx): form controls in a header are judged like the body's — 2.1.2, 3.3.2, 4.1.2 (#229)",
  scs:["2.1.2","4.1.2"],formats:["docx"],
