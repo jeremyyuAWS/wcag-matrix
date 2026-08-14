@@ -9,6 +9,8 @@ Live: `https://wcag-matrix.mova-io.app/`
 **This log starts at 2026-08-01.** Earlier work is not covered. The `(#NN)` references are
 GitHub PRs, not ADO work items.
 
+ADO: `MovateAI-Foundry` / `AI-Foundry` · Task **#3656** ACP demo prep — WCAG assessment matrix and app
+
 ---
 
 ## Feature: Grid-drift guard
