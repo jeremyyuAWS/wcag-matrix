@@ -96,6 +96,13 @@ ADO: `MovateAI-Foundry` / `AI-Foundry` · Task **#3656** ACP demo prep — WCAG 
 - Refreshed the backlog against reality (#48, #49): four items closed, one found to be wrong,
   three new ones opened.
 
+- **The Progress Log pipeline ran unattended, twice** (`9d687ce`, `6884df5`, 2026-08-09). Both commits
+  are **generated**, authored by `github-actions[bot]`: `.github/workflows/progress-log.yml` spliced
+  acp's `Matrix-Note:` commit trailers into `index.html` via `repository_dispatch`, through
+  `scripts/apply_progress_log.py` (+12/−3 lines across the two). Recorded as one line rather than two
+  Tasks because no one wrote them — the value is the evidence that the pipeline fires on a real acp
+  merge without a human in the loop, which is what the Feature was built to do.
+
 ## Documentation
 
 - `docs/` carries the tier methodology, drawer content spec and plain-language rewrite, and six
@@ -111,6 +118,13 @@ ADO: `MovateAI-Foundry` / `AI-Foundry` · Task **#3656** ACP demo prep — WCAG 
 - **Ground rule 3 keeps tier changes human.** The drift workflow opens a PR rather than pushing,
   so an unreviewed PR means the grid is knowingly stale.
 
+- **This checkout is parked on `log-0808-core17`, and it has diverged from `main`.** HEAD carries three
+  commits `origin/main` does not; `main` carries three HEAD does not. One pair is the same work under
+  two shas — `29087fd` was squash-merged as `03e4ba2` (#50) — which patch-id correctly recognised as
+  already covered. The other two are the bot's Progress Log syncs above. Nothing is lost, but the
+  branch should be reconciled with `main` or retired; until then this repo's delta is only correct
+  because `ado-sync.sh` now ranges over the union of trunk and HEAD rather than HEAD alone.
+
 ---
 
 ## Sync log
@@ -118,3 +132,9 @@ ADO: `MovateAI-Foundry` / `AI-Foundry` · Task **#3656** ACP demo prep — WCAG 
 - **2026-08-08** — Log created, covering 2026-08-01 onward (26 commits). Four Features written:
   the grid-drift guard, reconciliation against ACP's shipped ceiling, scope authority, and the
   Progress Log pipeline.
+- **2026-09-04** — Standup sweep. These two commits had been **invisible to every prior run**: the
+  checkout sits on `log-0808-core17` while the work landed on `origin/main`, and `ado-sync.sh`
+  compared against HEAD, so the delta read empty. The helper was fixed the same day to range over the
+  trunk unioned with HEAD; this repo was the second instance it surfaced, after `acp`. One Task
+  appended under Progress Log and coverage reporting, and the branch divergence recorded as an Open
+  item. Marker advanced from `c05f003` to the `origin/main` tip.
