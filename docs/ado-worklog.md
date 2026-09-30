@@ -103,6 +103,26 @@ ADO: `MovateAI-Foundry` / `AI-Foundry` · Task **#3656** ACP demo prep — WCAG 
   Tasks because no one wrote them — the value is the evidence that the pipeline fires on a real acp
   merge without a human in the loop, which is what the Feature was built to do.
 
+- **Eight more unattended pipeline runs landed the docx header/footer campaign into the grid**
+  (`8e8862b`…`bbcea96`, 2026-08-09 and 2026-08-10, all `github-actions[bot]`). Net effect on
+  `index.html` is +41/−1: the `DOC_BUILD` stamp moved `2026.08.09.0723` → `2026.08.10.0731`,
+  nine `PROGRESS_LOG` entries were prepended for acp PRs #202–#229, and four new `MATURITY`
+  cells appeared — docx 1.1.1, 2.1.2, 2.4.4 and 3.1.2, each carrying the boundary text the
+  detector states rather than a bare tier. Eight runs for one net build stamp is the splice
+  working as designed: it only prepends entries whose hash is absent, so re-running is a no-op.
+  One line rather than nine Tasks — no one wrote them.
+- The synced entries record a consistent claim worth keeping visible at intake: every one of the
+  docx header/footer fixes (#214, #226, #227, #229) reports **no (criterion, format) cell
+  change**. They widen *which parts of a file* the existing detectors read — running headers,
+  footers, foot/endnotes — rather than what the matrix claims to cover. A "click here" in a
+  footer used to be silent and now fails 2.4.4 exactly as it would in the body.
+- **These eight commits had been invisible to every prior standup for a month.** The delta helper
+  resolves its tip from the local `origin/main` remote-tracking ref and never fetches, and this
+  checkout had not been pulled since 2026-08-09 — so `origin/main` still read `6884df5` and the
+  delta came back empty. Fetching first is what surfaced them. This is the third distinct way
+  this repo has reported a false-empty delta, after the parked-branch bug (2026-09-04) and the
+  sandbox `getcwd` failure (2026-08-31).
+
 ## Documentation
 
 - `docs/` carries the tier methodology, drawer content spec and plain-language rewrite, and six
@@ -125,6 +145,13 @@ ADO: `MovateAI-Foundry` / `AI-Foundry` · Task **#3656** ACP demo prep — WCAG 
   branch should be reconciled with `main` or retired; until then this repo's delta is only correct
   because `ado-sync.sh` now ranges over the union of trunk and HEAD rather than HEAD alone.
 
+- **`ado-sync.sh` reads `origin/main` but never fetches it.** Ranging over the trunk fixed the
+  parked-branch case, but only as far as the trunk the local `.git` happens to know about. A
+  checkout nobody pulls has a frozen `origin/main`, and the delta is then empty for a correct
+  reason that is nonetheless wrong — which is how eight commits stayed unreported here from
+  2026-08-10 to 2026-09-11. The helper should either fetch before resolving the tip, or print the
+  tip's age so a month-old ref is visible in the output rather than silently trusted.
+
 ---
 
 ## Sync log
@@ -138,3 +165,11 @@ ADO: `MovateAI-Foundry` / `AI-Foundry` · Task **#3656** ACP demo prep — WCAG 
   trunk unioned with HEAD; this repo was the second instance it surfaced, after `acp`. One Task
   appended under Progress Log and coverage reporting, and the branch divergence recorded as an Open
   item. Marker advanced from `c05f003` to the `origin/main` tip.
+- **2026-09-11** — Standup sweep, mode `clean`. Eight commits (`8e8862b`…`bbcea96`, 2026-08-09/10)
+  appeared for the first time because this run fetched before resolving the tip; the local
+  `origin/main` had been frozen at `6884df5` since 2026-08-09, so every standup for a month read an
+  empty delta and reported this repo as inactive. All eight are `github-actions[bot]` Progress Log
+  syncs, folded into one Task plus one Task for what they carried, and the fetch gap opened as an
+  Open item against `ado-sync.sh`. **No hours booked against the commits** — they are bot-authored
+  and a month old. 0.5h booked to 2026-09-11 for this catch-up documentation pass (day 3.5h of 8h,
+  not capped). Marker advanced from `6884df5` to `bbcea96`.
